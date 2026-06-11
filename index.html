@@ -185,7 +185,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 <div id="login">
   <div class="lcard">
     <div class="llogo">NEXUS</div>
-    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v2025</span></div>
+    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v2032</span></div>
     <div class="lline"></div>
     <label class="llbl">Usuario</label>
     <input class="linp" id="ui" type="text" placeholder="tu usuario" autocapitalize="none" autocorrect="off">
@@ -233,7 +233,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
         <div style="display:flex;gap:6px;margin-bottom:12px;">
           <button id="cp-r1" onclick="cpSelectRuta('principal',this)" style="flex:1;padding:10px 4px;border-radius:10px;border:2px solid var(--accent);background:rgba(0,212,255,.15);color:var(--accent);font-size:11px;font-weight:700;cursor:pointer;">🚚 Principal<br><span style="font-weight:400;opacity:.8">Jon</span></button>
           <button id="cp-r2" onclick="cpSelectRuta('andarin',this)" style="flex:1;padding:10px 4px;border-radius:10px;border:1.5px solid var(--border);background:transparent;color:var(--text2);font-size:11px;font-weight:700;cursor:pointer;">🚶 Andarin<br><span style="font-weight:400;opacity:.8">Andrea</span></button>
-          <button id="cp-r3" onclick="cpSelectRuta('50008',this)" style="flex:1;padding:10px 4px;border-radius:10px;border:1.5px solid var(--border);background:transparent;color:var(--text2);font-size:11px;font-weight:700;cursor:pointer;">📦 50008<br><span style="font-weight:400;opacity:.8">Camilo</span></button>
+          <button id="cp-r3" onclick="cpSelectRuta('50008',this)" style="flex:1;padding:10px 4px;border-radius:10px;border:1.5px solid var(--border);background:transparent;color:var(--text2);font-size:11px;font-weight:700;cursor:pointer;">📦 50008<br><span style="font-weight:400;opacity:.8">Sebas</span></button>
         </div>
 
         <!-- Foto -->
@@ -1652,9 +1652,11 @@ list.innerHTML='<div class="empty">Cargando...</div>';
 let query=sb.from('cierres').select('*').order('created_at',{ascending:false}).limit(100);
 if(me.role==='driver') query=query.eq('driver',me.name);
 else if(me.role==='supervisor'){
-if(me.name==='Jon'||me.name==='jhon') query=query.eq('ruta_tipo','principal');
-else if(me.name==='Andrea'||me.name==='Jesica Andrea') query=query.eq('ruta_tipo','andarin');
-else if(me.name==='Camilo') query=query.eq('ruta_tipo','50008');
+const _sn=(me.name||'').toLowerCase();
+if(_sn.includes('jon')||_sn.includes('jhon')) query=query.eq('ruta_tipo','principal');
+else if(_sn.includes('andrea')) query=query.eq('ruta_tipo','andarin');
+else if(_sn.includes('sebas')) query=query.eq('ruta_tipo','50008');
+// Camilo (encargado) ve todos los cierres, sin filtro
 } else if(me.role==='manager'&&cierresDriverFiltro!=='all') query=query.eq('driver',cierresDriverFiltro);
 const{data,error}=await query;
 if(error){list.innerHTML='<div class="empty">Error cargando</div>';return;}
