@@ -185,7 +185,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 <div id="login">
   <div class="lcard">
     <div class="llogo">NEXUS</div>
-    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v1756</span></div>
+    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v1223</span></div>
     <div class="lline"></div>
     <label class="llbl">Usuario</label>
     <input class="linp" id="ui" type="text" placeholder="tu usuario" autocapitalize="none" autocorrect="off">
@@ -633,7 +633,12 @@ if(nuevaRuta){rutaId=nuevaRuta.id;ruta._rutaId=rutaId;}
 }
 }
 if(!rutaId)return;
-const rows=paradas.map(p=>({ruta_id:rutaId,n:p.n,name:p.name,addr:p.addr,saco:p.saco,bultos:p.bultos,status:p.status,lat:p.lat||null,lng:p.lng||null,codigo_seguimiento:p.codigo||null}));
+// Evitar duplicados: no insertar números de parada que ya existen en la ruta
+const{data:existentes}=await sb.from('paradas').select('n').eq('ruta_id',rutaId);
+const numsExistentes=new Set((existentes||[]).map(x=>Number(x.n)));
+const nuevas=paradas.filter(p=>!numsExistentes.has(Number(p.n)));
+if(!nuevas.length)return;
+const rows=nuevas.map(p=>({ruta_id:rutaId,n:p.n,name:p.name,addr:p.addr,saco:p.saco,bultos:p.bultos,status:p.status,lat:p.lat||null,lng:p.lng||null,codigo_seguimiento:p.codigo||null}));
 await sb.from('paradas').insert(rows);
 }
 
