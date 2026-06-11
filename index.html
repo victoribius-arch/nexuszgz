@@ -185,7 +185,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 <div id="login">
   <div class="lcard">
     <div class="llogo">NEXUS</div>
-    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v1938</span></div>
+    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v2025</span></div>
     <div class="lline"></div>
     <label class="llbl">Usuario</label>
     <input class="linp" id="ui" type="text" placeholder="tu usuario" autocapitalize="none" autocorrect="off">
@@ -1703,10 +1703,80 @@ return Math.max(0,Math.ceil((new Date(fecha)-Date.now())/(1000*60*60*24)));
 
 function verFoto(url){
 const overlay=document.createElement('div');
-overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:pointer;';
-overlay.innerHTML=`<img src="${url}" style="max-width:95%;max-height:95%;border-radius:8px;object-fit:contain;">`;
-overlay.onclick=()=>document.body.removeChild(overlay);
+overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:9999;overflow:hidden;touch-action:none;';
+overlay.innerHTML=`
+<img src="${url}" id="vf-img" style="position:absolute;left:0;top:0;width:100%;height:100%;object-fit:contain;transform-origin:0 0;will-change:transform;">
+<button id="vf-close" style="position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:14px;z-index:2;width:42px;height:42px;border-radius:50%;border:2px solid #fff;background:rgba(0,0,0,.5);color:#fff;font-size:20px;font-weight:700;cursor:pointer;">✕</button>
+<div style="position:absolute;bottom:calc(16px + env(safe-area-inset-bottom,0px));left:0;right:0;text-align:center;color:rgba(255,255,255,.6);font-size:12px;z-index:2;pointer-events:none;">Pellizca para hacer zoom · Doble toque para ampliar</div>`;
 document.body.appendChild(overlay);
+const img=overlay.querySelector('#vf-img');
+let scale=1,tx=0,ty=0;
+let startDist=0,startScale=1,startTx=0,startTy=0,startMidX=0,startMidY=0;
+let panX=0,panY=0,panning=false;
+let lastTap=0;
+function apply(){
+// Limitar para que no se pierda la imagen
+const minS=1,maxS=6;
+scale=Math.max(minS,Math.min(maxS,scale));
+if(scale===1){tx=0;ty=0;}
+img.style.transform=`translate(${tx}px,${ty}px) scale(${scale})`;
+}
+function dist(t){return Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);}
+function mid(t){return{x:(t[0].clientX+t[1].clientX)/2,y:(t[0].clientY+t[1].clientY)/2};}
+overlay.addEventListener('touchstart',e=>{
+if(e.touches.length===2){
+e.preventDefault();
+startDist=dist(e.touches);startScale=scale;
+const m=mid(e.touches);startMidX=m.x;startMidY=m.y;startTx=tx;startTy=ty;
+}else if(e.touches.length===1){
+// doble toque
+const now=Date.now();
+if(now-lastTap<300){
+e.preventDefault();
+if(scale>1){scale=1;tx=0;ty=0;}
+else{scale=2.5;const r=overlay.getBoundingClientRect();tx=-(e.touches[0].clientX-r.left)*(scale-1);ty=-(e.touches[0].clientY-r.top)*(scale-1);}
+apply();
+}
+lastTap=now;
+if(scale>1){panning=true;panX=e.touches[0].clientX-tx;panY=e.touches[0].clientY-ty;}
+}
+},{passive:false});
+overlay.addEventListener('touchmove',e=>{
+if(e.touches.length===2){
+e.preventDefault();
+const d=dist(e.touches);
+const newScale=Math.max(1,Math.min(6,startScale*d/startDist));
+const m=mid(e.touches);
+// Zoom centrado en el punto medio de los dedos
+tx=m.x-(startMidX-startTx)*(newScale/startScale);
+ty=m.y-(startMidY-startTy)*(newScale/startScale);
+scale=newScale;
+apply();
+}else if(e.touches.length===1&&panning&&scale>1){
+e.preventDefault();
+tx=e.touches[0].clientX-panX;
+ty=e.touches[0].clientY-panY;
+apply();
+}
+},{passive:false});
+overlay.addEventListener('touchend',e=>{
+if(e.touches.length===0)panning=false;
+apply();
+});
+// Zoom con rueda en ordenador
+overlay.addEventListener('wheel',e=>{
+e.preventDefault();
+const prev=scale;
+scale=Math.max(1,Math.min(6,scale*(e.deltaY<0?1.15:0.87)));
+tx=e.clientX-(e.clientX-tx)*(scale/prev);
+ty=e.clientY-(e.clientY-ty)*(scale/prev);
+apply();
+},{passive:false});
+overlay.querySelector('#vf-close').onclick=()=>document.body.removeChild(overlay);
+overlay.addEventListener('click',e=>{
+// Cerrar tocando el fondo solo sin zoom
+if(e.target===overlay&&scale===1)document.body.removeChild(overlay);
+});
 }
 
 let _cierreIntN=0;
