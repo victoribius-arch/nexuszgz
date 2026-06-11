@@ -185,7 +185,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 <div id="login">
   <div class="lcard">
     <div class="llogo">NEXUS</div>
-    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v1223</span></div>
+    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v1938</span></div>
     <div class="lline"></div>
     <label class="llbl">Usuario</label>
     <input class="linp" id="ui" type="text" placeholder="tu usuario" autocapitalize="none" autocorrect="off">
@@ -491,7 +491,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
     <div style="position:absolute;top:50%;left:10%;right:10%;height:2px;background:var(--accent);transform:translateY(-50%);opacity:.8;"></div>
   </div>
   <div id="scanner-result" style="color:#fff;font-size:14px;margin-top:16px;text-align:center;padding:0 20px;">Apunta al código de barras del paquete</div>
-  <button onclick="cerrarEscaner()" style="margin-top:20px;padding:14px 32px;border:2px solid #fff;border-radius:12px;background:transparent;color:#fff;font-size:15px;font-weight:700;cursor:pointer;">✕ Cerrar</button>
+  <div style="display:flex;gap:10px;margin-top:20px;">
+    <button onclick="leerDireccionIA()" style="padding:14px 22px;border:none;border-radius:12px;background:#00d4ff;color:#000;font-size:15px;font-weight:800;cursor:pointer;">🔍 Leer dirección (IA)</button>
+    <button onclick="cerrarEscaner()" style="padding:14px 22px;border:2px solid #fff;border-radius:12px;background:transparent;color:#fff;font-size:15px;font-weight:700;cursor:pointer;">✕ Cerrar</button>
+  </div>
 </div>
 
 <!-- BOTTOM SHEET: INCIDENCIA -->
@@ -2110,6 +2113,37 @@ if(video)video.srcObject=null;
 document.getElementById('scanner-overlay').style.display='none';
 }
 
+function distMetros(lat1,lng1,lat2,lng2){
+const R=6371000,rad=Math.PI/180;
+const dLat=(lat2-lat1)*rad,dLng=(lng2-lng1)*rad;
+const a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*rad)*Math.cos(lat2*rad)*Math.sin(dLng/2)*Math.sin(dLng/2);
+return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+function resaltarParada(parada){
+document.querySelectorAll('.si').forEach(x=>{x.style.background='';x.style.border='';});
+const el=document.getElementById('li-'+parada.n);
+if(el){
+el.style.background='rgba(16,185,129,.2)';
+el.style.border='2px solid var(--green)';
+el.scrollIntoView({behavior:'smooth',block:'center'});
+setTimeout(()=>{el.style.background='';el.style.border='';},6000);
+}
+const listaTab=document.querySelector('.bni[onclick*="s-lista"]');
+if(listaTab&&!document.getElementById('s-lista').classList.contains('on'))switchTab('s-lista',listaTab);
+// Verificación GPS: ¿estás en el punto de esta parada?
+if(parada.lat&&parada.lng&&navigator.geolocation){
+toast(`✅ Parada #${parada.n} — comprobando posición...`,'ok');
+navigator.geolocation.getCurrentPosition(function(pos){
+const d=distMetros(pos.coords.latitude,pos.coords.longitude,parada.lat,parada.lng);
+if(d<150)toast(`✅ #${parada.n} correcto — estás en el punto de entrega`,'ok');
+else toast(`📦 #${parada.n} — la parada está a ${d>=1000?(d/1000).toFixed(1)+' km':Math.round(d)+' m'} de aquí`,'');
+},function(){toast(`✅ Parada #${parada.n} — ${parada.addr}`,'ok');},{enableHighAccuracy:true,timeout:5000});
+} else {
+toast(`✅ Parada #${parada.n} — ${parada.addr}`,'ok');
+}
+}
+
 function buscarPorCodigo(codigo){
 const limpio=codigo.replace(/\s/g,'');
 // 1) Coincidencia exacta
@@ -2122,19 +2156,66 @@ const cola=limpio.slice(-8);
 parada=ruta.paradas.find(p=>p.codigo&&p.codigo.replace(/\s/g,'').endsWith(cola));
 }
 if(parada){
-document.querySelectorAll('.si').forEach(x=>{x.style.background='';x.style.border='';});
-const el=document.getElementById('li-'+parada.n);
-if(el){
-el.style.background='rgba(16,185,129,.2)';
-el.style.border='2px solid var(--green)';
-el.scrollIntoView({behavior:'smooth',block:'center'});
-setTimeout(()=>{el.style.background='';el.style.border='';},5000);
-}
-toast(`✅ Parada #${parada.n} — ${parada.addr}`,'ok');
-const listaTab=document.querySelector('.bni[onclick*="s-lista"]');
-if(listaTab&&!document.getElementById('s-lista').classList.contains('on'))switchTab('s-lista',listaTab);
+resaltarParada(parada);
 } else {
-toast(`Código ${limpio.slice(-10)} no está en tu ruta`,'err');
+toast(`Código ${limpio.slice(-10)} no está en tu ruta — prueba "Leer dirección (IA)"`,'err');
+}
+}
+
+// Leer la dirección de la etiqueta con IA (para paquetes sin código en la ruta)
+async function leerDireccionIA(){
+const video=document.getElementById('scanner-video');
+if(!video||!video.videoWidth){toast('Cámara no lista todavía','err');return;}
+const resultEl=document.getElementById('scanner-result');
+resultEl.textContent='🔍 Leyendo etiqueta con IA...';
+const canvas=document.createElement('canvas');
+canvas.width=video.videoWidth;canvas.height=video.videoHeight;
+canvas.getContext('2d').drawImage(video,0,0);
+const b64=canvas.toDataURL('image/jpeg',0.85).split(',')[1];
+try{
+const resp=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},
+body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:300,messages:[{role:'user',content:[
+{type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},
+{type:'text',text:'Lee la etiqueta de envío de este paquete. Extrae la dirección de entrega visible. Devuelve SOLO JSON sin nada más: {"addr":"calle y número que veas o null","codigo":"número de seguimiento si lo ves o null"}'}
+]}]})});
+const data=await resp.json();
+const txt=data.content?.find(c=>c.type==='text')?.text||'';
+let parsed=null;
+try{parsed=JSON.parse(txt.replace(/```json?|```/g,'').trim());}catch(e){const m=txt.match(/\{[\s\S]*\}/);if(m)try{parsed=JSON.parse(m[0]);}catch(e2){}}
+// Si leyó un código, probar primero por código
+if(parsed&&parsed.codigo){
+const limpio=String(parsed.codigo).replace(/\s/g,'');
+const porCodigo=ruta.paradas.find(p=>p.codigo&&(p.codigo.replace(/\s/g,'').includes(limpio)||limpio.includes(p.codigo.replace(/\s/g,''))));
+if(porCodigo){cerrarEscaner();resaltarParada(porCodigo);return;}
+}
+if(!parsed||!parsed.addr){resultEl.textContent='No se pudo leer la dirección — acerca la etiqueta y repite';return;}
+cerrarEscaner();
+buscarPorDireccion(parsed.addr);
+}catch(e){
+resultEl.textContent='Error leyendo la etiqueta — inténtalo de nuevo';
+}
+}
+
+function normTxt(s){
+return String(s).toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Z0-9 ]/g,' ').replace(/\b(C|CL|CALLE|AV|AVDA|AVENIDA|PS|PO|PASEO|PZA|PLAZA|CAMINO|DE|DEL|LA|EL|LOS|LAS)\b/g,'').replace(/\s+/g,' ').trim();
+}
+
+function buscarPorDireccion(addr){
+const objetivo=normTxt(addr);
+const numM=String(addr).match(/\d+/);
+let mejor=null,mejorScore=0;
+ruta.paradas.forEach(p=>{
+const pn=normTxt(p.addr);
+const palabras=objetivo.split(' ').filter(w=>w.length>2);
+if(!palabras.length)return;
+let score=palabras.filter(w=>pn.includes(w)).length/palabras.length;
+if(numM&&new RegExp('\\b'+numM[0]+'\\b').test(pn))score+=0.3;
+if(score>mejorScore){mejorScore=score;mejor=p;}
+});
+if(mejor&&mejorScore>=0.5){
+resaltarParada(mejor);
+}else{
+toast(`"${addr}" no coincide con ninguna parada de tu ruta`,'err');
 }
 }
 
