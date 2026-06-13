@@ -185,7 +185,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 <div id="login">
   <div class="lcard">
     <div class="llogo">NEXUS</div>
-    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v0903</span></div>
+    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v0918</span></div>
     <div class="lline"></div>
     <label class="llbl">Usuario</label>
     <input class="linp" id="ui" type="text" placeholder="tu usuario" autocapitalize="none" autocorrect="off">
@@ -952,9 +952,26 @@ const acts=_modoBorrar
 const el=document.createElement('div');
 el.className=`si ${cls}`;el.id='li-'+s.n;
 if(_modoBorrar&&sel)el.style.background='rgba(244,63,94,.08)';
+// Etiqueta de hora estimada de llegada
+let etaTag='';
+if(s.eta&&s.status==='pending'){
+let color='var(--accent)',bg='rgba(0,212,255,.12)',icon='🕐';
+// Aviso para preferentes: si la ETA supera su franja
+if(s.eta){
+const h=parseInt(s.eta.split(':')[0]);
+const m=parseInt(s.eta.split(':')[1]);
+const mins=h*60+m;
+const esPref=/preferente|13h|14h/i.test(s.name+' '+s.addr);
+if(esPref){
+if(mins>14*60){color='#f43f5e';bg='rgba(244,63,94,.15)';icon='⚠️';}
+else if(mins>13*60){color='#f59e0b';bg='rgba(245,158,11,.15)';icon='⚡';}
+}
+}
+etaTag=`<span class="tag" style="background:${bg};color:${color};font-weight:700;">${icon} ${s.eta}</span>`;
+}
 el.innerHTML=`<div class="sibar"></div><div class="sinum"><div class="nc">${s.n}</div></div>
 <div class="sibody"><div class="siname">${s.name}</div><div class="siaddr">${s.addr}</div>
-<div class="sitags"><span class="tag ts">Saca ${s.saco}</span><span class="tag tb2">${s.bultos}b</span>${tag}${s.codigo?`<span class="tag" style="background:rgba(251,146,60,.1);color:var(--orange);font-family:monospace;font-size:9px;">${s.codigo.slice(-8)}</span>`:''}</div></div>${acts}`;
+<div class="sitags"><span class="tag ts">Saca ${s.saco}</span><span class="tag tb2">${s.bultos}b</span>${etaTag}${tag}${s.codigo?`<span class="tag" style="background:rgba(251,146,60,.1);color:var(--orange);font-family:monospace;font-size:9px;">${s.codigo.slice(-8)}</span>`:''}</div></div>${acts}`;
 el.addEventListener('click',()=>{if(_modoBorrar)toggleSeleccion(s.n);else selStop(s.n);});
 return el;
 }
@@ -984,15 +1001,33 @@ pendientes[pendientes.length-1]
 ].filter(Boolean);
 // Añadir los que no hayan quedado incluidos
 pendientes.forEach(p=>{if(!reordenadas.find(r=>r.n===p.n))reordenadas.push(p);});
+
+// ── CALCULAR ETA POR PARADA ──
+const legs=data.routes[0].legs;
+const MARGEN_ENTREGA=120; // 2 min por parada (bajar, entregar, volver)
+let reloj=Date.now();
+reordenadas.forEach((p,i)=>{
+if(i===0){
+// Primera parada: tiempo desde ubicación de salida (~5 min para arrancar)
+reloj+=5*60*1000;
+} else {
+// Sumar el tramo de conducción hasta esta parada + margen de la anterior
+const leg=legs[i-1];
+const seg=leg?leg.duration.value:180;
+reloj+=(seg+MARGEN_ENTREGA)*1000;
+}
+p.eta=new Date(reloj).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+p._etaMs=reloj;
+});
+
 const entregadas=ruta.paradas.filter(p=>p.status!=='pending');
 ruta.paradas=[...entregadas,...reordenadas];
 renderLista();
 if(gmap1)renderMarkers1();
-// Calcular distancia total en km
-const legs=data.routes[0].legs;
+// Distancia y tiempo total
 const kmTotal=(legs.reduce((s,l)=>s+l.distance.value,0)/1000).toFixed(1);
-const minTotal=Math.round(legs.reduce((s,l)=>s+l.duration.value,0)/60);
-toast(`✅ Ruta optimizada — ${kmTotal} km · ${minTotal} min estimados`,'ok');
+const minTotal=Math.round(legs.reduce((s,l)=>s+l.duration.value,0)/60)+reordenadas.length*2;
+toast(`✅ Ruta optimizada — ${kmTotal} km · ~${minTotal} min · horas de llegada calculadas`,'ok');
 return;
 }
 }catch(e){console.warn('Google Directions falló, usando IA:',e);}
