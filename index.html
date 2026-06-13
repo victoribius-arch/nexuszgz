@@ -185,7 +185,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 <div id="login">
   <div class="lcard">
     <div class="llogo">NEXUS</div>
-    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v0859</span></div>
+    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v0903</span></div>
     <div class="lline"></div>
     <label class="llbl">Usuario</label>
     <input class="linp" id="ui" type="text" placeholder="tu usuario" autocapitalize="none" autocorrect="off">
@@ -1700,28 +1700,44 @@ String(c.parada_n).includes(cierresBusq)||
 (c.nombre_cliente||'').toLowerCase().includes(cierresBusq)||
 (c.dni_cliente||'').toLowerCase().includes(cierresBusq)
 );
-if(!cierres.length){list.innerHTML='<div class="empty">No hay cierres hoy</div>';return;}
+if(!cierres.length){list.innerHTML='<div class="empty">No hay cierres</div>';return;}
 
-list.innerHTML=cierres.map(c=>{
-const fecha=new Date(c.created_at).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+// Agrupar por día
+const hoy=new Date();hoy.setHours(0,0,0,0);
+const ayer=new Date(hoy);ayer.setDate(ayer.getDate()-1);
+const dias={};
+cierres.forEach(c=>{
+const f=new Date(c.created_at);const fd=new Date(f);fd.setHours(0,0,0,0);
+const key=fd.getTime();
+if(!dias[key])dias[key]={fecha:fd,items:[]};
+dias[key].items.push(c);
+});
+
+const nombreDia=(fd)=>{
+if(fd.getTime()===hoy.getTime())return 'HOY';
+if(fd.getTime()===ayer.getTime())return 'AYER';
+const dias_sem=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+const meses=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+return `${dias_sem[fd.getDay()]} ${fd.getDate()} ${meses[fd.getMonth()]}`;
+};
+
+const tarjeta=(c)=>{
+const hora=new Date(c.created_at).toLocaleString('es-ES',{hour:'2-digit',minute:'2-digit'});
 return `<div style="margin:8px;background:var(--card);border-radius:16px;overflow:hidden;border:1px solid var(--border);">
-<!-- Cabecera -->
 <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;">
 <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#000;flex-shrink:0;">${c.driver[0]}</div>
 <div style="flex:1;min-width:0;">
 <div style="font-weight:700;font-size:14px;">${c.driver}</div>
-<div style="display:flex;gap:6px;align-items:center;margin-top:2px;">
-<span style="font-size:11px;color:var(--text3);">${fecha}</span>
+<div style="display:flex;gap:6px;align-items:center;margin-top:2px;flex-wrap:wrap;">
+<span style="font-size:11px;color:var(--text3);">${hora}</span>
 ${c.ruta_tipo?`<span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;background:rgba(0,212,255,.15);color:var(--accent);">${c.ruta_tipo==='principal'?'🚚 Principal':c.ruta_tipo==='andarin'?'🚶 Andarin':'📦 50008'}</span>`:''}
 ${c.preferente?`<span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;background:rgba(245,158,11,.2);color:#f59e0b;">⚡ Preferente</span>`:''}
 </div>
 </div>
 <div style="font-family:monospace;font-size:20px;font-weight:900;color:var(--accent);">#${c.parada_n||'—'}</div>
 </div>
-<!-- Foto -->
 ${c.foto_url?`<img src="${c.foto_url}" onclick="verFoto('${c.foto_url}')" style="width:100%;max-height:280px;object-fit:cover;display:block;cursor:pointer;">`
 :'<div style="height:80px;background:var(--bg2);display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:13px;">Sin foto</div>'}
-<!-- Info -->
 <div style="padding:12px 14px;">
 <div style="font-size:12px;color:var(--text2);margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">📍 ${c.addr||'—'}</div>
 ${c.nombre_cliente?`<div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px;">👤 ${c.nombre_cliente}</div>`:''}
@@ -1729,6 +1745,20 @@ ${c.dni_cliente?`<div style="font-size:15px;font-weight:700;color:var(--accent);
 ${!c.nombre_cliente&&!c.dni_cliente?`<div style="font-size:13px;color:var(--text3);font-style:italic;">Sin nombre ni DNI</div>`:''}
 </div>
 </div>`;
+};
+
+// Ordenar días de más reciente a más antiguo y renderizar con cabecera plegable
+const keys=Object.keys(dias).sort((a,b)=>b-a);
+list.innerHTML=keys.map((k,idx)=>{
+const g=dias[k];
+const abierto=idx===0; // solo HOY abierto por defecto
+return `<details ${abierto?'open':''} style="margin:0;">
+<summary style="position:sticky;top:0;z-index:5;background:var(--bg2);padding:10px 16px;cursor:pointer;font-size:12px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+<span>📅 ${nombreDia(g.fecha)}</span>
+<span style="color:var(--text3);font-weight:600;">${g.items.length} ${g.items.length===1?'cierre':'cierres'}</span>
+</summary>
+<div>${g.items.map(tarjeta).join('')}</div>
+</details>`;
 }).join('');
 }
 
