@@ -185,7 +185,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 <div id="login">
   <div class="lcard">
     <div class="llogo">NEXUS</div>
-    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v0918</span></div>
+    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v0959</span></div>
     <div class="lline"></div>
     <label class="llbl">Usuario</label>
     <input class="linp" id="ui" type="text" placeholder="tu usuario" autocapitalize="none" autocorrect="off">
@@ -979,40 +979,65 @@ return el;
 async function optimizarConIA(){
 const pendientes=ruta.paradas.filter(p=>p.status==='pending');
 if(pendientes.length<2){toast('Necesitas al menos 2 paradas pendientes','err');return;}
-if(pendientes.length>23){toast('Máximo 23 paradas a la vez para optimizar','err');return;}
+if(pendientes.length>110){toast('Máximo 110 paradas','err');return;}
 toast('🗺️ Calculando ruta óptima...','');
 
-// ── MÉTODO 1: Google Directions API con optimizeWaypoints ──
-try{
-const origin=pendientes[0].addr+', Zaragoza, España';
-const destination=pendientes[pendientes.length-1].addr+', Zaragoza, España';
-const waypoints=pendientes.slice(1,-1).map(p=>encodeURIComponent(p.addr+', Zaragoza, España')).join('|');
-// Llamar a través del Worker para evitar CORS
+// Optimiza un bloque (máx 25 puntos) con Google Directions. Devuelve {orden, legs} o null
+async function optimizarBloque(grupo){
+if(grupo.length<2)return{orden:grupo,legs:[]};
+const origin=grupo[0].addr+', Zaragoza, España';
+const destination=grupo[grupo.length-1].addr+', Zaragoza, España';
+const waypoints=grupo.slice(1,-1).map(p=>encodeURIComponent(p.addr+', Zaragoza, España')).join('|');
 const gUrl=`https://maps.googleapis.com/maps/api/directions/json?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&waypoints=optimize:true|${waypoints}&mode=driving&language=es&key=${GMAPS_KEY}`;
 const resp=await fetch(WORKER_URL+'/gmaps?url='+encodeURIComponent(gUrl));
 const data=await resp.json();
 if(data.status==='OK'&&data.routes&&data.routes[0]){
-const order=data.routes[0].waypoint_order; // índices 0..n-2 de los waypoints
-const middle=pendientes.slice(1,-1);
-const reordenadas=[
-pendientes[0],
-...order.map(i=>middle[i]),
-pendientes[pendientes.length-1]
-].filter(Boolean);
-// Añadir los que no hayan quedado incluidos
-pendientes.forEach(p=>{if(!reordenadas.find(r=>r.n===p.n))reordenadas.push(p);});
+const order=data.routes[0].waypoint_order;
+const middle=grupo.slice(1,-1);
+const orden=[grupo[0],...order.map(i=>middle[i]),grupo[grupo.length-1]].filter(Boolean);
+grupo.forEach(p=>{if(!orden.find(r=>r.n===p.n))orden.push(p);});
+return{orden,legs:data.routes[0].legs};
+}
+return null;
+}
+
+try{
+let reordenadas=[],allLegs=[];
+
+if(pendientes.length<=25){
+// Caso normal: un solo bloque
+const r=await optimizarBloque(pendientes);
+if(!r)throw new Error('Google falló');
+reordenadas=r.orden;allLegs=r.legs;
+}else{
+// Muchas paradas: agrupar por código postal (zona) y optimizar cada grupo
+toast('🗺️ Optimizando ruta larga por zonas...','');
+const grupos={};
+pendientes.forEach(p=>{
+const cp=(p.addr.match(/\b50\d{3}\b/)||['50000'])[0];
+if(!grupos[cp])grupos[cp]=[];
+grupos[cp].push(p);
+});
+// Ordenar las zonas por CP y optimizar cada una (en sublotes de 25 si hiciera falta)
+for(const cp of Object.keys(grupos).sort()){
+let zona=grupos[cp];
+for(let i=0;i<zona.length;i+=25){
+const sub=zona.slice(i,i+25);
+const r=await optimizarBloque(sub);
+if(r){reordenadas.push(...r.orden);allLegs.push(...r.legs);}
+else{reordenadas.push(...sub);}
+}
+}
+}
+
+if(!reordenadas.length)throw new Error('Sin resultado');
 
 // ── CALCULAR ETA POR PARADA ──
-const legs=data.routes[0].legs;
-const MARGEN_ENTREGA=120; // 2 min por parada (bajar, entregar, volver)
-let reloj=Date.now();
+const MARGEN_ENTREGA=120;
+let reloj=Date.now()+5*60*1000;
 reordenadas.forEach((p,i)=>{
-if(i===0){
-// Primera parada: tiempo desde ubicación de salida (~5 min para arrancar)
-reloj+=5*60*1000;
-} else {
-// Sumar el tramo de conducción hasta esta parada + margen de la anterior
-const leg=legs[i-1];
+if(i>0){
+const leg=allLegs[i-1];
 const seg=leg?leg.duration.value:180;
 reloj+=(seg+MARGEN_ENTREGA)*1000;
 }
@@ -1024,15 +1049,14 @@ const entregadas=ruta.paradas.filter(p=>p.status!=='pending');
 ruta.paradas=[...entregadas,...reordenadas];
 renderLista();
 if(gmap1)renderMarkers1();
-// Distancia y tiempo total
-const kmTotal=(legs.reduce((s,l)=>s+l.distance.value,0)/1000).toFixed(1);
-const minTotal=Math.round(legs.reduce((s,l)=>s+l.duration.value,0)/60)+reordenadas.length*2;
-toast(`✅ Ruta optimizada — ${kmTotal} km · ~${minTotal} min · horas de llegada calculadas`,'ok');
+const kmTotal=(allLegs.reduce((s,l)=>s+(l.distance?l.distance.value:0),0)/1000).toFixed(1);
+const minTotal=Math.round(allLegs.reduce((s,l)=>s+(l.duration?l.duration.value:0),0)/60)+reordenadas.length*2;
+toast(`✅ Ruta optimizada — ${reordenadas.length} paradas · ${kmTotal} km · ~${minTotal} min`,'ok');
 return;
-}
-}catch(e){console.warn('Google Directions falló, usando IA:',e);}
+}catch(e){console.warn('Google falló, usando IA:',e);}
 
-// ── MÉTODO 2: Fallback con IA ──
+// ── FALLBACK IA (solo para rutas cortas) ──
+if(pendientes.length>25){toast('No se pudo optimizar la ruta larga, inténtalo de nuevo','err');return;}
 toast('✨ Optimizando con IA...','');
 try{
 const lista=pendientes.map(p=>`${p.n}: ${p.addr}`).join('\n');
@@ -1048,17 +1072,16 @@ const txt=data.content?.find(c=>c.type==='text')?.text||'';
 let orden=null;
 try{orden=JSON.parse(txt.trim());}catch(e){}
 if(!orden){const m=txt.match(/\[[\d,\s]+\]/);if(m)try{orden=JSON.parse(m[0]);}catch(e){}}
-if(!orden||!Array.isArray(orden)){toast('No se pudo optimizar — intenta de nuevo','err');return;}
+if(!orden||!Array.isArray(orden)){toast('No se pudo optimizar','err');return;}
 const entregadas=ruta.paradas.filter(p=>p.status!=='pending');
 const reordenadas=orden.map(n=>pendientes.find(p=>Number(p.n)===Number(n))).filter(Boolean);
 pendientes.forEach(p=>{if(!reordenadas.find(r=>r.n===p.n))reordenadas.push(p);});
 ruta.paradas=[...entregadas,...reordenadas];
 renderLista();
 if(gmap1)renderMarkers1();
-toast(`✨ Ruta optimizada — ${reordenadas.length} paradas reordenadas`,'ok');
+toast(`✨ Ruta optimizada — ${reordenadas.length} paradas`,'ok');
 }catch(e){toast('Error al optimizar','err');}
 }
-
 function selStop(n){
 document.querySelectorAll('.si').forEach(x=>x.classList.remove('on'));
 const el=document.getElementById('li-'+n);
