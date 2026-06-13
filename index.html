@@ -187,7 +187,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 <div id="login">
   <div class="lcard">
     <div class="llogo">NEXUS</div>
-    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v1735</span></div>
+    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v1753</span></div>
     <div class="lline"></div>
     <label class="llbl">Usuario</label>
     <input class="linp" id="ui" type="text" placeholder="tu usuario" autocapitalize="none" autocorrect="off">
@@ -385,6 +385,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
       <div class="pdasub">Gestiona los accesos de tus repartidores</div>
       <div id="equipo-list"></div>
       <button class="abtn" style="margin-top:16px" onclick="showAddDriver()">+ AÑADIR REPARTIDOR</button>
+      <button onclick="crearClientePrueba()" style="width:100%;padding:14px;border:1.5px solid var(--accent);border-radius:12px;background:rgba(37,99,235,.08);color:var(--accent);font-size:14px;font-weight:700;cursor:pointer;margin-top:10px;">🎁 Crear cliente de prueba (1 día)</button>
       <div id="add-driver-form" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-top:12px;">
         <div style="font-size:14px;font-weight:700;margin-bottom:12px;color:var(--accent)">Nuevo repartidor</div>
         <label class="llbl">Nombre</label>
@@ -737,6 +738,14 @@ btn.textContent='...';btn.disabled=true;
 try{
 const{data,error}=await sb.from('usuarios').select('*').eq('username',u).eq('password',p).eq('activo',true).single();
 if(error||!data){toast('Usuario o contraseña incorrectos','err');btn.textContent='ENTRAR';btn.disabled=false;return;}
+// Comprobar caducidad de prueba (fiable: fecha del servidor)
+if(data.prueba&&data.prueba_fin){
+const fin=new Date(data.prueba_fin).getTime();
+if(Date.now()>fin){
+toast('⏰ Tu prueba ha caducado. Contacta para activar tu cuenta','err');
+btn.textContent='ENTRAR';btn.disabled=false;return;
+}
+}
 me={...data};
 localStorage.setItem('nexus_session',JSON.stringify({username:me.username,password:me.password}));
 if(me.role==='manager'){
@@ -777,6 +786,11 @@ if(!saved)return false;
 const{username,password}=JSON.parse(saved);
 const{data,error}=await sb.from('usuarios').select('*').eq('username',username).eq('password',password).eq('activo',true).single();
 if(error||!data)return false;
+// Comprobar caducidad de prueba
+if(data.prueba&&data.prueba_fin&&Date.now()>new Date(data.prueba_fin).getTime()){
+localStorage.removeItem('nexus_session');
+return false;
+}
 me={...data};
 if(me.role==='manager'){
 const{data:drivers}=await sb.from('usuarios').select('*').eq('activo',true).neq('role','manager');
@@ -832,7 +846,11 @@ const TABS_S=[{id:'s-lista',lb:'Lista'},{id:'s-mapa',lb:'Mapa'},{id:'s-pda',lb:'
 const TABS_M=[{id:'s-lista',lb:'Lista'},{id:'s-mapa',lb:'Mapa'},{id:'s-pda',lb:'Fotos PDA'},{id:'s-cierres',lb:'Cierres'},{id:'s-gestor',lb:'Gestión'},{id:'s-equipo',lb:'Equipo'},{id:'s-historial',lb:'Historial'}];
 
 function buildNav(){
-const tabs=me.role==='manager'?TABS_M:(me.role==='supervisor'?TABS_S:TABS_D);
+let tabs=me.role==='manager'?TABS_M:(me.role==='supervisor'?TABS_S:TABS_D);
+// Modo simple: solo ruta, sin cierres ni historial de cierres
+if(me.modo_simple){
+tabs=[{id:'s-lista',lb:'Lista'},{id:'s-mapa',lb:'Mapa'},{id:'s-pda',lb:'Fotos PDA'}];
+}
 const bnav=document.getElementById('bnav');
 bnav.innerHTML='';
 tabs.forEach((t,i)=>{
@@ -1691,24 +1709,67 @@ const list=document.getElementById('equipo-list');
 list.innerHTML='<div class="empty">Cargando...</div>';
 const{data:drivers}=await sb.from('usuarios').select('*').eq('role','driver').order('name');
 if(!drivers||!drivers.length){list.innerHTML='<div class="empty">No hay repartidores</div>';return;}
-list.innerHTML=drivers.map(d=>`
+list.innerHTML=drivers.map(d=>{
+let pruebaInfo='';
+if(d.prueba&&d.prueba_fin){
+const fin=new Date(d.prueba_fin).getTime();
+const caducada=Date.now()>fin;
+const finTxt=new Date(d.prueba_fin).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+pruebaInfo=`<div style="font-size:11px;font-weight:700;margin-top:3px;color:${caducada?'var(--red)':'var(--orange)'};">${caducada?'⏰ PRUEBA CADUCADA':'🎁 Prueba hasta '+finTxt}</div>`;
+}
+const modoTag=d.modo_simple?'<span style="font-size:10px;background:rgba(37,99,235,.12);color:var(--accent);padding:1px 6px;border-radius:5px;margin-left:4px;">simple</span>':'';
+return `
 <div style="background:var(--card);border:1px solid ${d.activo?'var(--border)':'var(--red)'};border-radius:12px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;">
 <div class="tav" style="width:36px;height:36px;font-size:15px;flex-shrink:0;background:${d.color||'var(--accent)'}">${d.init||d.name[0]}</div>
 <div style="flex:1">
-<div style="font-weight:700;font-size:14px">${d.name} ${!d.activo?'<span style="color:var(--red);font-size:11px">DESACTIVADO</span>':''}</div>
+<div style="font-weight:700;font-size:14px">${d.name}${modoTag} ${!d.activo?'<span style="color:var(--red);font-size:11px">DESACTIVADO</span>':''}</div>
 <div style="font-size:12px;color:var(--text2)">Usuario: <b style="color:var(--accent)">${d.username}</b></div>
 <div style="font-size:12px;color:var(--text2)">Contraseña: <b>${d.password}</b></div>
+${pruebaInfo}
 </div>
 <div style="display:flex;flex-direction:column;gap:6px">
 <button class="abt ab-nav" onclick="editDriver('${d.id}','${d.username}','${d.password}')" style="font-size:11px;padding:6px 8px">✏️</button>
 <button class="abt ${d.activo?'ab-ko':'ab-ok'}" onclick="toggleDriver('${d.id}',${d.activo})" style="font-size:11px;padding:6px 8px">${d.activo?'🚫':'✓'}</button>
+${d.prueba?`<button class="abt ab-ok" onclick="activarCuenta('${d.id}')" style="font-size:11px;padding:6px 8px" title="Activar como cuenta de pago">💳</button>`:''}
 </div>
-</div>`).join('');
+</div>`;}).join('');
+}
+
+async function activarCuenta(id){
+if(!confirm('¿Activar como cuenta de pago? Se quitará la caducidad de prueba y tendrá acceso completo sin límite.'))return;
+const{error}=await sb.from('usuarios').update({prueba:false,prueba_fin:null}).eq('id',id);
+if(error){toast('Error al activar','err');return;}
+renderEquipo();
+toast('💳 Cuenta activada sin límite','ok');
 }
 
 function showAddDriver(){
 document.getElementById('add-driver-form').style.display='block';
 document.getElementById('new-name').focus();
+}
+
+async function crearClientePrueba(){
+const nombre=prompt('Nombre del cliente de prueba (ej: Autónomo García):');
+if(!nombre)return;
+const user=prompt('Usuario para acceder (sin espacios, ej: prueba1):');
+if(!user)return;
+const pass=prompt('Contraseña:');
+if(!pass)return;
+const colors=['#2563eb','#a78bfa','#10b981','#f59e0b','#f43f5e','#ec4899','#8b5cf6','#06b6d4'];
+const color=colors[Math.floor(Math.random()*colors.length)];
+const fin=new Date(Date.now()+24*60*60*1000).toISOString(); // 1 día
+const{data:existing}=await sb.from('usuarios').select('did').order('did',{ascending:false}).limit(1);
+const did=(existing&&existing[0]?.did!=null?existing[0].did+1:0);
+const{error}=await sb.from('usuarios').insert({
+username:user.trim().toLowerCase(),password:pass.trim(),name:nombre.trim(),
+role:'driver',init:nombre.trim()[0].toUpperCase(),did,color,activo:true,
+modo_simple:true,prueba:true,prueba_fin:fin
+});
+if(error){toast('Error: ese usuario ya existe','err');return;}
+renderEquipo();
+const finTxt=new Date(fin).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+alert(`✅ Cliente de prueba creado\n\nUsuario: ${user.trim().toLowerCase()}\nContraseña: ${pass.trim()}\nModo: simple (solo ruta, sin cierres)\nCaduca: ${finTxt}\n\nPásale estos datos y la web victoribius-arch.github.io/nexuszgz`);
+toast(`🎁 Prueba creada — caduca en 24h`,'ok');
 }
 
 async function addDriver(){
@@ -1956,6 +2017,13 @@ function abrirCierreIntegrado(n, e){
 if(e) e.stopPropagation();
 const parada=ruta.paradas.find(p=>Number(p.n)===Number(n));
 if(!parada)return;
+
+// Modo simple: marcar entregado directo, sin foto/nombre/DNI
+if(me.modo_simple){
+markStop(n,'delivered');
+toast(`✓ Parada #${n} entregada`,'ok');
+return;
+}
 
 document.getElementById('cp-n').value=n;
 document.getElementById('cp-titulo').textContent='✓ Confirmar entrega — Parada #'+n;
