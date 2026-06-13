@@ -185,7 +185,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 <div id="login">
   <div class="lcard">
     <div class="llogo">NEXUS</div>
-    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v0959</span></div>
+    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v1038</span></div>
     <div class="lline"></div>
     <label class="llbl">Usuario</label>
     <input class="linp" id="ui" type="text" placeholder="tu usuario" autocapitalize="none" autocorrect="off">
@@ -2329,9 +2329,15 @@ if(parada.lat&&parada.lng&&navigator.geolocation){
 toast(`✅ Parada #${parada.n} — comprobando posición...`,'ok');
 navigator.geolocation.getCurrentPosition(function(pos){
 const d=distMetros(pos.coords.latitude,pos.coords.longitude,parada.lat,parada.lng);
-if(d<150)toast(`✅ #${parada.n} correcto — estás en el punto de entrega`,'ok');
-else toast(`📦 #${parada.n} — la parada está a ${d>=1000?(d/1000).toFixed(1)+' km':Math.round(d)+' m'} de aquí`,'');
-},function(){toast(`✅ Parada #${parada.n} — ${parada.addr}`,'ok');},{enableHighAccuracy:true,timeout:5000});
+const dTxt=d>=1000?(d/1000).toFixed(1)+' km':Math.round(d)+' m';
+if(d<40){
+toast(`✅ #${parada.n} CORRECTO — estás en el punto (${Math.round(d)} m)`,'ok');
+}else if(d<120){
+toast(`⚠️ #${parada.n} cerca — la parada está a ${dTxt}. Comprueba el portal`,'');
+}else{
+toast(`❌ #${parada.n} NO estás aquí — la parada está a ${dTxt}`,'err');
+}
+},function(){toast(`✅ Parada #${parada.n} — ${parada.addr}`,'ok');},{enableHighAccuracy:true,timeout:8000,maximumAge:0});
 } else {
 toast(`✅ Parada #${parada.n} — ${parada.addr}`,'ok');
 }
