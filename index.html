@@ -187,7 +187,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 <div id="login">
   <div class="lcard">
     <div class="llogo">NEXUS</div>
-    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v1753</span></div>
+    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v1800</span></div>
     <div class="lline"></div>
     <label class="llbl">Usuario</label>
     <input class="linp" id="ui" type="text" placeholder="tu usuario" autocapitalize="none" autocorrect="off">
@@ -2020,8 +2020,7 @@ if(!parada)return;
 
 // Modo simple: marcar entregado directo, sin foto/nombre/DNI
 if(me.modo_simple){
-markStop(n,'delivered');
-toast(`✓ Parada #${n} entregada`,'ok');
+markStopDirect(n,'delivered');
 return;
 }
 
