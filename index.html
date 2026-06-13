@@ -185,7 +185,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 <div id="login">
   <div class="lcard">
     <div class="llogo">NEXUS</div>
-    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v2032</span></div>
+    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v0818</span></div>
     <div class="lline"></div>
     <label class="llbl">Usuario</label>
     <input class="linp" id="ui" type="text" placeholder="tu usuario" autocapitalize="none" autocorrect="off">
@@ -962,13 +962,47 @@ return el;
 async function optimizarConIA(){
 const pendientes=ruta.paradas.filter(p=>p.status==='pending');
 if(pendientes.length<2){toast('Necesitas al menos 2 paradas pendientes','err');return;}
-toast('✨ Optimizando orden con IA...','');
+if(pendientes.length>23){toast('Máximo 23 paradas a la vez para optimizar','err');return;}
+toast('🗺️ Calculando ruta óptima...','');
+
+// ── MÉTODO 1: Google Directions API con optimizeWaypoints ──
+try{
+const origin=pendientes[0].addr+', Zaragoza, España';
+const destination=pendientes[pendientes.length-1].addr+', Zaragoza, España';
+const waypoints=pendientes.slice(1,-1).map(p=>encodeURIComponent(p.addr+', Zaragoza, España')).join('|');
+const url=`https://maps.googleapis.com/maps/api/directions/json?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&waypoints=optimize:true|${waypoints}&mode=driving&language=es&key=${GMAPS_KEY}`;
+const resp=await fetch(url);
+const data=await resp.json();
+if(data.status==='OK'&&data.routes&&data.routes[0]){
+const order=data.routes[0].waypoint_order; // índices 0..n-2 de los waypoints
+const middle=pendientes.slice(1,-1);
+const reordenadas=[
+pendientes[0],
+...order.map(i=>middle[i]),
+pendientes[pendientes.length-1]
+].filter(Boolean);
+// Añadir los que no hayan quedado incluidos
+pendientes.forEach(p=>{if(!reordenadas.find(r=>r.n===p.n))reordenadas.push(p);});
+const entregadas=ruta.paradas.filter(p=>p.status!=='pending');
+ruta.paradas=[...entregadas,...reordenadas];
+renderLista();
+if(gmap1)renderMarkers1();
+// Calcular distancia total en km
+const legs=data.routes[0].legs;
+const kmTotal=(legs.reduce((s,l)=>s+l.distance.value,0)/1000).toFixed(1);
+const minTotal=Math.round(legs.reduce((s,l)=>s+l.duration.value,0)/60);
+toast(`✅ Ruta optimizada — ${kmTotal} km · ${minTotal} min estimados`,'ok');
+return;
+}
+}catch(e){console.warn('Google Directions falló, usando IA:',e);}
+
+// ── MÉTODO 2: Fallback con IA ──
+toast('✨ Optimizando con IA...','');
 try{
 const lista=pendientes.map(p=>`${p.n}: ${p.addr}`).join('\n');
 const content=[{type:'text',text:`Eres un experto en rutas de reparto en Zaragoza, España.
 Tengo estas paradas pendientes con furgoneta:
 ${lista}
-
 Ordénalas para minimizar el recorrido total, teniendo en cuenta las calles de Zaragoza, sentidos únicos y zonas.
 Devuelve SOLO un array JSON con los números de parada en el orden óptimo: [3,1,5,2,4]`}];
 const resp=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},
@@ -979,10 +1013,8 @@ let orden=null;
 try{orden=JSON.parse(txt.trim());}catch(e){}
 if(!orden){const m=txt.match(/\[[\d,\s]+\]/);if(m)try{orden=JSON.parse(m[0]);}catch(e){}}
 if(!orden||!Array.isArray(orden)){toast('No se pudo optimizar — intenta de nuevo','err');return;}
-
 const entregadas=ruta.paradas.filter(p=>p.status!=='pending');
 const reordenadas=orden.map(n=>pendientes.find(p=>Number(p.n)===Number(n))).filter(Boolean);
-
 pendientes.forEach(p=>{if(!reordenadas.find(r=>r.n===p.n))reordenadas.push(p);});
 ruta.paradas=[...entregadas,...reordenadas];
 renderLista();
