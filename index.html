@@ -185,7 +185,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 <div id="login">
   <div class="lcard">
     <div class="llogo">NEXUS</div>
-    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v1652</span></div>
+    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v1659</span></div>
     <div class="lline"></div>
     <label class="llbl">Usuario</label>
     <input class="linp" id="ui" type="text" placeholder="tu usuario" autocapitalize="none" autocorrect="off">
@@ -2280,57 +2280,76 @@ document.getElementById('carga-estado').textContent='Error de cámara: '+e.messa
 }
 }
 
-async function capturarPaquete(){
-if(_cargaProcesando)return;
+let _cargaPendientes=0;
+
+function capturarPaquete(){
 const v=document.getElementById('carga-video');
 if(!v||!v.videoWidth){toast('Cámara no lista','err');return;}
-_cargaProcesando=true;
-const btn=document.getElementById('carga-btn');
-btn.textContent='⏳ Leyendo...';btn.style.opacity='.6';
-document.getElementById('carga-estado').textContent='Leyendo etiqueta con IA...';
 
+// Asignar número YA (sin esperar a la IA)
+_cargaNum++;
+const miNum=_cargaNum;
+const slot={num:miNum,name:'Particular',addr:null,codigo:null,_leyendo:true};
+_cargaPaquetes.push(slot);
+_cargaPendientes++;
+document.getElementById('carga-contador').textContent=_cargaNum+(_cargaNum===1?' paquete':' paquetes');
+const ult=document.getElementById('carga-ultimo');
+ult.style.display='block';
+ult.innerHTML=`📦 Paquete #${miNum} — escríbelo en el paquete · leyendo dirección...`;
+document.getElementById('carga-estado').textContent='Captura el siguiente cuando quieras';
+
+// Recortar al recuadro central (zona de la etiqueta) y comprimir
+const vw=v.videoWidth,vh=v.videoHeight;
+const cropX=vw*0.05,cropY=vh*0.28,cropW=vw*0.9,cropH=vh*0.44;
+const maxW=900;
+const scale=Math.min(1,maxW/cropW);
 const canvas=document.createElement('canvas');
-canvas.width=v.videoWidth;canvas.height=v.videoHeight;
-canvas.getContext('2d').drawImage(v,0,0);
-const b64=canvas.toDataURL('image/jpeg',0.8).split(',')[1];
+canvas.width=cropW*scale;canvas.height=cropH*scale;
+canvas.getContext('2d').drawImage(v,cropX,cropY,cropW,cropH,0,0,canvas.width,canvas.height);
+const b64=canvas.toDataURL('image/jpeg',0.6).split(',')[1];
 
+// Leer en segundo plano (no bloquea)
+(async()=>{
 try{
 const resp=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},
-body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:300,messages:[{role:'user',content:[
+body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:200,messages:[{role:'user',content:[
 {type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},
-{type:'text',text:'Lee la etiqueta de envío de este paquete. Extrae el nombre del destinatario, la dirección de entrega completa con número y el código de seguimiento si lo ves. Devuelve SOLO JSON sin nada más: {"name":"nombre o Particular","addr":"calle número, CP ciudad","codigo":"número seguimiento o null"}'}
+{type:'text',text:'Lee la etiqueta. Devuelve SOLO JSON: {"name":"nombre o Particular","addr":"calle número, CP ciudad","codigo":"seguimiento o null"}'}
 ]}]})});
 const data=await resp.json();
 const txt=data.content?.find(c=>c.type==='text')?.text||'';
 let parsed=null;
 try{parsed=JSON.parse(txt.replace(/```json?|```/g,'').trim());}catch(e){const m=txt.match(/\{[\s\S]*\}/);if(m)try{parsed=JSON.parse(m[0]);}catch(e2){}}
-if(!parsed||!parsed.addr){
-document.getElementById('carga-estado').textContent='❌ No se leyó la dirección — repite con mejor luz';
-btn.textContent='📸 Capturar';btn.style.opacity='1';_cargaProcesando=false;
-return;
+if(parsed&&parsed.addr){
+slot.name=parsed.name||'Particular';slot.addr=parsed.addr;slot.codigo=parsed.codigo||null;slot._leyendo=false;
+}else{
+slot._error=true;slot._leyendo=false;
 }
-_cargaNum++;
-_cargaPaquetes.push({num:_cargaNum,name:parsed.name||'Particular',addr:parsed.addr,codigo:parsed.codigo||null});
-document.getElementById('carga-contador').textContent=_cargaNum+(_cargaNum===1?' paquete':' paquetes');
-const ult=document.getElementById('carga-ultimo');
-ult.style.display='block';
-ult.innerHTML=`✓ Paquete #${_cargaNum} — ${parsed.addr}`;
-document.getElementById('carga-estado').textContent='Escribe '+_cargaNum+' en el paquete. Siguiente cuando quieras';
-}catch(e){
-document.getElementById('carga-estado').textContent='Error leyendo — inténtalo otra vez';
-}
-btn.textContent='📸 Capturar';btn.style.opacity='1';_cargaProcesando=false;
+}catch(e){slot._error=true;slot._leyendo=false;}
+_cargaPendientes--;
+// Actualizar contador de errores si los hay
+const errs=_cargaPaquetes.filter(p=>p._error).length;
+if(errs>0)document.getElementById('carga-estado').textContent=`⚠️ ${errs} paquete(s) no se leyeron bien — revisa al terminar`;
+})();
 }
 
-function cerrarCargaCamara(){
+async function cerrarCargaCamara(){
+// Esperar a que terminen las lecturas en curso
+if(_cargaPendientes>0){
+document.getElementById('carga-estado').textContent='Terminando de leer los últimos paquetes...';
+let intentos=0;
+while(_cargaPendientes>0&&intentos<60){await new Promise(r=>setTimeout(r,250));intentos++;}
+}
 if(_cargaStream){_cargaStream.getTracks().forEach(t=>t.stop());_cargaStream=null;}
 document.getElementById('carga-overlay').style.display='none';
 const v=document.getElementById('carga-video');if(v)v.srcObject=null;
-if(!_cargaPaquetes.length){toast('No se capturó ningún paquete','');return;}
-// Volcar a extractedStops para cargar en ruta
-extractedStops=_cargaPaquetes.map(p=>({n:p.num,name:p.name,addr:p.addr,bultos:1,codigo:p.codigo,paquete:p.num}));
+const validos=_cargaPaquetes.filter(p=>p.addr&&!p._error);
+const fallidos=_cargaPaquetes.length-validos.length;
+if(!validos.length){toast('No se leyó ningún paquete correctamente','err');return;}
+// Volcar a extractedStops conservando el número de paquete
+extractedStops=validos.map(p=>({n:p.num,name:p.name,addr:p.addr,bultos:1,codigo:p.codigo,paquete:p.num}));
 renderResults();
-toast(`✅ ${_cargaPaquetes.length} paquetes leídos — revisa y carga en ruta`,'ok');
+toast(`✅ ${validos.length} paquetes leídos${fallidos?` · ${fallidos} fallaron, vuelve a escanearlos`:''} — carga en ruta`,fallidos?'':'ok');
 }
 
 async function abrirEscaner(){
