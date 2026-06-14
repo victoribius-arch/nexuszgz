@@ -4,15 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>NEXUS</title>
+<meta name="theme-color" content="#eef2f7">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
-  --bg:#f5f7fa; --bg2:#ffffff; --card:#ffffff; --border:#e2e8f0;
-  --accent:#2563eb; --accent2:#1d4ed8; --green:#16a34a; --red:#dc2626;
-  --orange:#f59e0b; --text:#1e293b; --text2:#64748b; --text3:#94a3b8;
+  /* TEMA CLARO NEXUS */
+  --bg:#eef2f7; --bg2:#e4eaf2; --card:#ffffff; --border:#e3e8ef;
+  --accent:#2e6be6; --accent2:#1b54c9; --green:#1e9e6a; --red:#d64545;
+  --orange:#e08a00; --text:#16263b; --text2:#5b6b7e; --text3:#9aa9b8;
+  /* nuevas para el tema claro */
+  --on-accent:#ffffff; --card2:#f4f6f9; --shadow:0 1px 3px rgba(22,38,59,.07),0 6px 20px rgba(22,38,59,.05);
+  --green-soft:#e6f6ef; --red-soft:#fbeaea; --orange-soft:#fdf2e0; --accent-soft:#eaf1fe;
   --safe-top:env(safe-area-inset-top,0px); --safe-bot:env(safe-area-inset-bottom,0px);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -20,7 +24,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 
 /* LOGIN */
 #login{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:24px;z-index:100;}
-#login::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 40% 40%,rgba(37,99,235,.08),transparent 55%),radial-gradient(ellipse at 70% 70%,rgba(29,78,216,.06),transparent 50%);pointer-events:none;}
+#login::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 40% 40%,var(--accent-soft),transparent 55%),radial-gradient(ellipse at 70% 70%,rgba(27,84,201,.08),transparent 50%);pointer-events:none;}
 .lcard{width:100%;max-width:360px;position:relative;z-index:1;}
 .llogo{font-size:56px;font-weight:900;letter-spacing:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center;margin-bottom:2px;}
 .lsub{text-align:center;font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--text2);margin-bottom:6px;}
@@ -28,7 +32,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 .llbl{font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);margin-bottom:6px;display:block;}
 .linp{width:100%;background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;color:var(--text);font-size:16px;outline:none;-webkit-appearance:none;margin-bottom:14px;transition:border-color .2s;}
 .linp:focus{border-color:var(--accent);}
-.lbtn{width:100%;padding:16px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:18px;font-weight:800;letter-spacing:2px;cursor:pointer;margin-top:4px;box-shadow:0 4px 20px rgba(37,99,235,.3);}
+.lbtn{width:100%;padding:16px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:var(--on-accent);font-size:18px;font-weight:800;letter-spacing:2px;cursor:pointer;margin-top:4px;box-shadow:0 4px 20px rgba(46,107,230,.30);}
 .lhint{margin-top:18px;text-align:center;font-size:12px;color:var(--text3);line-height:2;}
 .lhint b{color:var(--accent);}
 
@@ -36,19 +40,17 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 #app{position:fixed;inset:0;display:none;flex-direction:column;}
 
 /* TOPBAR */
-.topbar{padding:calc(var(--safe-top) + 8px) 16px 8px;background:rgba(255,255,255,.95);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0;backdrop-filter:blur(12px);}
+.topbar{padding:calc(var(--safe-top) + 8px) 16px 8px;background:rgba(255,255,255,.92);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0;backdrop-filter:blur(12px);}
 .tlogo{font-size:22px;font-weight:900;letter-spacing:4px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
 .tinfo{flex:1;font-size:12px;color:var(--text2);}
 .tinfo b{color:var(--text);font-weight:600;}
-.tav{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0;}
+.tav{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:var(--on-accent);flex-shrink:0;}
 
 /* BOTTOM NAV */
-.bnav{display:flex;background:rgba(255,255,255,.98);border-top:1px solid var(--border);padding-bottom:var(--safe-bot);flex-shrink:0;}
+.bnav{display:flex;background:rgba(255,255,255,.96);border-top:1px solid var(--border);padding-bottom:var(--safe-bot);flex-shrink:0;}
 .bni{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 4px 8px;cursor:pointer;position:relative;}
-.bni-ic{margin-bottom:3px;color:var(--text3);display:flex;align-items:center;justify-content:center;}
-.bni-ic svg{width:22px;height:22px;display:block;}
+.bni-ic{font-size:20px;margin-bottom:3px;}
 .bni-lb{font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text3);}
-.bni.on .bni-ic{color:var(--accent);}
 .bni.on .bni-lb{color:var(--accent);}
 .bni::after{content:'';position:absolute;top:0;left:20%;right:20%;height:2px;background:var(--accent);border-radius:0 0 2px 2px;opacity:0;}
 .bni.on::after{opacity:1;}
@@ -70,12 +72,12 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 .frow{display:flex;gap:5px;overflow-x:auto;padding-bottom:2px;}
 .frow::-webkit-scrollbar{display:none;}
 .ftb{padding:6px 12px;border-radius:8px;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;background:var(--card);border:1px solid var(--border);color:var(--text2);white-space:nowrap;cursor:pointer;}
-.ftb.on{background:var(--accent);border-color:var(--accent);color:#fff;}
+.ftb.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent);}
 
 .slist{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
 .slist::-webkit-scrollbar{display:none;}
 
-.si{display:flex;align-items:stretch;border-bottom:1px solid var(--border);cursor:pointer;background:var(--bg);}
+.si{display:flex;align-items:stretch;border-bottom:1px solid var(--border);cursor:pointer;background:var(--card);}
 .si:active{background:var(--card);}
 .sibar{width:4px;flex-shrink:0;}
 .si.pend .sibar{background:var(--accent);}
@@ -84,28 +86,28 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 .sinum{width:48px;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:14px 0;}
 .nc{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;background:var(--card);}
 .si.pend .nc{border-color:var(--accent);color:var(--accent);}
-.si.del .nc{border-color:var(--green);color:var(--green);background:rgba(16,185,129,.1);}
-.si.fail .nc{border-color:var(--red);color:var(--red);background:rgba(244,63,94,.1);}
+.si.del .nc{border-color:var(--green);color:var(--green);background:var(--green-soft);}
+.si.fail .nc{border-color:var(--red);color:var(--red);background:var(--red-soft);}
 .sibody{flex:1;padding:14px 10px 14px 0;min-width:0;}
 .siname{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .siaddr{font-size:12px;color:var(--text2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .sitags{display:flex;gap:4px;margin-top:7px;flex-wrap:wrap;}
 .tag{font-size:10px;font-weight:600;padding:3px 7px;border-radius:5px;}
-.ts{background:rgba(0,212,255,.12);color:var(--accent);}
+.ts{background:var(--accent-soft);color:var(--accent);}
 .tb2{background:rgba(255,255,255,.07);color:var(--text2);}
-.tok{background:rgba(16,185,129,.15);color:#34d399;}
-.tko{background:rgba(244,63,94,.15);color:#fb7185;}
-.tpe{background:rgba(251,146,60,.15);color:#fb923c;}
+.tok{background:var(--green-soft);color:var(--green);}
+.tko{background:var(--red-soft);color:var(--red);}
+.tpe{background:var(--orange-soft);color:var(--orange);}
 .siacts{display:flex;flex-direction:column;gap:5px;padding:12px 12px 12px 0;flex-shrink:0;justify-content:center;}
 .abt{padding:8px 10px;border-radius:8px;font-size:11px;font-weight:700;border:none;cursor:pointer;min-width:52px;text-align:center;}
-.ab-ok{background:rgba(16,185,129,.2);color:var(--green);}
-.ab-ko{background:rgba(244,63,94,.15);color:var(--red);}
-.ab-nav{background:rgba(0,212,255,.12);color:var(--accent);}
+.ab-ok{background:var(--green-soft);color:var(--green);}
+.ab-ko{background:var(--red-soft);color:var(--red);}
+.ab-nav{background:var(--accent-soft);color:var(--accent);}
 .si.del .sibody,.si.del .sinum{opacity:.45;}
 .empty{padding:40px;text-align:center;color:var(--text3);font-size:13px;}
 
 /* MAPA */
-.mscr{flex:1;position:relative;background:#08131e;overflow:hidden;}
+.mscr{flex:1;position:relative;background:#e9eef5;overflow:hidden;}
 #gmap{width:100%;height:100%;position:absolute;top:0;left:0;}
 .mstats{position:absolute;top:12px;left:12px;display:flex;flex-direction:column;gap:5px;z-index:5;}
 .msp{display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:20px;background:rgba(8,19,30,.88);border:1px solid var(--border);font-size:12px;font-weight:600;backdrop-filter:blur(8px);}
@@ -135,18 +137,18 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 .pgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px;}
 .pthumb{position:relative;border-radius:10px;overflow:hidden;aspect-ratio:4/3;background:var(--card);}
 .pthumb img{width:100%;height:100%;object-fit:cover;}
-.pdel{position:absolute;top:5px;right:5px;width:24px;height:24px;border-radius:50%;background:rgba(244,63,94,.9);border:none;color:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
-.abtn{width:100%;padding:16px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:18px;font-weight:800;letter-spacing:2px;cursor:pointer;margin-bottom:16px;box-shadow:0 4px 20px rgba(37,99,235,.3);}
+.pdel{position:absolute;top:5px;right:5px;width:24px;height:24px;border-radius:50%;background:rgba(214,69,69,.92);border:none;color:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.abtn{width:100%;padding:16px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:var(--on-accent);font-size:18px;font-weight:800;letter-spacing:2px;cursor:pointer;margin-bottom:16px;box-shadow:0 4px 20px rgba(46,107,230,.30);}
 .abtn:disabled{opacity:.4;cursor:not-allowed;}
 .rbox{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:16px;}
 .rtit{font-size:14px;font-weight:700;color:var(--accent);margin-bottom:12px;letter-spacing:.5px;}
 .srow{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
 .srow:last-child{border-bottom:none;}
-.srnum{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;}
+.srnum{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--on-accent);flex-shrink:0;}
 .srinfo{flex:1;min-width:0;}
 .srname{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .sraddr{font-size:11px;color:var(--text2);margin-top:1px;}
-.srsaco{font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:rgba(0,212,255,.12);color:var(--accent);flex-shrink:0;}
+.srsaco{font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:var(--accent-soft);color:var(--accent);flex-shrink:0;}
 .lbtn2{width:100%;padding:14px;border:1px solid var(--accent);border-radius:12px;background:transparent;color:var(--accent);font-size:16px;font-weight:700;letter-spacing:1px;cursor:pointer;}
 
 /* GESTOR */
@@ -161,19 +163,19 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 .dcard{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;}
 .dtop{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
 .dname{font-weight:600;font-size:13px;}
-.don{margin-left:auto;font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;background:rgba(16,185,129,.15);color:var(--green);}
+.don{margin-left:auto;font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;background:var(--green-soft);color:var(--green);}
 .pbar{height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:5px;}
 .pfill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:2px;}
 .dnums{display:flex;gap:4px;}
 .dn{flex:1;text-align:center;background:rgba(255,255,255,.04);border-radius:5px;padding:5px 2px;}
 .dnv{font-size:14px;font-weight:700;}
 .dnl{font-size:9px;color:var(--text3);text-transform:uppercase;}
-.gmapw{flex:1;position:relative;background:#08131e;overflow:hidden;}
+.gmapw{flex:1;position:relative;background:#e9eef5;overflow:hidden;}
 #gmap2{width:100%;height:100%;position:absolute;top:0;left:0;}
 
 /* Company tabs */
 .emp-tab{flex:1;background:var(--card);border:2px solid var(--border);border-radius:12px;padding:12px 8px;text-align:center;cursor:pointer;transition:all .2s;}
-.emp-tab.on{border-color:var(--accent);background:rgba(0,212,255,.1);}
+.emp-tab.on{border-color:var(--accent);background:var(--accent-soft);}
 .emp-tab:active{opacity:.8;}
 
 /* TOAST */
@@ -188,7 +190,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 <div id="login">
   <div class="lcard">
     <div class="llogo">NEXUS</div>
-    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v2042</span></div>
+    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v1038</span></div>
     <div class="lline"></div>
     <label class="llbl">Usuario</label>
     <input class="linp" id="ui" type="text" placeholder="tu usuario" autocapitalize="none" autocorrect="off">
@@ -213,32 +215,30 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
       <div class="frow" id="frow"></div>
       <div style="display:flex;gap:6px;margin-top:6px;">
         <button id="btn-zona" onclick="toggleZonas()" style="flex:1;padding:8px;border:1.5px solid var(--border);border-radius:8px;background:transparent;color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;">📦 Por zona</button>
-        <button onclick="navRutaCompleta(event)" style="flex:1;padding:8px;border:1.5px solid var(--accent);border-radius:8px;background:rgba(0,212,255,.1);color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;">🗺️ Ruta completa</button>
-        <button onclick="optimizarConIA()" style="flex:1;padding:8px;border:1.5px solid var(--green);border-radius:8px;background:rgba(16,185,129,.1);color:var(--green);font-size:12px;font-weight:700;cursor:pointer;">✨ Optimizar</button>
-        <button onclick="abrirEscaner()" style="flex:1;padding:8px;border:1.5px solid var(--orange);border-radius:8px;background:rgba(251,146,60,.1);color:var(--orange);font-size:12px;font-weight:700;cursor:pointer;">📷 Escanear</button>
-        <button onclick="borrarRuta()" style="padding:8px 10px;border:1.5px solid var(--red);border-radius:8px;background:rgba(244,63,94,.1);color:var(--red);font-size:12px;font-weight:700;cursor:pointer;" title="Borrar ruta">🗑️</button>
+        <button onclick="navRutaCompleta(event)" style="flex:1;padding:8px;border:1.5px solid var(--accent);border-radius:8px;background:var(--accent-soft);color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;">🗺️ Ruta completa</button>
+        <button onclick="optimizarConIA()" style="flex:1;padding:8px;border:1.5px solid var(--green);border-radius:8px;background:var(--green-soft);color:var(--green);font-size:12px;font-weight:700;cursor:pointer;">✨ Optimizar</button>
+        <button onclick="abrirEscaner()" style="flex:1;padding:8px;border:1.5px solid var(--orange);border-radius:8px;background:var(--orange-soft);color:var(--orange);font-size:12px;font-weight:700;cursor:pointer;">📷 Escanear</button>
+        <button onclick="borrarRuta()" style="padding:8px 10px;border:1.5px solid var(--red);border-radius:8px;background:var(--red-soft);color:var(--red);font-size:12px;font-weight:700;cursor:pointer;" title="Borrar ruta">🗑️</button>
       </div>
     </div>
     <div class="slist" id="slist"></div>
 
     <!-- FORMULARIO DE CIERRE PERMANENTE - nunca se elimina del DOM -->
     <div id="cierre-panel" style="display:none;position:fixed;left:0;right:0;bottom:60px;z-index:800;padding:0 8px;">
-      <div style="background:var(--bg2);border:2px solid #10b981;border-radius:16px;padding:16px;box-shadow:0 -4px 24px rgba(0,0,0,.4);">
+      <div style="background:var(--bg2);border:2px solid var(--green);border-radius:16px;padding:16px;box-shadow:0 -4px 24px rgba(0,0,0,.4);">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-          <div style="font-size:14px;font-weight:800;color:#10b981;" id="cp-titulo">✓ Confirmar entrega</div>
+          <div style="font-size:14px;font-weight:800;color:var(--green);" id="cp-titulo">✓ Confirmar entrega</div>
           <button onclick="cerrarCierrePanel()" style="background:none;border:none;color:var(--text2);font-size:22px;cursor:pointer;line-height:1;">×</button>
         </div>
         <div style="font-size:12px;color:var(--text2);margin-bottom:12px;" id="cp-addr"></div>
         <input type="hidden" id="cp-n">
 
         <!-- Selección de ruta -->
-        <div id="cp-ruta-sel">
         <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">¿A qué ruta pertenece?</div>
         <div style="display:flex;gap:6px;margin-bottom:12px;">
-          <button id="cp-r1" onclick="cpSelectRuta('principal',this)" style="flex:1;padding:10px 4px;border-radius:10px;border:2px solid var(--accent);background:rgba(0,212,255,.15);color:var(--accent);font-size:11px;font-weight:700;cursor:pointer;">🚚 Principal<br><span style="font-weight:400;opacity:.8">Jon</span></button>
+          <button id="cp-r1" onclick="cpSelectRuta('principal',this)" style="flex:1;padding:10px 4px;border-radius:10px;border:2px solid var(--accent);background:var(--accent-soft);color:var(--accent);font-size:11px;font-weight:700;cursor:pointer;">🚚 Principal<br><span style="font-weight:400;opacity:.8">Jon</span></button>
           <button id="cp-r2" onclick="cpSelectRuta('andarin',this)" style="flex:1;padding:10px 4px;border-radius:10px;border:1.5px solid var(--border);background:transparent;color:var(--text2);font-size:11px;font-weight:700;cursor:pointer;">🚶 Andarin<br><span style="font-weight:400;opacity:.8">Andrea</span></button>
           <button id="cp-r3" onclick="cpSelectRuta('50008',this)" style="flex:1;padding:10px 4px;border-radius:10px;border:1.5px solid var(--border);background:transparent;color:var(--text2);font-size:11px;font-weight:700;cursor:pointer;">📦 50008<br><span style="font-weight:400;opacity:.8">Sebas</span></button>
-        </div>
         </div>
 
         <!-- Foto -->
@@ -256,7 +256,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
           ⚡ Marcar como preferente (13h/14h)
         </button>
 
-        <button onclick="cpConfirmar()" style="width:100%;padding:14px;border:none;border-radius:12px;background:#10b981;color:#fff;font-size:16px;font-weight:800;cursor:pointer;">
+        <button onclick="cpConfirmar()" style="width:100%;padding:14px;border:none;border-radius:12px;background:var(--green);color:#fff;font-size:16px;font-weight:800;cursor:pointer;">
           ✓ Confirmar entrega
         </button>
       </div>
@@ -306,11 +306,15 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
         </div>
       </div>
 
-      <button onclick="abrirCargaCamara()" style="width:100%;padding:16px;border:none;border-radius:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:8px;">
-        📷 Escanear paquetes con la cámara
-      </button>
-      <div style="text-align:center;font-size:11px;color:var(--text3);margin-bottom:14px;">Lee cada etiqueta y numera los paquetes uno a uno</div>
+      <div class="uzone" id="uzone" onclick="document.getElementById('pda-file-input').click()">
+        <input type="file" id="pda-file-input" accept="image/*" multiple style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;" onchange="onFiles(this.files)">
+        <div class="uzic">📱</div>
+        <div class="uztit">Toca para subir fotos</div>
+        <div class="uzsub" id="uzsub">Capturas de pantalla de tu PDA CTT Express</div>
+      </div>
 
+      <div class="pgrid" id="pgrid"></div>
+      <button class="abtn" id="abtn" disabled onclick="analyze()">ANALIZAR CON IA</button>
       <div id="rarea"></div>
 
       <!-- Añadir parada manual -->
@@ -333,7 +337,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 
       <!-- Borrar ruta -->
       <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:16px;">
-        <button onclick="borrarRuta()" style="width:100%;padding:14px;border:2px solid var(--red);border-radius:12px;background:rgba(244,63,94,.08);color:var(--red);font-size:14px;font-weight:700;cursor:pointer;">
+        <button onclick="borrarRuta()" style="width:100%;padding:14px;border:2px solid var(--red);border-radius:12px;background:var(--red-soft);color:var(--red);font-size:14px;font-weight:700;cursor:pointer;">
           🗑️ Borrar ruta de hoy
         </button>
         <div style="font-size:11px;color:var(--text3);text-align:center;margin-top:6px;">Elimina todas las paradas para volver a cargar la ruta</div>
@@ -379,7 +383,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
       <div class="pdasub">Gestiona los accesos de tus repartidores</div>
       <div id="equipo-list"></div>
       <button class="abtn" style="margin-top:16px" onclick="showAddDriver()">+ AÑADIR REPARTIDOR</button>
-      <button onclick="crearClientePrueba()" style="width:100%;padding:14px;border:1.5px solid var(--accent);border-radius:12px;background:rgba(37,99,235,.08);color:var(--accent);font-size:14px;font-weight:700;cursor:pointer;margin-top:10px;">🎁 Crear cliente de prueba (1 día)</button>
       <div id="add-driver-form" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-top:12px;">
         <div style="font-size:14px;font-weight:700;margin-bottom:12px;color:var(--accent)">Nuevo repartidor</div>
         <label class="llbl">Nombre</label>
@@ -405,7 +408,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
           <option value="all">Todos los repartidores</option>
         </select>
       </div>
-      <button onclick="cargarHistorial()" style="width:100%;padding:12px;border:none;border-radius:10px;background:var(--accent);color:#fff;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:4px;">🔍 Buscar</button>
+      <button onclick="cargarHistorial()" style="width:100%;padding:12px;border:none;border-radius:10px;background:var(--accent);color:var(--on-accent);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:4px;">🔍 Buscar</button>
     </div>
     <div class="slist" id="hist-list"></div>
   </div>
@@ -424,10 +427,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
     <div style="font-size:13px;color:var(--text2);margin-bottom:20px;" id="cierre-addr1"></div>
     <div style="font-size:13px;font-weight:700;color:var(--text2);margin-bottom:12px;">¿Cómo registras esta entrega?</div>
     <div style="display:flex;flex-direction:column;gap:10px;">
-      <button style="padding:18px;border-radius:14px;border:2px solid var(--accent);background:rgba(0,212,255,.12);color:var(--accent);font-size:16px;font-weight:700;cursor:pointer;text-align:left;" onclick="cierre_paso2(true)">
+      <button style="padding:18px;border-radius:14px;border:2px solid var(--accent);background:var(--accent-soft);color:var(--accent);font-size:16px;font-weight:700;cursor:pointer;text-align:left;" onclick="cierre_paso2(true)">
         📷 Con foto de etiqueta CTT<br><span style="font-size:12px;font-weight:400;opacity:.7">Sube la foto + nombre y DNI</span>
       </button>
-      <button style="padding:18px;border-radius:14px;border:2px solid var(--green);background:rgba(16,185,129,.12);color:var(--green);font-size:16px;font-weight:700;cursor:pointer;text-align:left;" onclick="cierre_paso2(false)">
+      <button style="padding:18px;border-radius:14px;border:2px solid var(--green);background:var(--green-soft);color:var(--green);font-size:16px;font-weight:700;cursor:pointer;text-align:left;" onclick="cierre_paso2(false)">
         ✓ Sin foto — solo nombre y DNI<br><span style="font-size:12px;font-weight:400;opacity:.7">El cliente firma o confirma en persona</span>
       </button>
       <button style="padding:14px;border-radius:14px;border:1.5px solid var(--border);background:transparent;color:var(--text2);font-size:14px;cursor:pointer;" onclick="cerrarTodoCierre()">
@@ -459,7 +462,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 
     <div style="display:flex;gap:10px;">
       <button class="lbtn2" style="flex:1" id="btn-cancelar-cierre" onclick="cerrarTodoCierre()">Cancelar</button>
-      <button class="lbtn" style="flex:1;margin-top:0;background:linear-gradient(135deg,#10b981,#059669);box-shadow:0 4px 15px rgba(16,185,129,.3);" id="btn-confirmar-cierre" onclick="(async function(){
+      <button class="lbtn" style="flex:1;margin-top:0;background:linear-gradient(135deg,var(--green),var(--accent2));box-shadow:0 4px 15px var(--green-soft);" id="btn-confirmar-cierre" onclick="(async function(){
         var n=parseInt(document.getElementById('cierre-parada-n').value||'0');
         var nom=document.getElementById('cierre-nombre').value.trim();
         var dni=document.getElementById('cierre-dni').value.trim();
@@ -476,7 +479,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
             var r=await sb.storage.from('cierres').upload(fn,c,{contentType:'image/jpeg',upsert:true});
             if(!r.error){url=sb.storage.from('cierres').getPublicUrl(fn).data.publicUrl;}
           }
-          await sb.from('cierres').insert({driver:me.name,parada_n:n,addr:p?p.addr:'',foto_url:url,nombre_cliente:nom||null,dni_cliente:dni||null,empresa_id:me.empresa_id||null});
+          await sb.from('cierres').insert({driver:me.name,parada_n:n,addr:p?p.addr:'',foto_url:url,nombre_cliente:nom||null,dni_cliente:dni||null});
         }catch(e){console.error(e);}
       })()">✓ Confirmar</button>
     </div>
@@ -486,36 +489,16 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 <div class="toast" id="toast"></div>
 
 <!-- ESCÁNER CÓDIGO DE BARRAS -->
-<div id="scanner-overlay" style="display:none;position:fixed;inset:0;background:#000;z-index:1000;flex-direction:column;align-items:center;justify-content:center;padding:calc(12px + env(safe-area-inset-top,0px)) 12px calc(12px + env(safe-area-inset-bottom,0px));overflow:hidden;">
-  <div style="position:relative;width:100%;max-width:400px;flex:0 1 auto;min-height:0;display:flex;align-items:center;justify-content:center;">
-    <video id="scanner-video" style="width:100%;max-height:55vh;object-fit:cover;border-radius:12px;" autoplay playsinline></video>
+<div id="scanner-overlay" style="display:none;position:fixed;inset:0;background:#000;z-index:1000;flex-direction:column;align-items:center;justify-content:center;">
+  <div style="position:relative;width:100%;max-width:400px;">
+    <video id="scanner-video" style="width:100%;border-radius:12px;" autoplay playsinline></video>
     <div style="position:absolute;inset:0;border:3px solid var(--accent);border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,.5);"></div>
     <div style="position:absolute;top:50%;left:10%;right:10%;height:2px;background:var(--accent);transform:translateY(-50%);opacity:.8;"></div>
   </div>
-  <div id="scanner-result" style="color:#fff;font-size:14px;margin-top:12px;text-align:center;padding:0 20px;flex-shrink:0;">Apunta al código de barras del paquete</div>
-  <div style="display:flex;gap:10px;margin-top:14px;flex-shrink:0;flex-wrap:wrap;justify-content:center;">
-    <button onclick="leerDireccionIA()" style="padding:14px 22px;border:none;border-radius:12px;background:var(--accent);color:#fff;font-size:15px;font-weight:800;cursor:pointer;">🔍 Leer dirección (IA)</button>
+  <div id="scanner-result" style="color:#fff;font-size:14px;margin-top:16px;text-align:center;padding:0 20px;">Apunta al código de barras del paquete</div>
+  <div style="display:flex;gap:10px;margin-top:20px;">
+    <button onclick="leerDireccionIA()" style="padding:14px 22px;border:none;border-radius:12px;background:var(--accent);color:var(--on-accent);font-size:15px;font-weight:800;cursor:pointer;">🔍 Leer dirección (IA)</button>
     <button onclick="cerrarEscaner()" style="padding:14px 22px;border:2px solid #fff;border-radius:12px;background:transparent;color:#fff;font-size:15px;font-weight:700;cursor:pointer;">✕ Cerrar</button>
-  </div>
-</div>
-
-<!-- CÁMARA DE CARGA: escanear paquetes y numerarlos -->
-<div id="carga-overlay" style="display:none;position:fixed;inset:0;background:#000;z-index:1000;flex-direction:column;">
-  <div style="padding:calc(12px + env(safe-area-inset-top,0px)) 16px 10px;display:flex;align-items:center;justify-content:space-between;">
-    <div style="color:#fff;font-size:16px;font-weight:800;">📷 Cargar paquetes</div>
-    <div id="carga-contador" style="background:var(--accent);color:#fff;font-weight:800;font-size:14px;padding:4px 12px;border-radius:20px;">0 paquetes</div>
-  </div>
-  <div style="position:relative;flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;">
-    <video id="carga-video" style="width:100%;height:100%;object-fit:cover;" autoplay playsinline></video>
-    <div style="position:absolute;left:8%;right:8%;top:30%;bottom:30%;border:3px solid var(--accent);border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,.45);pointer-events:none;"></div>
-    <div id="carga-ultimo" style="position:absolute;top:16px;left:16px;right:16px;background:rgba(16,185,129,.95);color:#fff;font-size:13px;font-weight:700;padding:10px 14px;border-radius:10px;display:none;"></div>
-  </div>
-  <div style="padding:16px 16px calc(20px + env(safe-area-inset-bottom,0px));text-align:center;">
-    <div id="carga-estado" style="color:#fff;font-size:13px;margin-bottom:14px;">Apunta a la etiqueta y pulsa Capturar</div>
-    <div style="display:flex;gap:10px;align-items:center;justify-content:center;">
-      <button onclick="cerrarCargaCamara()" style="padding:14px 18px;border:2px solid #fff;border-radius:12px;background:transparent;color:#fff;font-size:14px;font-weight:700;cursor:pointer;">Terminar</button>
-      <button id="carga-btn" onclick="capturarPaquete()" style="flex:1;max-width:200px;padding:16px;border:none;border-radius:14px;background:var(--accent);color:#fff;font-size:16px;font-weight:800;cursor:pointer;">📸 Capturar</button>
-    </div>
   </div>
 </div>
 
@@ -586,11 +569,11 @@ return{n:idx, name:`${neg} ${ape}`, addr:`${cal}, ${num}`, saco, bultos, status}
 }
 
 const RUTAS=[
-{driver:'Jon',     did:0,color:'#00d4ff',paradas:[]},
+{driver:'Jon',     did:0,color:'#2e6be6',paradas:[]},
 {driver:'Sebas',   did:1,color:'#a78bfa',paradas:[]},
-{driver:'Andrea',  did:2,color:'#10b981',paradas:[]},
-{driver:'Camilo',  did:3,color:'#f59e0b',paradas:[]},
-{driver:'Steward', did:4,color:'#f43f5e',paradas:[]},
+{driver:'Andrea',  did:2,color:'var(--green)',paradas:[]},
+{driver:'Camilo',  did:3,color:'var(--orange)',paradas:[]},
+{driver:'Steward', did:4,color:'var(--red)',paradas:[]},
 ];
 const USERS={
 victor:  {pass:'1234',  role:'manager',name:'Victor',  init:'V'},
@@ -636,7 +619,7 @@ ruta._rutaId=rutaId;
 ruta._fecha=hoy;
 const{data:paradas_db}=await sb.from('paradas').select('*').eq('ruta_id',rutaId).order('n');
 if(paradas_db&&paradas_db.length){
-ruta.paradas=paradas_db.map(p=>({n:p.n,name:p.name,addr:p.addr,saco:p.saco,bultos:p.bultos,status:p.status,lat:p.lat,lng:p.lng,_id:p.id,codigo:p.codigo_seguimiento,paquete:p.paquete}));
+ruta.paradas=paradas_db.map(p=>({n:p.n,name:p.name,addr:p.addr,saco:p.saco,bultos:p.bultos,status:p.status,lat:p.lat,lng:p.lng,_id:p.id}));
 renderLista();if(gmap1)renderMarkers1();
 toast(`✓ ${paradas_db.length} paradas cargadas del día`,'ok');
 }
@@ -653,7 +636,7 @@ rutaId=existente[0].id;
 ruta._rutaId=rutaId;
 } else {
 
-const{data:nuevaRuta}=await sb.from('rutas').insert({driver:me.name,fecha:hoy,empresa,empresa_id:me.empresa_id||null}).select().single();
+const{data:nuevaRuta}=await sb.from('rutas').insert({driver:me.name,fecha:hoy,empresa}).select().single();
 if(nuevaRuta){rutaId=nuevaRuta.id;ruta._rutaId=rutaId;}
 }
 }
@@ -663,7 +646,7 @@ const{data:existentes}=await sb.from('paradas').select('n').eq('ruta_id',rutaId)
 const numsExistentes=new Set((existentes||[]).map(x=>Number(x.n)));
 const nuevas=paradas.filter(p=>!numsExistentes.has(Number(p.n)));
 if(!nuevas.length)return;
-const rows=nuevas.map(p=>({ruta_id:rutaId,n:p.n,name:p.name,addr:p.addr,saco:p.saco,bultos:p.bultos,status:p.status,lat:p.lat||null,lng:p.lng||null,codigo_seguimiento:p.codigo||null,paquete:p.paquete||null}));
+const rows=nuevas.map(p=>({ruta_id:rutaId,n:p.n,name:p.name,addr:p.addr,saco:p.saco,bultos:p.bultos,status:p.status,lat:p.lat||null,lng:p.lng||null,codigo_seguimiento:p.codigo||null}));
 await sb.from('paradas').insert(rows);
 }
 
@@ -696,12 +679,12 @@ cargarTodasParadasGestor();
 async function cargarTodasParadasGestor(){
 const hoy=new Date().toISOString().split('T')[0];
 
-const{data:usuarios}=await sb.from('usuarios').select('*').eq('activo',true).neq('role','manager').eq('empresa_id',me.empresa_id);
+const{data:usuarios}=await sb.from('usuarios').select('*').eq('activo',true).neq('role','manager');
 if(usuarios){
 
 usuarios.forEach(d=>{
 if(!RUTAS.find(r=>r.driver===d.name)){
-RUTAS.push({driver:d.name,did:d.did||0,color:d.color||'#00d4ff',paradas:[]});
+RUTAS.push({driver:d.name,did:d.did||0,color:d.color||'#2e6be6',paradas:[]});
 }
 });
 
@@ -709,13 +692,13 @@ for(let i=RUTAS.length-1;i>=0;i--){
 if(!usuarios.find(u=>u.name===RUTAS[i].driver))RUTAS.splice(i,1);
 }
 }
-const{data:rutas_hoy}=await sb.from('rutas').select('*').eq('fecha',hoy).eq('empresa_id',me.empresa_id);
+const{data:rutas_hoy}=await sb.from('rutas').select('*').eq('fecha',hoy);
 for(const r of RUTAS){
 if(!rutas_hoy||!rutas_hoy.length){r.paradas=[];continue;}
 const rutaDB=rutas_hoy.find(x=>x.driver===r.driver);
 if(!rutaDB){r.paradas=[];continue;}
 const{data:paradas_db}=await sb.from('paradas').select('*').eq('ruta_id',rutaDB.id).order('n');
-if(paradas_db)r.paradas=paradas_db.map(p=>({n:p.n,name:p.name,addr:p.addr,saco:p.saco,bultos:p.bultos,status:p.status,lat:p.lat,lng:p.lng,_id:p.id,codigo:p.codigo_seguimiento,paquete:p.paquete}));
+if(paradas_db)r.paradas=paradas_db.map(p=>({n:p.n,name:p.name,addr:p.addr,saco:p.saco,bultos:p.bultos,status:p.status,lat:p.lat,lng:p.lng,_id:p.id}));
 else r.paradas=[];
 }
 renderGestor();
@@ -730,27 +713,19 @@ const p=document.getElementById('pi').value;
 const btn=document.getElementById('lbtn');
 btn.textContent='...';btn.disabled=true;
 try{
-const{data,error}=await sb.from('usuarios').select('*').eq('username',u).eq('password',p).eq('activo',true).maybeSingle();
+const{data,error}=await sb.from('usuarios').select('*').eq('username',u).eq('password',p).eq('activo',true).single();
 if(error||!data){toast('Usuario o contraseña incorrectos','err');btn.textContent='ENTRAR';btn.disabled=false;return;}
-// Comprobar caducidad de prueba (fiable: fecha del servidor)
-if(data.prueba&&data.prueba_fin){
-const fin=new Date(data.prueba_fin).getTime();
-if(Date.now()>fin){
-toast('⏰ Tu prueba ha caducado. Contacta para activar tu cuenta','err');
-btn.textContent='ENTRAR';btn.disabled=false;return;
-}
-}
 me={...data};
 localStorage.setItem('nexus_session',JSON.stringify({username:me.username,password:me.password}));
 if(me.role==='manager'){
-const{data:drivers}=await sb.from('usuarios').select('*').eq('activo',true).neq('role','manager').eq('empresa_id',me.empresa_id);
+const{data:drivers}=await sb.from('usuarios').select('*').eq('activo',true).neq('role','manager');
 if(drivers){
 RUTAS.length=0;
-drivers.forEach(d=>{RUTAS.push({driver:d.name,did:d.did||0,color:d.color||'#00d4ff',paradas:[]});});
+drivers.forEach(d=>{RUTAS.push({driver:d.name,did:d.did||0,color:d.color||'#2e6be6',paradas:[]});});
 }
-ruta=RUTAS[0]||{driver:'',did:0,color:'#00d4ff',paradas:[]};
+ruta=RUTAS[0]||{driver:'',did:0,color:'#2e6be6',paradas:[]};
 } else {
-ruta=RUTAS.find(r=>r.driver===me.name)||{driver:me.name,did:me.did||0,color:me.color||'#00d4ff',paradas:[]};
+ruta=RUTAS.find(r=>r.driver===me.name)||{driver:me.name,did:me.did||0,color:me.color||'#2e6be6',paradas:[]};
 if(!RUTAS.find(r=>r.driver===me.name))RUTAS.push(ruta);
 }
 document.getElementById('login').style.display='none';
@@ -778,23 +753,18 @@ try{
 const saved=localStorage.getItem('nexus_session');
 if(!saved)return false;
 const{username,password}=JSON.parse(saved);
-const{data,error}=await sb.from('usuarios').select('*').eq('username',username).eq('password',password).eq('activo',true).maybeSingle();
+const{data,error}=await sb.from('usuarios').select('*').eq('username',username).eq('password',password).eq('activo',true).single();
 if(error||!data)return false;
-// Comprobar caducidad de prueba
-if(data.prueba&&data.prueba_fin&&Date.now()>new Date(data.prueba_fin).getTime()){
-localStorage.removeItem('nexus_session');
-return false;
-}
 me={...data};
 if(me.role==='manager'){
-const{data:drivers}=await sb.from('usuarios').select('*').eq('activo',true).neq('role','manager').eq('empresa_id',me.empresa_id);
+const{data:drivers}=await sb.from('usuarios').select('*').eq('activo',true).neq('role','manager');
 if(drivers){
 RUTAS.length=0;
-drivers.forEach(d=>{RUTAS.push({driver:d.name,did:d.did||0,color:d.color||'#00d4ff',paradas:[]});});
+drivers.forEach(d=>{RUTAS.push({driver:d.name,did:d.did||0,color:d.color||'#2e6be6',paradas:[]});});
 }
-ruta=RUTAS[0]||{driver:'',did:0,color:'#00d4ff',paradas:[]};
+ruta=RUTAS[0]||{driver:'',did:0,color:'#2e6be6',paradas:[]};
 } else {
-ruta=RUTAS.find(r=>r.driver===me.name)||{driver:me.name,did:me.did||0,color:me.color||'#00d4ff',paradas:[]};
+ruta=RUTAS.find(r=>r.driver===me.name)||{driver:me.name,did:me.did||0,color:me.color||'#2e6be6',paradas:[]};
 if(!RUTAS.find(r=>r.driver===me.name))RUTAS.push(ruta);
 }
 document.getElementById('login').style.display='none';
@@ -825,40 +795,24 @@ if(!ok) localStorage.removeItem('nexus_session');
 },100);
 });
 
-const ICONS={
-'s-lista':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>',
-'s-mapa':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>',
-'s-pda':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>',
-'s-cierres':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>',
-'s-gestor':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>',
-'s-equipo':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
-'s-historial':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>'
-};
-
-const TABS_D=[{id:'s-lista',lb:'Lista'},{id:'s-mapa',lb:'Mapa'},{id:'s-pda',lb:'Fotos PDA'}];
-const TABS_S=[{id:'s-lista',lb:'Lista'},{id:'s-mapa',lb:'Mapa'},{id:'s-pda',lb:'Fotos PDA'},{id:'s-cierres',lb:'Cierres'},{id:'s-historial',lb:'Historial'}];
-const TABS_M=[{id:'s-lista',lb:'Lista'},{id:'s-mapa',lb:'Mapa'},{id:'s-pda',lb:'Fotos PDA'},{id:'s-cierres',lb:'Cierres'},{id:'s-gestor',lb:'Gestión'},{id:'s-equipo',lb:'Equipo'},{id:'s-historial',lb:'Historial'}];
+const TABS_D=[{id:'s-lista',ic:'📋',lb:'Lista'},{id:'s-mapa',ic:'🗺️',lb:'Mapa'},{id:'s-pda',ic:'📸',lb:'Fotos PDA'}];
+const TABS_S=[{id:'s-lista',ic:'📋',lb:'Lista'},{id:'s-mapa',ic:'🗺️',lb:'Mapa'},{id:'s-pda',ic:'📸',lb:'Fotos PDA'},{id:'s-cierres',ic:'📷',lb:'Cierres'},{id:'s-historial',ic:'📅',lb:'Historial'}];
+const TABS_M=[{id:'s-lista',ic:'📋',lb:'Lista'},{id:'s-mapa',ic:'🗺️',lb:'Mapa'},{id:'s-pda',ic:'📸',lb:'Fotos PDA'},{id:'s-cierres',ic:'📷',lb:'Cierres'},{id:'s-gestor',ic:'📊',lb:'Gestión'},{id:'s-equipo',ic:'👥',lb:'Equipo'},{id:'s-historial',ic:'📅',lb:'Historial'}];
 
 function buildNav(){
-let tabs=me.role==='manager'?TABS_M:(me.role==='supervisor'?TABS_S:TABS_D);
-// Modo simple: ruta + sus cierres privados (sin gestión ni equipo)
-if(me.modo_simple){
-tabs=[{id:'s-lista',lb:'Lista'},{id:'s-mapa',lb:'Mapa'},{id:'s-pda',lb:'Fotos PDA'},{id:'s-cierres',lb:'Cierres'}];
-}
+const tabs=me.role==='manager'?TABS_M:(me.role==='supervisor'?TABS_S:TABS_D);
 const bnav=document.getElementById('bnav');
 bnav.innerHTML='';
 tabs.forEach((t,i)=>{
 const d=document.createElement('div');
 d.className='bni'+(i===0?' on':'');
-d.innerHTML=`<div class="bni-ic">${ICONS[t.id]||''}</div><div class="bni-lb">${t.lb}</div>`;
+d.innerHTML=`<div class="bni-ic">${t.ic}</div><div class="bni-lb">${t.lb}</div>`;
 d.onclick=()=>switchTab(t.id,d);
 bnav.appendChild(d);
 });
 }
 
 function switchTab(id,el){
-// Modo simple (cliente de prueba): ruta, mapa, fotos y sus cierres
-if(me.modo_simple&&!['s-lista','s-mapa','s-pda','s-cierres'].includes(id))return;
 document.querySelectorAll('.bni').forEach(x=>x.classList.remove('on'));
 document.querySelectorAll('.scr').forEach(x=>x.classList.remove('on'));
 el.classList.add('on');
@@ -957,7 +911,7 @@ _zonaMode=!_zonaMode;
 const btn=document.getElementById('btn-zona');
 if(btn){
 btn.style.borderColor=_zonaMode?'var(--accent)':'var(--border)';
-btn.style.background=_zonaMode?'rgba(0,212,255,.1)':'transparent';
+btn.style.background=_zonaMode?'var(--accent-soft)':'transparent';
 btn.style.color=_zonaMode?'var(--accent)':'var(--text2)';
 btn.textContent=_zonaMode?'📦 Agrupado por zona':'📦 Agrupar por zona';
 }
@@ -975,7 +929,7 @@ zonas[calle].push(s);
 lista.innerHTML='';
 Object.entries(zonas).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([zona,paradas])=>{
 const header=document.createElement('div');
-header.style.cssText='padding:6px 16px;background:rgba(0,212,255,.06);border-bottom:1px solid var(--border);font-size:11px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;';
+header.style.cssText='padding:6px 16px;background:var(--accent-soft);border-bottom:1px solid var(--border);font-size:11px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;';
 header.textContent='📍 '+zona+' ('+paradas.length+')';
 lista.appendChild(header);
 paradas.forEach(s=>lista.appendChild(crearElementoParada(s)));
@@ -998,15 +952,15 @@ const acts=_modoBorrar
 </div>`
 :`<div class="siacts">
 <button class="abt ab-nav" onclick="navTo('${s.addr}',event)">↗</button>
-<button class="abt" style="background:rgba(251,146,60,.15);color:var(--orange);font-size:12px;padding:6px 8px;" onclick="markStop(${s.n},'pending',event)">↩</button>
+<button class="abt" style="background:var(--orange-soft);color:var(--orange);font-size:12px;padding:6px 8px;" onclick="markStop(${s.n},'pending',event)">↩</button>
 </div>`;
 const el=document.createElement('div');
 el.className=`si ${cls}`;el.id='li-'+s.n;
-if(_modoBorrar&&sel)el.style.background='rgba(244,63,94,.08)';
+if(_modoBorrar&&sel)el.style.background='var(--red-soft)';
 // Etiqueta de hora estimada de llegada
 let etaTag='';
 if(s.eta&&s.status==='pending'){
-let color='var(--accent)',bg='rgba(0,212,255,.12)',icon='🕐';
+let color='var(--accent)',bg='var(--accent-soft)',icon='🕐';
 // Aviso para preferentes: si la ETA supera su franja
 if(s.eta){
 const h=parseInt(s.eta.split(':')[0]);
@@ -1014,15 +968,15 @@ const m=parseInt(s.eta.split(':')[1]);
 const mins=h*60+m;
 const esPref=/preferente|13h|14h/i.test(s.name+' '+s.addr);
 if(esPref){
-if(mins>14*60){color='#f43f5e';bg='rgba(244,63,94,.15)';icon='⚠️';}
-else if(mins>13*60){color='#f59e0b';bg='rgba(245,158,11,.15)';icon='⚡';}
+if(mins>14*60){color='var(--red)';bg='var(--red-soft)';icon='⚠️';}
+else if(mins>13*60){color='var(--orange)';bg='var(--orange-soft)';icon='⚡';}
 }
 }
 etaTag=`<span class="tag" style="background:${bg};color:${color};font-weight:700;">${icon} ${s.eta}</span>`;
 }
 el.innerHTML=`<div class="sibar"></div><div class="sinum"><div class="nc">${s.n}</div></div>
-<div class="sibody"><div class="siname">${s.name}${s.paquete?`<span style="margin-left:6px;background:var(--orange);color:#000;font-size:11px;font-weight:800;padding:2px 8px;border-radius:8px;">📦 Paq. ${s.paquete}</span>`:''}</div><div class="siaddr">${s.addr}</div>
-<div class="sitags"><span class="tag ts">Saca ${s.saco}</span><span class="tag tb2">${s.bultos}b</span>${etaTag}${tag}${s.codigo?`<span class="tag" style="background:rgba(251,146,60,.1);color:var(--orange);font-family:monospace;font-size:9px;">${s.codigo.slice(-8)}</span>`:''}</div></div>${acts}`;
+<div class="sibody"><div class="siname">${s.name}</div><div class="siaddr">${s.addr}</div>
+<div class="sitags"><span class="tag ts">Saca ${s.saco}</span><span class="tag tb2">${s.bultos}b</span>${etaTag}${tag}${s.codigo?`<span class="tag" style="background:var(--orange-soft);color:var(--orange);font-family:monospace;font-size:9px;">${s.codigo.slice(-8)}</span>`:''}</div></div>${acts}`;
 el.addEventListener('click',()=>{if(_modoBorrar)toggleSeleccion(s.n);else selStop(s.n);});
 return el;
 }
@@ -1039,7 +993,8 @@ if(grupo.length<2)return{orden:grupo,legs:[]};
 const origin=grupo[0].addr+', Zaragoza, España';
 const destination=grupo[grupo.length-1].addr+', Zaragoza, España';
 const waypoints=grupo.slice(1,-1).map(p=>encodeURIComponent(p.addr+', Zaragoza, España')).join('|');
-const resp=await fetch(`${WORKER_URL}/directions?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&waypoints=${waypoints}`);
+const gUrl=`https://maps.googleapis.com/maps/api/directions/json?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&waypoints=optimize:true|${waypoints}&mode=driving&language=es&key=${GMAPS_KEY}`;
+const resp=await fetch(WORKER_URL+'/gmaps?url='+encodeURIComponent(gUrl));
 const data=await resp.json();
 if(data.status==='OK'&&data.routes&&data.routes[0]){
 const order=data.routes[0].waypoint_order;
@@ -1116,7 +1071,7 @@ ${lista}
 Ordénalas para minimizar el recorrido total, teniendo en cuenta las calles de Zaragoza, sentidos únicos y zonas.
 Devuelve SOLO un array JSON con los números de parada en el orden óptimo: [3,1,5,2,4]`}];
 const resp=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},
-body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:500,messages:[{role:'user',content}]})});
+body:JSON.stringify({max_tokens:500,messages:[{role:'user',content}]})});
 const data=await resp.json();
 const txt=data.content?.find(c=>c.type==='text')?.text||'';
 let orden=null;
@@ -1154,13 +1109,13 @@ if(document.getElementById('s-gestor').classList.contains('on'))initMap2();
 };
 
 const MAP_STYLE=[
-{elementType:'geometry',stylers:[{color:'#0b0e15'}]},
-{elementType:'labels.text.fill',stylers:[{color:'#7ba7c7'}]},
-{elementType:'labels.text.stroke',stylers:[{color:'#0b0e15'}]},
-{featureType:'road',elementType:'geometry',stylers:[{color:'#1a2f4a'}]},
-{featureType:'road.arterial',elementType:'geometry',stylers:[{color:'#1e3a5f'}]},
-{featureType:'road.highway',elementType:'geometry',stylers:[{color:'#243d5c'}]},
-{featureType:'water',elementType:'geometry',stylers:[{color:'#0d2137'}]},
+{elementType:'geometry',stylers:[{color:'#eef2f7'}]},
+{elementType:'labels.text.fill',stylers:[{color:'#5b6b7e'}]},
+{elementType:'labels.text.stroke',stylers:[{color:'#ffffff'}]},
+{featureType:'road',elementType:'geometry',stylers:[{color:'#ffffff'}]},
+{featureType:'road.arterial',elementType:'geometry',stylers:[{color:'#ffffff'}]},
+{featureType:'road.highway',elementType:'geometry',stylers:[{color:'#dbe4f0'}]},
+{featureType:'water',elementType:'geometry',stylers:[{color:'#cfe0f5'}]},
 {featureType:'poi',stylers:[{visibility:'off'}]},
 {featureType:'transit',stylers:[{visibility:'off'}]},
 ];
@@ -1193,8 +1148,8 @@ const bounds=new google.maps.LatLngBounds();
 ruta.paradas.forEach((s,i)=>{
 const c=s.lat&&s.lng?{lat:s.lat,lng:s.lng}:coord(i);
 const isSel=selPin===s.n;
-const col=s.status==='delivered'?'#10b981':s.status==='failed'?'#f43f5e':'#00d4ff';
-const tc=s.status==='failed'?'#fff':'#000';
+const col=s.status==='delivered'?'#1e9e6a':s.status==='failed'?'#d64545':'#2e6be6';
+const tc='#fff';
 const svg=pinSVG(s.n,col,tc,isSel);
 const icon={url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg),scaledSize:new google.maps.Size(44,54),anchor:new google.maps.Point(22,54)};
 const m=new google.maps.Marker({position:c,map:gmap1,icon,title:`#${s.n} ${s.name}`,zIndex:isSel?999:s.n});
@@ -1247,17 +1202,17 @@ const imgs=await Promise.all(uploadFiles.map(f=>new Promise((res,rej)=>{
 const img=new Image();
 const url=URL.createObjectURL(f);
 img.onload=()=>{
-const MAX=1280;
+const MAX=1600;
 let w=img.width,h=img.height;
 if(w>MAX||h>MAX){if(w>h){h=Math.round(h*MAX/w);w=MAX;}else{w=Math.round(w*MAX/h);h=MAX;}}
 const canvas=document.createElement('canvas');
 canvas.width=w;canvas.height=h;
 canvas.getContext('2d').drawImage(img,0,0,w,h);
-const data=canvas.toDataURL('image/jpeg',0.8).split(',')[1];
+const data=canvas.toDataURL('image/jpeg',0.92).split(',')[1];
 URL.revokeObjectURL(url);
 res({data,media_type:'image/jpeg'});
 };
-img.onerror=()=>{URL.revokeObjectURL(url);rej(new Error('No se pudo abrir una de las fotos (formato no válido)'));};
+img.onerror=rej;
 img.src=url;
 })));
 
@@ -1313,33 +1268,22 @@ const content=[
 {type:'text',text:prompt}
 ];
 try{
-const ctrl=new AbortController();
-const timer=setTimeout(()=>ctrl.abort(),25000);
-const resp=await fetch(WORKER_URL,{method:'POST',signal:ctrl.signal,headers:{'Content-Type':'application/json'},
-body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:4000,messages:[{role:'user',content}]})});
-clearTimeout(timer);
-if(!resp.ok)return {error:`servidor respondió ${resp.status}`};
+const resp=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},
+body:JSON.stringify({max_tokens:4000,messages:[{role:'user',content}]})});
+if(!resp.ok)return [];
 const respText=await resp.text();
 let data;
-try{data=JSON.parse(respText);}catch(e){return {error:'respuesta no válida del servidor'};}
+try{data=JSON.parse(respText);}catch(e){return [];}
 const txt=data.content?.find(c=>c.type==='text')?.text||'';
 let parsed=null;
 try{parsed=JSON.parse(txt.trim());}catch(e){}
 if(!parsed){try{parsed=JSON.parse(txt.replace(/```json?|```/g,'').trim());}catch(e){}}
 if(!parsed){const m=txt.match(/\{[\s\S]*\}/);if(m)try{parsed=JSON.parse(m[0]);}catch(e){}}
 return parsed?.stops||[];
-}catch(e){
-if(e.name==='AbortError')return {error:'una foto tardó demasiado (red lenta)'};
-return {error:e.message};
-}
+}catch(e){return [];}
 }));
 
-let allStops=[];
-let errores=[];
-resultados.forEach(r=>{
-if(Array.isArray(r))allStops=allStops.concat(r);
-else if(r&&r.error)errores.push(r.error);
-});
+let allStops=resultados.flat();
 
 const seen=new Set();
 extractedStops=allStops.filter(s=>{
@@ -1349,11 +1293,9 @@ seen.add(key);return true;
 });
 
 if(!extractedStops.length){
-const motivo=errores.length?`<div style="font-size:12px;color:var(--text2)">Motivo: ${errores[0]}. Prueba con menos fotos a la vez o mejor conexión.</div>`:`<div style="font-size:12px;color:var(--text2)">La IA no pudo extraer paradas. Intenta con fotos más nítidas de la pantalla de la PDA.</div>`;
-document.getElementById('rarea').innerHTML=`<div class="rbox"><div class="rtit" style="color:var(--orange)">⚠️ Sin resultados</div>${motivo}</div>`;
+document.getElementById('rarea').innerHTML=`<div class="rbox"><div class="rtit" style="color:var(--orange)">⚠️ Sin resultados</div><div style="font-size:12px;color:var(--text2)">La IA no pudo extraer paradas. Intenta con fotos más nítidas de la pantalla de la PDA.</div></div>`;
 } else {
 renderResults();
-if(errores.length)toast(`✅ ${extractedStops.length} paradas · ⚠️ ${errores.length} foto(s) fallaron`,'');
 }
 }catch(err){
 document.getElementById('rarea').innerHTML=`<div class="rbox"><div class="rtit" style="color:var(--red)">❌ Error</div><div style="font-size:12px;color:var(--text2)">${err.message}</div></div>`;
@@ -1498,7 +1440,7 @@ if(cache[calleKey]){return cache[calleKey];}
 try{
 const q=encodeURIComponent(calle+(cp?', '+cp:'')+', Zaragoza, España');
 const comp=encodeURIComponent('locality:Zaragoza|country:ES');
-const r=await fetch(`${WORKER_URL}/geocode?address=${q}&components=${comp}`);
+const r=await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${q}&components=${comp}&key=${GMAPS_KEY}`);
 const d=await r.json();
 if(d.results&&d.results[0]){
 const res=d.results[0];
@@ -1567,7 +1509,7 @@ const paradas=extractedStops.map((s,i)=>({
 n:s.n,name:s.name,addr:s.addr,
 saco:sacas[Math.floor(i/Math.max(1,extractedStops.length/5))%5],
 bultos:s.bultos||1,status:'pending',lat:null,lng:null,
-codigo:s.codigo||null,paquete:s.paquete||null
+codigo:s.codigo||null
 }));
 
 const batchSize=5;
@@ -1596,9 +1538,9 @@ await guardarParadasEnDB(nuevas);
 
 toast(`✓ ${nuevas.length} paradas localizadas`,'ok');
 extractedStops=[];uploadFiles=[];
-const _pg=document.getElementById('pgrid');if(_pg)_pg.innerHTML='';
-const _ra=document.getElementById('rarea');if(_ra)_ra.innerHTML='';
-const _ab=document.getElementById('abtn');if(_ab)_ab.disabled=true;
+document.getElementById('pgrid').innerHTML='';
+document.getElementById('rarea').innerHTML='';
+document.getElementById('abtn').disabled=true;
 if(btn){btn.disabled=false;btn.textContent='ANALIZAR CON IA';}
 }
 
@@ -1630,7 +1572,7 @@ card.innerHTML=`
 <div class="dtop">
 <div class="tav" style="background:${r.color};color:#000;width:26px;height:26px;font-size:12px">${r.driver[0]}</div>
 <div><div class="dname">${r.driver}</div><div style="font-size:10px;color:var(--text3)">${total} paradas</div></div>
-<div class="don" style="background:${isSelected?'rgba(0,212,255,.2)':'rgba(16,185,129,.15)'};color:${isSelected?'var(--accent)':'var(--green)'}">
+<div class="don" style="background:${isSelected?'var(--accent-soft)':'var(--green-soft)'};color:${isSelected?'var(--accent)':'var(--green)'}">
 ${isSelected?'● Activo':'● Live'}
 </div>
 </div>
@@ -1671,8 +1613,8 @@ RUTAS.forEach(r=>{
 if(selectedDriver2&&r.driver!==selectedDriver2)return;
 r.paradas.forEach(s=>{
 if(!s.lat||!s.lng)return;
-const col=s.status==='delivered'?'#10b981':s.status==='failed'?'#f43f5e':r.color;
-const tc=s.status==='failed'?'#fff':'#000';
+const col=s.status==='delivered'?'#1e9e6a':s.status==='failed'?'#d64545':r.color;
+const tc='#fff';
 const svg=pinSVG(s.n,col,tc,false);
 const icon={url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg),scaledSize:new google.maps.Size(32,40),anchor:new google.maps.Point(16,40)};
 const m=new google.maps.Marker({position:{lat:s.lat,lng:s.lng},map:gmap2,icon,title:`#${s.n} ${s.name} — ${r.driver}`,zIndex:s.n});
@@ -1716,46 +1658,21 @@ if(gmap2){renderMap2Markers();dibujarRepartidoresEnMapa();}
 async function renderEquipo(){
 const list=document.getElementById('equipo-list');
 list.innerHTML='<div class="empty">Cargando...</div>';
-let q=sb.from('usuarios').select('*').neq('id',me.id).order('role').order('name');
-if(me.empresa_id)q=q.eq('empresa_id',me.empresa_id);
-const{data:drivers}=await q;
-if(!drivers||!drivers.length){list.innerHTML='<div class="empty">No hay trabajadores</div>';return;}
-list.innerHTML=drivers.map(d=>{
-let pruebaInfo='';
-if(d.prueba&&d.prueba_fin){
-const fin=new Date(d.prueba_fin).getTime();
-const caducada=Date.now()>fin;
-const finTxt=new Date(d.prueba_fin).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
-pruebaInfo=`<div style="font-size:11px;font-weight:700;margin-top:3px;color:${caducada?'var(--red)':'var(--orange)'};">${caducada?'⏰ PRUEBA CADUCADA':'🎁 Prueba hasta '+finTxt}</div>`;
-}
-const modoTag=d.modo_simple?'<span style="font-size:10px;background:rgba(37,99,235,.12);color:var(--accent);padding:1px 6px;border-radius:5px;margin-left:4px;">simple</span>':'';
-const rolNombre=d.role==='manager'?'Gerente':d.role==='supervisor'?'Supervisor':'Repartidor';
-const rolColor=d.role==='manager'?'#8b5cf6':d.role==='supervisor'?'#2563eb':'#64748b';
-const rolTag=`<span style="font-size:10px;background:${rolColor}22;color:${rolColor};padding:1px 7px;border-radius:5px;font-weight:700;">${rolNombre}</span>`;
-return `
+const{data:drivers}=await sb.from('usuarios').select('*').eq('role','driver').order('name');
+if(!drivers||!drivers.length){list.innerHTML='<div class="empty">No hay repartidores</div>';return;}
+list.innerHTML=drivers.map(d=>`
 <div style="background:var(--card);border:1px solid ${d.activo?'var(--border)':'var(--red)'};border-radius:12px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;">
 <div class="tav" style="width:36px;height:36px;font-size:15px;flex-shrink:0;background:${d.color||'var(--accent)'}">${d.init||d.name[0]}</div>
 <div style="flex:1">
-<div style="font-weight:700;font-size:14px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">${d.name} ${rolTag}${modoTag} ${!d.activo?'<span style="color:var(--red);font-size:11px">DESACTIVADO</span>':''}</div>
+<div style="font-weight:700;font-size:14px">${d.name} ${!d.activo?'<span style="color:var(--red);font-size:11px">DESACTIVADO</span>':''}</div>
 <div style="font-size:12px;color:var(--text2)">Usuario: <b style="color:var(--accent)">${d.username}</b></div>
 <div style="font-size:12px;color:var(--text2)">Contraseña: <b>${d.password}</b></div>
-${pruebaInfo}
 </div>
 <div style="display:flex;flex-direction:column;gap:6px">
 <button class="abt ab-nav" onclick="editDriver('${d.id}','${d.username}','${d.password}')" style="font-size:11px;padding:6px 8px">✏️</button>
 <button class="abt ${d.activo?'ab-ko':'ab-ok'}" onclick="toggleDriver('${d.id}',${d.activo})" style="font-size:11px;padding:6px 8px">${d.activo?'🚫':'✓'}</button>
-${d.prueba?`<button class="abt ab-ok" onclick="activarCuenta('${d.id}')" style="font-size:11px;padding:6px 8px" title="Activar como cuenta de pago">💳</button>`:''}
-<button class="abt" onclick="deleteDriver('${d.id}','${d.name.replace(/'/g,"")}')" style="font-size:11px;padding:6px 8px;background:rgba(220,38,38,.15);color:var(--red);" title="Eliminar definitivamente">🗑️</button>
 </div>
-</div>`;}).join('');
-}
-
-async function activarCuenta(id){
-if(!confirm('¿Activar como cuenta de pago? Se quitará la caducidad de prueba y tendrá acceso completo sin límite.'))return;
-const{error}=await sb.from('usuarios').update({prueba:false,prueba_fin:null}).eq('id',id);
-if(error){toast('Error al activar','err');return;}
-renderEquipo();
-toast('💳 Cuenta activada sin límite','ok');
+</div>`).join('');
 }
 
 function showAddDriver(){
@@ -1763,51 +1680,17 @@ document.getElementById('add-driver-form').style.display='block';
 document.getElementById('new-name').focus();
 }
 
-async function crearClientePrueba(){
-const nombre=prompt('Nombre del cliente de prueba (ej: Autónomo García):');
-if(!nombre)return;
-const user=prompt('Usuario para acceder (sin espacios, ej: prueba1):');
-if(!user)return;
-const pass=prompt('Contraseña:');
-if(!pass)return;
-const colors=['#2563eb','#a78bfa','#10b981','#f59e0b','#f43f5e','#ec4899','#8b5cf6','#06b6d4'];
-const color=colors[Math.floor(Math.random()*colors.length)];
-const fin=new Date(Date.now()+24*60*60*1000).toISOString(); // 1 día
-const{data:existing}=await sb.from('usuarios').select('did').order('did',{ascending:false}).limit(1);
-const did=(existing&&existing[0]?.did!=null?existing[0].did+1:0);
-const{error}=await sb.from('usuarios').insert({
-username:user.trim().toLowerCase(),password:pass.trim(),name:nombre.trim(),
-role:'driver',init:nombre.trim()[0].toUpperCase(),did,color,activo:true,
-modo_simple:true,prueba:true,prueba_fin:fin
-});
-if(error){toast('Error: ese usuario ya existe','err');return;}
-renderEquipo();
-const finTxt=new Date(fin).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
-alert(`✅ Cliente de prueba creado\n\nUsuario: ${user.trim().toLowerCase()}\nContraseña: ${pass.trim()}\nModo: simple (solo ruta, sin cierres)\nCaduca: ${finTxt}\n\nPásale estos datos y la web victoribius-arch.github.io/nexuszgz`);
-toast(`🎁 Prueba creada — caduca en 24h`,'ok');
-}
-
 async function addDriver(){
 const name=document.getElementById('new-name').value.trim();
 const user=document.getElementById('new-user').value.trim().toLowerCase();
 const pass=document.getElementById('new-pass').value.trim();
 if(!name||!user||!pass){toast('Rellena todos los campos','err');return;}
-// Comprobar límite del pack de la empresa
-if(me.empresa_id){
-const{data:emp}=await sb.from('empresas').select('plan_plazas').eq('id',me.empresa_id).single();
-const{data:activos}=await sb.from('usuarios').select('id').eq('empresa_id',me.empresa_id).eq('activo',true).neq('role','manager');
-const plazas=emp?.plan_plazas||5;
-if(activos&&activos.length>=plazas){
-toast(`⚠️ Has alcanzado el límite de tu plan (${plazas} trabajadores). Desactiva uno o amplía tu plan.`,'err');
-return;
-}
-}
-const colors=['#00d4ff','#a78bfa','#10b981','#f59e0b','#f43f5e','#ec4899','#8b5cf6','#06b6d4'];
+const colors=['#2e6be6','#a78bfa','var(--green)','var(--orange)','var(--red)','#ec4899','#8b5cf6','#06b6d4'];
 const color=colors[Math.floor(Math.random()*colors.length)];
 const init=name[0].toUpperCase();
 const{data:existing}=await sb.from('usuarios').select('did').eq('role','driver').order('did',{ascending:false}).limit(1);
 const did=(existing&&existing[0]?.did!=null?existing[0].did+1:0);
-const{error}=await sb.from('usuarios').insert({username:user,password:pass,name,role:'driver',init,did,color,activo:true,empresa_id:me.empresa_id||null});
+const{error}=await sb.from('usuarios').insert({username:user,password:pass,name,role:'driver',init,did,color,activo:true});
 if(error){toast('Error: ese usuario ya existe','err');return;}
 document.getElementById('add-driver-form').style.display='none';
 document.getElementById('new-name').value='';
@@ -1831,14 +1714,6 @@ renderEquipo();
 toast(activo?'Repartidor desactivado':'Repartidor activado',activo?'err':'ok');
 }
 
-async function deleteDriver(id, nombre){
-if(!confirm(`¿Eliminar a ${nombre} definitivamente?\n\nSe borrará su cuenta. Sus rutas y cierres anteriores se conservan en el historial.\n\nEsta acción no se puede deshacer.`))return;
-const{error}=await sb.from('usuarios').delete().eq('id',id);
-if(error){toast('Error al eliminar','err');return;}
-renderEquipo();
-toast(`🗑️ ${nombre} eliminado`,'ok');
-}
-
 let cierresBusq='', cierresDriverFiltro='all', cierreFotoFile=null;
 
 async function iniciarCierres(){
@@ -1852,7 +1727,7 @@ await cargarCierres();
 }
 
 async function renderFiltroDrivers(){
-const{data:drivers}=await sb.from('usuarios').select('name').eq('role','driver').eq('activo',true).eq('empresa_id',me.empresa_id);
+const{data:drivers}=await sb.from('usuarios').select('name').eq('role','driver').eq('activo',true);
 const frow=document.getElementById('frow-cierres');
 frow.innerHTML=`<div class="ftb on" onclick="setCierreDriver('all',this)">Todos</div>`+
 (drivers||[]).map(d=>`<div class="ftb" onclick="setCierreDriver('${d.name}',this)">${d.name}</div>`).join('');
@@ -1871,11 +1746,6 @@ async function cargarCierres(){
 const list=document.getElementById('cierres-list');
 list.innerHTML='<div class="empty">Cargando...</div>';
 let query=sb.from('cierres').select('*').order('created_at',{ascending:false}).limit(100);
-// Cliente de prueba (modo simple): SOLO sus cierres, aislado por su nombre
-if(me.modo_simple){
-query=query.eq('driver',me.name);
-}else{
-query=query.eq('empresa_id',me.empresa_id);
 if(me.role==='driver') query=query.eq('driver',me.name);
 else if(me.role==='supervisor'){
 const _sn=(me.name||'').toLowerCase();
@@ -1884,7 +1754,6 @@ else if(_sn.includes('andrea')) query=query.eq('ruta_tipo','andarin');
 else if(_sn.includes('sebas')) query=query.eq('ruta_tipo','50008');
 // Camilo (encargado) ve todos los cierres, sin filtro
 } else if(me.role==='manager'&&cierresDriverFiltro!=='all') query=query.eq('driver',cierresDriverFiltro);
-}
 const{data,error}=await query;
 if(error){list.innerHTML='<div class="empty">Error cargando</div>';return;}
 let cierres=data||[];
@@ -1919,13 +1788,13 @@ const tarjeta=(c)=>{
 const hora=new Date(c.created_at).toLocaleString('es-ES',{hour:'2-digit',minute:'2-digit'});
 return `<div style="margin:8px;background:var(--card);border-radius:16px;overflow:hidden;border:1px solid var(--border);">
 <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;">
-<div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;flex-shrink:0;">${c.driver[0]}</div>
+<div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:var(--on-accent);flex-shrink:0;">${c.driver[0]}</div>
 <div style="flex:1;min-width:0;">
 <div style="font-weight:700;font-size:14px;">${c.driver}</div>
 <div style="display:flex;gap:6px;align-items:center;margin-top:2px;flex-wrap:wrap;">
 <span style="font-size:11px;color:var(--text3);">${hora}</span>
-${c.ruta_tipo?`<span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;background:rgba(0,212,255,.15);color:var(--accent);">${c.ruta_tipo==='principal'?'🚚 Principal':c.ruta_tipo==='andarin'?'🚶 Andarin':'📦 50008'}</span>`:''}
-${c.preferente?`<span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;background:rgba(245,158,11,.2);color:#f59e0b;">⚡ Preferente</span>`:''}
+${c.ruta_tipo?`<span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;background:var(--accent-soft);color:var(--accent);">${c.ruta_tipo==='principal'?'🚚 Principal':c.ruta_tipo==='andarin'?'🚶 Andarin':'📦 50008'}</span>`:''}
+${c.preferente?`<span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;background:var(--orange-soft);color:var(--orange);">⚡ Preferente</span>`:''}
 </div>
 </div>
 <div style="font-family:monospace;font-size:20px;font-weight:900;color:var(--accent);">#${c.parada_n||'—'}</div>
@@ -2048,7 +1917,7 @@ const b=document.getElementById(id);
 if(b){b.style.border='1.5px solid var(--border)';b.style.background='transparent';b.style.color='var(--text2)';}
 });
 btn.style.border='2px solid var(--accent)';
-btn.style.background='rgba(0,212,255,.15)';
+btn.style.background='var(--accent-soft)';
 btn.style.color='var(--accent)';
 }
 
@@ -2056,9 +1925,6 @@ function abrirCierreIntegrado(n, e){
 if(e) e.stopPropagation();
 const parada=ruta.paradas.find(p=>Number(p.n)===Number(n));
 if(!parada)return;
-
-// Modo simple: abre el cierre con foto/nombre/DNI opcionales (privado, solo lo ve él)
-// Ya no marca directo — usa el panel normal de abajo
 
 document.getElementById('cp-n').value=n;
 document.getElementById('cp-titulo').textContent='✓ Confirmar entrega — Parada #'+n;
@@ -2073,16 +1939,8 @@ window._cpPreferente=false;
 const pb=document.getElementById('cp-preferente-btn');
 if(pb){pb.style.borderColor='var(--border)';pb.style.color='var(--text2)';pb.style.background='transparent';pb.textContent='⚡ Marcar como preferente (13h/14h)';}
 
-// Modo simple: ocultar selector de ruta, su cierre se guarda con su propio nombre
-const rutaSelDiv=document.getElementById('cp-ruta-sel');
-if(me.modo_simple){
-if(rutaSelDiv)rutaSelDiv.style.display='none';
-window._cpRuta='prueba_'+(me.username||me.name);
-}else{
-if(rutaSelDiv)rutaSelDiv.style.display='block';
 window._cpRuta='principal';
 cpSelectRuta('principal',document.getElementById('cp-r1'));
-}
 document.getElementById('cierre-panel').style.display='block';
 }
 
@@ -2090,9 +1948,9 @@ function cpTogglePreferente(){
 window._cpPreferente=!window._cpPreferente;
 const btn=document.getElementById('cp-preferente-btn');
 if(window._cpPreferente){
-btn.style.borderColor='#f59e0b';
-btn.style.color='#f59e0b';
-btn.style.background='rgba(245,158,11,.12)';
+btn.style.borderColor='var(--orange)';
+btn.style.color='var(--orange)';
+btn.style.background='var(--orange-soft)';
 btn.textContent='⚡ Preferente (13h/14h) ✓';
 } else {
 btn.style.borderColor='var(--border)';
@@ -2155,8 +2013,7 @@ const{error:insErr}=await sb.from('cierres').insert({
 driver:me.name,parada_n:n,addr:parada?parada.addr:'',
 foto_url:fotoUrl,nombre_cliente:nombre||null,dni_cliente:dni||null,
 ruta_tipo:window._cpRuta||'principal',
-preferente:window._cpPreferente||false,
-empresa_id:me.empresa_id||null
+preferente:window._cpPreferente||false
 });
 if(t){
 if(insErr){t.textContent='Error: '+insErr.message;t.className='toast err show';}
@@ -2196,8 +2053,7 @@ if(!upErr){fotoUrl=sb.storage.from('cierres').getPublicUrl(fn).data.publicUrl;}
 }
 await sb.from('cierres').insert({
 driver:me.name,parada_n:n,addr:parada?parada.addr:'',
-foto_url:fotoUrl,nombre_cliente:nombre||null,dni_cliente:dni||null,
-empresa_id:me.empresa_id||null
+foto_url:fotoUrl,nombre_cliente:nombre||null,dni_cliente:dni||null
 });
 
 if(document.getElementById('s-cierres').classList.contains('on'))cargarCierres();
@@ -2240,7 +2096,7 @@ const parada=ruta.paradas.find(p=>Number(p.n)===Number(n));
 const labels={ausente:'🚫 Ausente',cambio_domicilio:'🏠 Cambio domicilio',rehusado:'❌ Rehusado'};
 cerrarIncidencia();
 if(parada){parada.status='failed';renderLista();if(gmap1)renderMarkers1();actualizarEstadoDB(parada,'failed');toast((labels[tipo]||tipo)+' — Parada #'+n,'err');}
-try{await sb.from('cierres').insert({driver:me.name,parada_n:n,addr:parada?parada.addr:'',nombre_cliente:(labels[tipo]||tipo)+(nota?' — '+nota:''),dni_cliente:null,foto_url:null,empresa_id:me.empresa_id||null});}catch(e){console.error(e);}
+try{await sb.from('cierres').insert({driver:me.name,parada_n:n,addr:parada?parada.addr:'',nombre_cliente:(labels[tipo]||tipo)+(nota?' — '+nota:''),dni_cliente:null,foto_url:null});}catch(e){console.error(e);}
 }
 
 let geoInterval=null;
@@ -2250,7 +2106,7 @@ async function enviarUbicacion(){
 if(!me||(me.role!=='driver'&&me.role!=='supervisor'))return;
 navigator.geolocation.getCurrentPosition(async function(pos){
 await sb.from('ubicaciones').upsert({driver:me.name,lat:pos.coords.latitude,lng:pos.coords.longitude,updated_at:new Date().toISOString()},{onConflict:'driver'});
-},function(err){console.log('Geo error:',err);},{enableHighAccuracy:true,timeout:20000,maximumAge:30000});
+},function(err){console.log('Geo error:',err);},{enableHighAccuracy:true,timeout:10000});
 }
 async function cargarUbicacionesRepartidores(){
 const{data}=await sb.from('ubicaciones').select('*');
@@ -2261,7 +2117,7 @@ if(!gmap2)return;
 if(window._driverMarkers){window._driverMarkers.forEach(m=>m.setMap(null));}
 window._driverMarkers=[];
 Object.entries(driverLocations).forEach(([driver,loc])=>{
-const r=RUTAS.find(x=>x.driver===driver);const color=r?r.color:'#00d4ff';
+const r=RUTAS.find(x=>x.driver===driver);const color=r?r.color:'#2e6be6';
 const mins=Math.round((Date.now()-new Date(loc.updated_at).getTime())/60000);
 const svg='<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><circle cx="24" cy="24" r="22" fill="'+color+'" stroke="#fff" stroke-width="3"/><text x="24" y="29" text-anchor="middle" fill="#000" font-size="16" font-weight="800" font-family="sans-serif">'+driver[0]+'</text></svg>';
 const icon={url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg),scaledSize:new google.maps.Size(48,48),anchor:new google.maps.Point(24,24)};
@@ -2295,7 +2151,7 @@ if(!fechaInput.value) fechaInput.value=hoy;
 
 const sel=document.getElementById('hist-driver');
 if(sel.options.length<=1){
-const{data}=await sb.from('usuarios').select('name').eq('activo',true).neq('role','manager').eq('empresa_id',me.empresa_id);
+const{data}=await sb.from('usuarios').select('name').eq('activo',true).neq('role','manager');
 if(data) data.forEach(u=>{
 const o=document.createElement('option');
 o.value=u.name;o.textContent=u.name;
@@ -2312,7 +2168,7 @@ const list=document.getElementById('hist-list');
 if(!fecha){list.innerHTML='<div class="empty">Selecciona una fecha</div>';return;}
 list.innerHTML='<div class="empty">Cargando...</div>';
 
-let query=sb.from('rutas').select('*').eq('fecha',fecha).eq('empresa_id',me.empresa_id).order('created_at',{ascending:true});
+let query=sb.from('rutas').select('*').eq('fecha',fecha).order('created_at',{ascending:true});
 if(driver!=='all') query=query.eq('driver',driver);
 const{data:rutas}=await query;
 
@@ -2330,7 +2186,7 @@ const pct=total?Math.round(ok/total*100):0;
 
 html+=`<div style="margin:8px;background:var(--card);border-radius:14px;padding:14px;border:1px solid var(--border);">
 <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-<div style="width:36px;height:36px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;">${r.driver[0]}</div>
+<div style="width:36px;height:36px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:var(--on-accent);">${r.driver[0]}</div>
 <div style="flex:1;">
 <div style="font-weight:700;font-size:15px;">${r.driver}</div>
 <div style="font-size:11px;color:var(--text3);">${fecha} · ${r.empresa||'CTT'}</div>
@@ -2341,9 +2197,9 @@ html+=`<div style="margin:8px;background:var(--card);border-radius:14px;padding:
 <div style="background:var(--green);height:6px;border-radius:6px;width:${pct}%;transition:width .3s;"></div>
 </div>
 <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
-<span style="font-size:12px;padding:4px 10px;border-radius:20px;background:rgba(16,185,129,.15);color:var(--green);font-weight:700;">✓ ${ok} entregadas</span>
-<span style="font-size:12px;padding:4px 10px;border-radius:20px;background:rgba(244,63,94,.15);color:var(--red);font-weight:700;">✗ ${fail} fallidas</span>
-${pend?`<span style="font-size:12px;padding:4px 10px;border-radius:20px;background:rgba(251,146,60,.15);color:var(--orange);font-weight:700;">⏳ ${pend} pendientes</span>`:''}
+<span style="font-size:12px;padding:4px 10px;border-radius:20px;background:var(--green-soft);color:var(--green);font-weight:700;">✓ ${ok} entregadas</span>
+<span style="font-size:12px;padding:4px 10px;border-radius:20px;background:var(--red-soft);color:var(--red);font-weight:700;">✗ ${fail} fallidas</span>
+${pend?`<span style="font-size:12px;padding:4px 10px;border-radius:20px;background:var(--orange-soft);color:var(--orange);font-weight:700;">⏳ ${pend} pendientes</span>`:''}
 </div>
 <details style="cursor:pointer;">
 <summary style="font-size:12px;color:var(--text2);font-weight:600;">Ver ${total} paradas</summary>
@@ -2384,104 +2240,6 @@ setInterval(checkAutoReset,5*60*1000);
 
 let _scannerStream=null;
 let _scannerInterval=null;
-
-// ── CÁMARA DE CARGA: numerar paquetes ──
-let _cargaStream=null, _cargaPaquetes=[], _cargaNum=0, _cargaProcesando=false;
-
-async function abrirCargaCamara(){
-_cargaPaquetes=[];_cargaNum=0;
-document.getElementById('carga-contador').textContent='0 paquetes';
-document.getElementById('carga-ultimo').style.display='none';
-document.getElementById('carga-estado').textContent='Apunta a la etiqueta y pulsa Capturar';
-const overlay=document.getElementById('carga-overlay');
-overlay.style.display='flex';
-try{
-_cargaStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1920},height:{ideal:1080}}});
-const v=document.getElementById('carga-video');
-v.srcObject=_cargaStream;await v.play();
-}catch(e){
-document.getElementById('carga-estado').textContent='Error de cámara: '+e.message;
-}
-}
-
-let _cargaPendientes=0;
-
-function capturarPaquete(){
-const v=document.getElementById('carga-video');
-if(!v||!v.videoWidth){toast('Cámara no lista','err');return;}
-
-// Asignar número YA (sin esperar a la IA)
-_cargaNum++;
-const miNum=_cargaNum;
-const slot={num:miNum,name:'Particular',addr:null,codigo:null,_leyendo:true};
-_cargaPaquetes.push(slot);
-_cargaPendientes++;
-document.getElementById('carga-contador').textContent=_cargaNum+(_cargaNum===1?' paquete':' paquetes');
-const ult=document.getElementById('carga-ultimo');
-ult.style.display='block';
-ult.innerHTML=`📦 Paquete #${miNum} — escríbelo en el paquete · leyendo dirección...`;
-document.getElementById('carga-estado').textContent='Captura el siguiente cuando quieras';
-
-// Recortar al recuadro central (zona de la etiqueta) y comprimir
-const vw=v.videoWidth,vh=v.videoHeight;
-const cropX=vw*0.05,cropY=vh*0.28,cropW=vw*0.9,cropH=vh*0.44;
-const maxW=1100;
-const scale=Math.min(1,maxW/cropW);
-const canvas=document.createElement('canvas');
-canvas.width=cropW*scale;canvas.height=cropH*scale;
-canvas.getContext('2d').drawImage(v,cropX,cropY,cropW,cropH,0,0,canvas.width,canvas.height);
-const b64=canvas.toDataURL('image/jpeg',0.82).split(',')[1];
-
-// Leer en segundo plano (no bloquea)
-(async()=>{
-try{
-const ctrl=new AbortController();
-const timer=setTimeout(()=>ctrl.abort(),15000);
-const resp=await fetch(WORKER_URL,{method:'POST',signal:ctrl.signal,headers:{'Content-Type':'application/json'},
-body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:200,messages:[{role:'user',content:[
-{type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},
-{type:'text',text:'Lee la etiqueta de envío. Devuelve SOLO JSON: {"name":"nombre o Particular","addr":"calle número, CP ciudad","codigo":"seguimiento o null"}'}
-]}]})});
-clearTimeout(timer);
-const data=await resp.json();
-const txt=data.content?.find(c=>c.type==='text')?.text||'';
-// === DEPURACIÓN TEMPORAL: ver qué devuelve la IA ===
-alert('IA respondió:\n\n'+(txt||JSON.stringify(data).slice(0,300)));
-let parsed=null;
-try{parsed=JSON.parse(txt.replace(/```json?|```/g,'').trim());}catch(e){const m=txt.match(/\{[\s\S]*\}/);if(m)try{parsed=JSON.parse(m[0]);}catch(e2){}}
-if(parsed&&parsed.addr){
-slot.name=parsed.name||'Particular';slot.addr=parsed.addr;slot.codigo=parsed.codigo||null;slot._leyendo=false;
-}else{
-slot._error=true;slot._leyendo=false;
-}
-}catch(e){slot._error=true;slot._leyendo=false;alert('Error al leer: '+e.message);}
-_cargaPendientes--;
-// Actualizar contador de errores si los hay
-const errs=_cargaPaquetes.filter(p=>p._error).length;
-if(errs>0)document.getElementById('carga-estado').textContent=`⚠️ ${errs} paquete(s) no se leyeron bien — revisa al terminar`;
-})();
-}
-
-async function cerrarCargaCamara(){
-// Esperar a que terminen las lecturas en curso
-if(_cargaPendientes>0){
-document.getElementById('carga-estado').textContent='Terminando de leer los últimos paquetes...';
-let intentos=0;
-while(_cargaPendientes>0&&intentos<60){await new Promise(r=>setTimeout(r,250));intentos++;}
-}
-if(_cargaStream){_cargaStream.getTracks().forEach(t=>t.stop());_cargaStream=null;}
-document.getElementById('carga-overlay').style.display='none';
-const v=document.getElementById('carga-video');if(v)v.srcObject=null;
-const validos=_cargaPaquetes.filter(p=>p.addr&&!p._error);
-const fallidos=_cargaPaquetes.length-validos.length;
-if(!validos.length){toast('No se leyó ningún paquete correctamente','err');return;}
-// Volcar a extractedStops conservando el número de paquete
-extractedStops=validos.map(p=>({n:p.num,name:p.name,addr:p.addr,bultos:1,codigo:p.codigo,paquete:p.num}));
-renderResults();
-// Asegurar que el área de resultados y el botón cargar son visibles
-setTimeout(()=>{const r=document.getElementById('rarea');if(r)r.scrollIntoView({behavior:'smooth',block:'start'});},200);
-toast(`✅ ${validos.length} paquetes leídos${fallidos?` · ${fallidos} fallaron, vuelve a escanearlos`:''} — carga en ruta`,fallidos?'':'ok');
-}
 
 async function abrirEscaner(){
 const overlay=document.getElementById('scanner-overlay');
@@ -2564,7 +2322,7 @@ function resaltarParada(parada){
 document.querySelectorAll('.si').forEach(x=>{x.style.background='';x.style.border='';});
 const el=document.getElementById('li-'+parada.n);
 if(el){
-el.style.background='rgba(16,185,129,.2)';
+el.style.background='var(--green-soft)';
 el.style.border='2px solid var(--green)';
 el.scrollIntoView({behavior:'smooth',block:'center'});
 setTimeout(()=>{el.style.background='';el.style.border='';},6000);
@@ -2614,29 +2372,16 @@ const video=document.getElementById('scanner-video');
 if(!video||!video.videoWidth){toast('Cámara no lista todavía','err');return;}
 const resultEl=document.getElementById('scanner-result');
 resultEl.textContent='🔍 Leyendo etiqueta con IA...';
-// Pausar el lector de código para liberar el frame del vídeo
-if(window._codeReader){try{window._codeReader.reset();}catch(e){}}
-if(_scannerInterval){clearInterval(_scannerInterval);_scannerInterval=null;}
-await new Promise(r=>setTimeout(r,150)); // dar tiempo a que el frame quede disponible
-// Recortar al recuadro central y comprimir fuerte (rápido de enviar)
-const vw=video.videoWidth,vh=video.videoHeight;
-const cropX=vw*0.05,cropY=vh*0.20,cropW=vw*0.9,cropH=vh*0.6;
-const maxW=800;
-const scale=Math.min(1,maxW/cropW);
 const canvas=document.createElement('canvas');
-canvas.width=Math.round(cropW*scale);canvas.height=Math.round(cropH*scale);
-canvas.getContext('2d').drawImage(video,cropX,cropY,cropW,cropH,0,0,canvas.width,canvas.height);
-const b64=canvas.toDataURL('image/jpeg',0.55).split(',')[1];
+canvas.width=video.videoWidth;canvas.height=video.videoHeight;
+canvas.getContext('2d').drawImage(video,0,0);
+const b64=canvas.toDataURL('image/jpeg',0.85).split(',')[1];
 try{
-// Límite de 12s para que no te tenga esperando si la red va lenta
-const ctrl=new AbortController();
-const timer=setTimeout(()=>ctrl.abort(),15000);
-const resp=await fetch(WORKER_URL,{method:'POST',signal:ctrl.signal,headers:{'Content-Type':'application/json'},
-body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:200,messages:[{role:'user',content:[
+const resp=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},
+body:JSON.stringify({max_tokens:300,messages:[{role:'user',content:[
 {type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},
-{type:'text',text:'Lee la etiqueta de envío. Extrae la dirección de entrega (calle y número). Devuelve SOLO JSON: {"addr":"calle y número o null","codigo":"número de seguimiento o null"}'}
+{type:'text',text:'Lee la etiqueta de envío de este paquete. Extrae la dirección de entrega visible. Devuelve SOLO JSON sin nada más: {"addr":"calle y número que veas o null","codigo":"número de seguimiento si lo ves o null"}'}
 ]}]})});
-clearTimeout(timer);
 const data=await resp.json();
 const txt=data.content?.find(c=>c.type==='text')?.text||'';
 let parsed=null;
@@ -2651,8 +2396,7 @@ if(!parsed||!parsed.addr){resultEl.textContent='No se pudo leer la dirección �
 cerrarEscaner();
 buscarPorDireccion(parsed.addr);
 }catch(e){
-if(e.name==='AbortError')resultEl.textContent='La lectura tardó demasiado — comprueba tu conexión y repite';
-else resultEl.textContent='Error leyendo la etiqueta — inténtalo de nuevo';
+resultEl.textContent='Error leyendo la etiqueta — inténtalo de nuevo';
 }
 }
 
@@ -2663,28 +2407,17 @@ return String(s).toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').r
 function buscarPorDireccion(addr){
 const objetivo=normTxt(addr);
 const numM=String(addr).match(/\d+/);
-const numObj=numM?numM[0]:null;
 let mejor=null,mejorScore=0;
 ruta.paradas.forEach(p=>{
 const pn=normTxt(p.addr);
-const palObj=objetivo.split(' ').filter(w=>w.length>2);
-const palPar=pn.split(' ').filter(w=>w.length>2);
-if(!palObj.length||!palPar.length)return;
-// Coincidencia de palabras en ambos sentidos (más flexible)
-const comunes=palObj.filter(w=>palPar.some(x=>x.includes(w)||w.includes(x))).length;
-let score=comunes/Math.max(palObj.length,palPar.length);
-// El número de portal es lo más identificativo: mucho peso
-const numPar=(p.addr.match(/\d+/)||[])[0];
-if(numObj&&numPar&&numObj===numPar)score+=0.5;
-else if(numObj&&numPar&&numObj!==numPar)score-=0.2; // número distinto penaliza
+const palabras=objetivo.split(' ').filter(w=>w.length>2);
+if(!palabras.length)return;
+let score=palabras.filter(w=>pn.includes(w)).length/palabras.length;
+if(numM&&new RegExp('\\b'+numM[0]+'\\b').test(pn))score+=0.3;
 if(score>mejorScore){mejorScore=score;mejor=p;}
 });
-if(mejor&&mejorScore>=0.35){
+if(mejor&&mejorScore>=0.5){
 resaltarParada(mejor);
-}else if(mejor){
-// Aunque no llegue al umbral, ofrecer la más parecida
-resaltarParada(mejor);
-toast(`Parada más parecida a "${addr}" — verifica que es correcta`,'');
 }else{
 toast(`"${addr}" no coincide con ninguna parada de tu ruta`,'err');
 }
