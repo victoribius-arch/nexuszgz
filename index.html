@@ -187,7 +187,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 <div id="login">
   <div class="lcard">
     <div class="llogo">NEXUS</div>
-    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v1922</span></div>
+    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v1841</span></div>
     <div class="lline"></div>
     <label class="llbl">Usuario</label>
     <input class="linp" id="ui" type="text" placeholder="tu usuario" autocapitalize="none" autocorrect="off">
@@ -1735,6 +1735,7 @@ ${pruebaInfo}
 <button class="abt ab-nav" onclick="editDriver('${d.id}','${d.username}','${d.password}')" style="font-size:11px;padding:6px 8px">✏️</button>
 <button class="abt ${d.activo?'ab-ko':'ab-ok'}" onclick="toggleDriver('${d.id}',${d.activo})" style="font-size:11px;padding:6px 8px">${d.activo?'🚫':'✓'}</button>
 ${d.prueba?`<button class="abt ab-ok" onclick="activarCuenta('${d.id}')" style="font-size:11px;padding:6px 8px" title="Activar como cuenta de pago">💳</button>`:''}
+<button class="abt" onclick="deleteDriver('${d.id}','${d.name.replace(/'/g,"")}')" style="font-size:11px;padding:6px 8px;background:rgba(220,38,38,.15);color:var(--red);" title="Eliminar definitivamente">🗑️</button>
 </div>
 </div>`;}).join('');
 }
@@ -1781,12 +1782,22 @@ const name=document.getElementById('new-name').value.trim();
 const user=document.getElementById('new-user').value.trim().toLowerCase();
 const pass=document.getElementById('new-pass').value.trim();
 if(!name||!user||!pass){toast('Rellena todos los campos','err');return;}
+// Comprobar límite del pack de la empresa
+if(me.empresa_id){
+const{data:emp}=await sb.from('empresas').select('plan_plazas').eq('id',me.empresa_id).single();
+const{data:activos}=await sb.from('usuarios').select('id').eq('empresa_id',me.empresa_id).eq('activo',true).neq('role','manager');
+const plazas=emp?.plan_plazas||5;
+if(activos&&activos.length>=plazas){
+toast(`⚠️ Has alcanzado el límite de tu plan (${plazas} trabajadores). Desactiva uno o amplía tu plan.`,'err');
+return;
+}
+}
 const colors=['#00d4ff','#a78bfa','#10b981','#f59e0b','#f43f5e','#ec4899','#8b5cf6','#06b6d4'];
 const color=colors[Math.floor(Math.random()*colors.length)];
 const init=name[0].toUpperCase();
 const{data:existing}=await sb.from('usuarios').select('did').eq('role','driver').order('did',{ascending:false}).limit(1);
 const did=(existing&&existing[0]?.did!=null?existing[0].did+1:0);
-const{error}=await sb.from('usuarios').insert({username:user,password:pass,name,role:'driver',init,did,color,activo:true});
+const{error}=await sb.from('usuarios').insert({username:user,password:pass,name,role:'driver',init,did,color,activo:true,empresa_id:me.empresa_id||null});
 if(error){toast('Error: ese usuario ya existe','err');return;}
 document.getElementById('add-driver-form').style.display='none';
 document.getElementById('new-name').value='';
@@ -1808,6 +1819,14 @@ async function toggleDriver(id, activo){
 await sb.from('usuarios').update({activo:!activo}).eq('id',id);
 renderEquipo();
 toast(activo?'Repartidor desactivado':'Repartidor activado',activo?'err':'ok');
+}
+
+async function deleteDriver(id, nombre){
+if(!confirm(`¿Eliminar a ${nombre} definitivamente?\n\nSe borrará su cuenta. Sus rutas y cierres anteriores se conservan en el historial.\n\nEsta acción no se puede deshacer.`))return;
+const{error}=await sb.from('usuarios').delete().eq('id',id);
+if(error){toast('Error al eliminar','err');return;}
+renderEquipo();
+toast(`🗑️ ${nombre} eliminado`,'ok');
 }
 
 let cierresBusq='', cierresDriverFiltro='all', cierreFotoFile=null;
