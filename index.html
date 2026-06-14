@@ -188,7 +188,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 <div id="login">
   <div class="lcard">
     <div class="llogo">NEXUS</div>
-    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v2132</span></div>
+    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v2138</span></div>
     <div class="lline"></div>
     <label class="llbl">Usuario</label>
     <input class="linp" id="ui" type="text" placeholder="tu usuario" autocapitalize="none" autocorrect="off">
@@ -658,10 +658,11 @@ if(nuevaRuta){rutaId=nuevaRuta.id;ruta._rutaId=rutaId;}
 }
 }
 if(!rutaId)return;
-// Evitar duplicados: no insertar números de parada que ya existen en la ruta
-const{data:existentes}=await sb.from('paradas').select('n').eq('ruta_id',rutaId);
-const numsExistentes=new Set((existentes||[]).map(x=>Number(x.n)));
-const nuevas=paradas.filter(p=>!numsExistentes.has(Number(p.n)));
+// Evitar duplicados reales: misma parada (número + dirección). 
+// Así dos paquetes distintos no se borran aunque compartan número de lote.
+const{data:existentes}=await sb.from('paradas').select('n,addr').eq('ruta_id',rutaId);
+const clavesExistentes=new Set((existentes||[]).map(x=>Number(x.n)+'|'+(x.addr||'').trim().toLowerCase()));
+const nuevas=paradas.filter(p=>!clavesExistentes.has(Number(p.n)+'|'+(p.addr||'').trim().toLowerCase()));
 if(!nuevas.length)return;
 const rows=nuevas.map(p=>({ruta_id:rutaId,n:p.n,name:p.name,addr:p.addr,saco:p.saco,bultos:p.bultos,status:p.status,lat:p.lat||null,lng:p.lng||null,codigo_seguimiento:p.codigo||null,paquete:p.paquete||null}));
 await sb.from('paradas').insert(rows);
@@ -1060,7 +1061,10 @@ return null;
 try{
 let reordenadas=[],allLegs=[];
 
-if(pendientes.length<=25){
+if(pendientes.length<=2){
+// Con 1-2 paradas no hay nada que optimizar: mantener tal cual, sin tocar Google
+reordenadas=pendientes;allLegs=[];
+}else if(pendientes.length<=25){
 // Caso normal: un solo bloque
 const r=await optimizarBloque(pendientes);
 if(!r)throw new Error('Google falló');
@@ -1087,6 +1091,9 @@ else{reordenadas.push(...sub);}
 }
 
 if(!reordenadas.length)throw new Error('Sin resultado');
+
+// RED DE SEGURIDAD: garantizar que NINGUNA parada pendiente se pierda
+pendientes.forEach(p=>{if(!reordenadas.find(r=>r.n===p.n))reordenadas.push(p);});
 
 // ── CALCULAR ETA POR PARADA ──
 const MARGEN_ENTREGA=120;
@@ -2479,7 +2486,7 @@ const v=document.getElementById('carga-video');if(v)v.srcObject=null;
 const validos=_cargaPaquetes.filter(p=>p.addr&&!p._error);
 const fallidos=_cargaPaquetes.length-validos.length;
 if(!validos.length){toast('No se leyó ningún paquete correctamente','err');return;}
-// Volcar a extractedStops conservando el número de paquete
+// Volcar a extractedStops conservando el número de paquete escrito en la caja
 extractedStops=validos.map(p=>({n:p.num,name:p.name,addr:p.addr,bultos:1,codigo:p.codigo,paquete:p.num}));
 renderResults();
 // Asegurar que el área de resultados y el botón cargar son visibles
