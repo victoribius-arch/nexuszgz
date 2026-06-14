@@ -188,7 +188,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 <div id="login">
   <div class="lcard">
     <div class="llogo">NEXUS</div>
-    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v2025</span></div>
+    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v2036</span></div>
     <div class="lline"></div>
     <label class="llbl">Usuario</label>
     <input class="linp" id="ui" type="text" placeholder="tu usuario" autocapitalize="none" autocorrect="off">
@@ -309,17 +309,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
       <button onclick="abrirCargaCamara()" style="width:100%;padding:16px;border:none;border-radius:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:8px;">
         📷 Escanear paquetes con la cámara
       </button>
-      <div style="text-align:center;font-size:11px;color:var(--text3);margin-bottom:14px;">Lee cada etiqueta y numera los paquetes · o sube fotos abajo</div>
+      <div style="text-align:center;font-size:11px;color:var(--text3);margin-bottom:14px;">Lee cada etiqueta y numera los paquetes uno a uno</div>
 
-      <div class="uzone" id="uzone" onclick="document.getElementById('pda-file-input').click()">
-        <input type="file" id="pda-file-input" accept="image/*" multiple style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;" onchange="onFiles(this.files)">
-        <div class="uzic">📱</div>
-        <div class="uztit">Toca para subir fotos</div>
-        <div class="uzsub" id="uzsub">Capturas de pantalla de tu PDA CTT Express</div>
-      </div>
-
-      <div class="pgrid" id="pgrid"></div>
-      <button class="abtn" id="abtn" disabled onclick="analyze()">ANALIZAR CON IA</button>
       <div id="rarea"></div>
 
       <!-- Añadir parada manual -->
@@ -1605,9 +1596,9 @@ await guardarParadasEnDB(nuevas);
 
 toast(`✓ ${nuevas.length} paradas localizadas`,'ok');
 extractedStops=[];uploadFiles=[];
-document.getElementById('pgrid').innerHTML='';
-document.getElementById('rarea').innerHTML='';
-document.getElementById('abtn').disabled=true;
+const _pg=document.getElementById('pgrid');if(_pg)_pg.innerHTML='';
+const _ra=document.getElementById('rarea');if(_ra)_ra.innerHTML='';
+const _ab=document.getElementById('abtn');if(_ab)_ab.disabled=true;
 if(btn){btn.disabled=false;btn.textContent='ANALIZAR CON IA';}
 }
 
@@ -2434,21 +2425,24 @@ document.getElementById('carga-estado').textContent='Captura el siguiente cuando
 // Recortar al recuadro central (zona de la etiqueta) y comprimir
 const vw=v.videoWidth,vh=v.videoHeight;
 const cropX=vw*0.05,cropY=vh*0.28,cropW=vw*0.9,cropH=vh*0.44;
-const maxW=900;
+const maxW=1100;
 const scale=Math.min(1,maxW/cropW);
 const canvas=document.createElement('canvas');
 canvas.width=cropW*scale;canvas.height=cropH*scale;
 canvas.getContext('2d').drawImage(v,cropX,cropY,cropW,cropH,0,0,canvas.width,canvas.height);
-const b64=canvas.toDataURL('image/jpeg',0.6).split(',')[1];
+const b64=canvas.toDataURL('image/jpeg',0.82).split(',')[1];
 
 // Leer en segundo plano (no bloquea)
 (async()=>{
 try{
-const resp=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},
-body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:200,messages:[{role:'user',content:[
+const ctrl=new AbortController();
+const timer=setTimeout(()=>ctrl.abort(),15000);
+const resp=await fetch(WORKER_URL,{method:'POST',signal:ctrl.signal,headers:{'Content-Type':'application/json'},
+body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:200,messages:[{role:'user',content:[
 {type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},
-{type:'text',text:'Lee la etiqueta. Devuelve SOLO JSON: {"name":"nombre o Particular","addr":"calle número, CP ciudad","codigo":"seguimiento o null"}'}
+{type:'text',text:'Lee la etiqueta de envío. Devuelve SOLO JSON: {"name":"nombre o Particular","addr":"calle número, CP ciudad","codigo":"seguimiento o null"}'}
 ]}]})});
+clearTimeout(timer);
 const data=await resp.json();
 const txt=data.content?.find(c=>c.type==='text')?.text||'';
 let parsed=null;
@@ -2634,9 +2628,9 @@ const b64=canvas.toDataURL('image/jpeg',0.55).split(',')[1];
 try{
 // Límite de 12s para que no te tenga esperando si la red va lenta
 const ctrl=new AbortController();
-const timer=setTimeout(()=>ctrl.abort(),12000);
+const timer=setTimeout(()=>ctrl.abort(),15000);
 const resp=await fetch(WORKER_URL,{method:'POST',signal:ctrl.signal,headers:{'Content-Type':'application/json'},
-body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:200,messages:[{role:'user',content:[
+body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:200,messages:[{role:'user',content:[
 {type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},
 {type:'text',text:'Lee la etiqueta de envío. Extrae la dirección de entrega (calle y número). Devuelve SOLO JSON: {"addr":"calle y número o null","codigo":"número de seguimiento o null"}'}
 ]}]})});
