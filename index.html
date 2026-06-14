@@ -187,7 +187,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 <div id="login">
   <div class="lcard">
     <div class="llogo">NEXUS</div>
-    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v1850</span></div>
+    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v1900</span></div>
     <div class="lline"></div>
     <label class="llbl">Usuario</label>
     <input class="linp" id="ui" type="text" placeholder="tu usuario" autocapitalize="none" autocorrect="off">
@@ -1124,7 +1124,7 @@ ${lista}
 Ordénalas para minimizar el recorrido total, teniendo en cuenta las calles de Zaragoza, sentidos únicos y zonas.
 Devuelve SOLO un array JSON con los números de parada en el orden óptimo: [3,1,5,2,4]`}];
 const resp=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},
-body:JSON.stringify({model:'claude-haiku-4-5',max_tokens:500,messages:[{role:'user',content}]})});
+body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:500,messages:[{role:'user',content}]})});
 const data=await resp.json();
 const txt=data.content?.find(c=>c.type==='text')?.text||'';
 let orden=null;
@@ -1322,7 +1322,7 @@ const content=[
 ];
 try{
 const resp=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},
-body:JSON.stringify({model:'claude-haiku-4-5',max_tokens:4000,messages:[{role:'user',content}]})});
+body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:4000,messages:[{role:'user',content}]})});
 if(!resp.ok)return [];
 const respText=await resp.text();
 let data;
@@ -2425,7 +2425,7 @@ const b64=canvas.toDataURL('image/jpeg',0.6).split(',')[1];
 (async()=>{
 try{
 const resp=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},
-body:JSON.stringify({model:'claude-haiku-4-5',max_tokens:200,messages:[{role:'user',content:[
+body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:200,messages:[{role:'user',content:[
 {type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},
 {type:'text',text:'Lee la etiqueta. Devuelve SOLO JSON: {"name":"nombre o Particular","addr":"calle número, CP ciudad","codigo":"seguimiento o null"}'}
 ]}]})});
@@ -2604,7 +2604,7 @@ canvas.getContext('2d').drawImage(video,0,0);
 const b64=canvas.toDataURL('image/jpeg',0.85).split(',')[1];
 try{
 const resp=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},
-body:JSON.stringify({model:'claude-haiku-4-5',max_tokens:300,messages:[{role:'user',content:[
+body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:300,messages:[{role:'user',content:[
 {type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},
 {type:'text',text:'Lee la etiqueta de envío de este paquete. Extrae la dirección de entrega visible. Devuelve SOLO JSON sin nada más: {"addr":"calle y número que veas o null","codigo":"número de seguimiento si lo ves o null"}'}
 ]}]})});
