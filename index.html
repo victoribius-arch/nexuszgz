@@ -188,7 +188,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 <div id="login">
   <div class="lcard">
     <div class="llogo">NEXUS</div>
-    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v2142</span></div>
+    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v2158</span></div>
     <div class="lline"></div>
     <label class="llbl">Usuario</label>
     <input class="linp" id="ui" type="text" placeholder="tu usuario" autocapitalize="none" autocorrect="off">
@@ -2402,8 +2402,12 @@ let _scannerInterval=null;
 let _cargaStream=null, _cargaPaquetes=[], _cargaNum=0, _cargaProcesando=false;
 
 async function abrirCargaCamara(){
-_cargaPaquetes=[];_cargaNum=0;
-document.getElementById('carga-contador').textContent='0 paquetes';
+_cargaPaquetes=[];
+// Continuar la numeración desde el último paquete que ya hay en la ruta
+// (así el segundo lote sigue 3,4,5... y no vuelve a empezar en 1)
+const maxPaq=ruta.paradas.reduce((m,p)=>Math.max(m,Number(p.paquete)||Number(p.n)||0),0);
+_cargaNum=maxPaq;
+document.getElementById('carga-contador').textContent=maxPaq+' en ruta';
 document.getElementById('carga-ultimo').style.display='none';
 document.getElementById('carga-estado').textContent='Apunta a la etiqueta y pulsa Capturar';
 const overlay=document.getElementById('carga-overlay');
@@ -2423,16 +2427,14 @@ function capturarPaquete(){
 const v=document.getElementById('carga-video');
 if(!v||!v.videoWidth){toast('Cámara no lista','err');return;}
 
-// Asignar número YA (sin esperar a la IA)
-_cargaNum++;
-const miNum=_cargaNum;
-const slot={num:miNum,name:'Particular',addr:null,codigo:null,_leyendo:true};
+// Crear slot — el número se decide cuando responda la IA (rotulador o asignado)
+const slot={num:null,name:'Particular',addr:null,codigo:null,_leyendo:true};
 _cargaPaquetes.push(slot);
 _cargaPendientes++;
-document.getElementById('carga-contador').textContent=_cargaNum+(_cargaNum===1?' paquete':' paquetes');
+document.getElementById('carga-contador').textContent=_cargaPaquetes.length+(_cargaPaquetes.length===1?' capturado':' capturados');
 const ult=document.getElementById('carga-ultimo');
 ult.style.display='block';
-ult.innerHTML=`📦 Paquete #${miNum} — escríbelo en el paquete · leyendo dirección...`;
+ult.innerHTML=`📦 Leyendo etiqueta y buscando número escrito...`;
 document.getElementById('carga-estado').textContent='Captura el siguiente cuando quieras';
 
 // Recortar al recuadro central (zona de la etiqueta) y comprimir
@@ -2453,7 +2455,7 @@ const timer=setTimeout(()=>ctrl.abort(),15000);
 const resp=await fetch(WORKER_URL,{method:'POST',signal:ctrl.signal,headers:{'Content-Type':'application/json'},
 body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:200,messages:[{role:'user',content:[
 {type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},
-{type:'text',text:'Lee la etiqueta de envío. Devuelve SOLO JSON: {"name":"nombre o Particular","addr":"calle número, CP ciudad","codigo":"seguimiento o null"}'}
+{type:'text',text:'Mira este paquete. 1) Lee la dirección de entrega de la etiqueta. 2) Busca un NÚMERO ESCRITO A MANO CON ROTULADOR sobre la caja (grande, manuscrito, NO impreso) que identifica el paquete. Ignora los números impresos de la etiqueta (código de barras, código postal, teléfono). Si NO hay ningún número manuscrito a rotulador, numero_manual debe ser null. Devuelve SOLO JSON: {"name":"nombre o Particular","addr":"calle número, CP ciudad","codigo":"seguimiento o null","numero_manual":número escrito a rotulador o null}'}
 ]}]})});
 clearTimeout(timer);
 const data=await resp.json();
@@ -2461,7 +2463,16 @@ const txt=data.content?.find(c=>c.type==='text')?.text||'';
 let parsed=null;
 try{parsed=JSON.parse(txt.replace(/```json?|```/g,'').trim());}catch(e){const m=txt.match(/\{[\s\S]*\}/);if(m)try{parsed=JSON.parse(m[0]);}catch(e2){}}
 if(parsed&&parsed.addr){
+// Número: el del rotulador si la IA lo vio, si no el siguiente libre
+const numManual=parsed.numero_manual!=null&&!isNaN(Number(parsed.numero_manual))?Number(parsed.numero_manual):null;
+if(numManual){slot.num=numManual;slot._marcado=true;}
+else{_cargaNum++;slot.num=_cargaNum;slot._marcado=false;}
 slot.name=parsed.name||'Particular';slot.addr=parsed.addr;slot.codigo=parsed.codigo||null;slot._leyendo=false;
+const ult2=document.getElementById('carga-ultimo');
+if(ult2){
+if(slot._marcado)ult2.innerHTML=`✓ Paquete #${slot.num} (número leído del rotulador) — ${slot.addr}`;
+else ult2.innerHTML=`📦 Paquete #${slot.num} — ESCRÍBELO en el paquete · ${slot.addr}`;
+}
 }else{
 slot._error=true;slot._leyendo=false;
 }
@@ -2606,7 +2617,7 @@ toast(`✅ Parada #${parada.n} — ${parada.addr}`,'ok');
 
 function buscarPorCodigo(codigo){
 const limpio=codigo.replace(/\s/g,'');
-// 1) Coincidencia exacta
+// 1) Coincidencia exacta del código de seguimiento
 let parada=ruta.paradas.find(p=>p.codigo&&p.codigo.replace(/\s/g,'')===limpio);
 // 2) Coincidencia parcial — uno contiene al otro (prefijos de transportista)
 if(!parada)parada=ruta.paradas.find(p=>p.codigo&&(p.codigo.replace(/\s/g,'').includes(limpio)||limpio.includes(p.codigo.replace(/\s/g,''))));
@@ -2620,6 +2631,15 @@ resaltarParada(parada);
 } else {
 toast(`Código ${limpio.slice(-10)} no está en tu ruta — prueba "Leer dirección (IA)"`,'err');
 }
+}
+
+// Buscar parada por el NÚMERO escrito en el paquete (1, 2, 3...)
+function buscarPorNumeroPaquete(num){
+const n=Number(num);
+if(!n)return false;
+const parada=ruta.paradas.find(p=>Number(p.paquete)===n||Number(p.n)===n);
+if(parada){resaltarParada(parada);return true;}
+return false;
 }
 
 // Leer la dirección de la etiqueta con IA (para paquetes sin código en la ruta)
