@@ -187,7 +187,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 <div id="login">
   <div class="lcard">
     <div class="llogo">NEXUS</div>
-    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v1845</span></div>
+    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v1850</span></div>
     <div class="lline"></div>
     <label class="llbl">Usuario</label>
     <input class="linp" id="ui" type="text" placeholder="tu usuario" autocapitalize="none" autocorrect="off">
@@ -484,7 +484,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
             var r=await sb.storage.from('cierres').upload(fn,c,{contentType:'image/jpeg',upsert:true});
             if(!r.error){url=sb.storage.from('cierres').getPublicUrl(fn).data.publicUrl;}
           }
-          await sb.from('cierres').insert({driver:me.name,parada_n:n,addr:p?p.addr:'',foto_url:url,nombre_cliente:nom||null,dni_cliente:dni||null});
+          await sb.from('cierres').insert({driver:me.name,parada_n:n,addr:p?p.addr:'',foto_url:url,nombre_cliente:nom||null,dni_cliente:dni||null,empresa_id:me.empresa_id||null});
         }catch(e){console.error(e);}
       })()">✓ Confirmar</button>
     </div>
@@ -661,7 +661,7 @@ rutaId=existente[0].id;
 ruta._rutaId=rutaId;
 } else {
 
-const{data:nuevaRuta}=await sb.from('rutas').insert({driver:me.name,fecha:hoy,empresa}).select().single();
+const{data:nuevaRuta}=await sb.from('rutas').insert({driver:me.name,fecha:hoy,empresa,empresa_id:me.empresa_id||null}).select().single();
 if(nuevaRuta){rutaId=nuevaRuta.id;ruta._rutaId=rutaId;}
 }
 }
@@ -704,7 +704,7 @@ cargarTodasParadasGestor();
 async function cargarTodasParadasGestor(){
 const hoy=new Date().toISOString().split('T')[0];
 
-const{data:usuarios}=await sb.from('usuarios').select('*').eq('activo',true).neq('role','manager');
+const{data:usuarios}=await sb.from('usuarios').select('*').eq('activo',true).neq('role','manager').eq('empresa_id',me.empresa_id);
 if(usuarios){
 
 usuarios.forEach(d=>{
@@ -717,7 +717,7 @@ for(let i=RUTAS.length-1;i>=0;i--){
 if(!usuarios.find(u=>u.name===RUTAS[i].driver))RUTAS.splice(i,1);
 }
 }
-const{data:rutas_hoy}=await sb.from('rutas').select('*').eq('fecha',hoy);
+const{data:rutas_hoy}=await sb.from('rutas').select('*').eq('fecha',hoy).eq('empresa_id',me.empresa_id);
 for(const r of RUTAS){
 if(!rutas_hoy||!rutas_hoy.length){r.paradas=[];continue;}
 const rutaDB=rutas_hoy.find(x=>x.driver===r.driver);
@@ -751,7 +751,7 @@ btn.textContent='ENTRAR';btn.disabled=false;return;
 me={...data};
 localStorage.setItem('nexus_session',JSON.stringify({username:me.username,password:me.password}));
 if(me.role==='manager'){
-const{data:drivers}=await sb.from('usuarios').select('*').eq('activo',true).neq('role','manager');
+const{data:drivers}=await sb.from('usuarios').select('*').eq('activo',true).neq('role','manager').eq('empresa_id',me.empresa_id);
 if(drivers){
 RUTAS.length=0;
 drivers.forEach(d=>{RUTAS.push({driver:d.name,did:d.did||0,color:d.color||'#00d4ff',paradas:[]});});
@@ -795,7 +795,7 @@ return false;
 }
 me={...data};
 if(me.role==='manager'){
-const{data:drivers}=await sb.from('usuarios').select('*').eq('activo',true).neq('role','manager');
+const{data:drivers}=await sb.from('usuarios').select('*').eq('activo',true).neq('role','manager').eq('empresa_id',me.empresa_id);
 if(drivers){
 RUTAS.length=0;
 drivers.forEach(d=>{RUTAS.push({driver:d.name,did:d.did||0,color:d.color||'#00d4ff',paradas:[]});});
@@ -1847,7 +1847,7 @@ await cargarCierres();
 }
 
 async function renderFiltroDrivers(){
-const{data:drivers}=await sb.from('usuarios').select('name').eq('role','driver').eq('activo',true);
+const{data:drivers}=await sb.from('usuarios').select('name').eq('role','driver').eq('activo',true).eq('empresa_id',me.empresa_id);
 const frow=document.getElementById('frow-cierres');
 frow.innerHTML=`<div class="ftb on" onclick="setCierreDriver('all',this)">Todos</div>`+
 (drivers||[]).map(d=>`<div class="ftb" onclick="setCierreDriver('${d.name}',this)">${d.name}</div>`).join('');
@@ -1865,7 +1865,7 @@ function buscarCierres(q){cierresBusq=q.toLowerCase();cargarCierres();}
 async function cargarCierres(){
 const list=document.getElementById('cierres-list');
 list.innerHTML='<div class="empty">Cargando...</div>';
-let query=sb.from('cierres').select('*').order('created_at',{ascending:false}).limit(100);
+let query=sb.from('cierres').select('*').eq('empresa_id',me.empresa_id).order('created_at',{ascending:false}).limit(100);
 if(me.role==='driver') query=query.eq('driver',me.name);
 else if(me.role==='supervisor'){
 const _sn=(me.name||'').toLowerCase();
@@ -2144,7 +2144,8 @@ const{error:insErr}=await sb.from('cierres').insert({
 driver:me.name,parada_n:n,addr:parada?parada.addr:'',
 foto_url:fotoUrl,nombre_cliente:nombre||null,dni_cliente:dni||null,
 ruta_tipo:window._cpRuta||'principal',
-preferente:window._cpPreferente||false
+preferente:window._cpPreferente||false,
+empresa_id:me.empresa_id||null
 });
 if(t){
 if(insErr){t.textContent='Error: '+insErr.message;t.className='toast err show';}
@@ -2184,7 +2185,8 @@ if(!upErr){fotoUrl=sb.storage.from('cierres').getPublicUrl(fn).data.publicUrl;}
 }
 await sb.from('cierres').insert({
 driver:me.name,parada_n:n,addr:parada?parada.addr:'',
-foto_url:fotoUrl,nombre_cliente:nombre||null,dni_cliente:dni||null
+foto_url:fotoUrl,nombre_cliente:nombre||null,dni_cliente:dni||null,
+empresa_id:me.empresa_id||null
 });
 
 if(document.getElementById('s-cierres').classList.contains('on'))cargarCierres();
@@ -2227,7 +2229,7 @@ const parada=ruta.paradas.find(p=>Number(p.n)===Number(n));
 const labels={ausente:'🚫 Ausente',cambio_domicilio:'🏠 Cambio domicilio',rehusado:'❌ Rehusado'};
 cerrarIncidencia();
 if(parada){parada.status='failed';renderLista();if(gmap1)renderMarkers1();actualizarEstadoDB(parada,'failed');toast((labels[tipo]||tipo)+' — Parada #'+n,'err');}
-try{await sb.from('cierres').insert({driver:me.name,parada_n:n,addr:parada?parada.addr:'',nombre_cliente:(labels[tipo]||tipo)+(nota?' — '+nota:''),dni_cliente:null,foto_url:null});}catch(e){console.error(e);}
+try{await sb.from('cierres').insert({driver:me.name,parada_n:n,addr:parada?parada.addr:'',nombre_cliente:(labels[tipo]||tipo)+(nota?' — '+nota:''),dni_cliente:null,foto_url:null,empresa_id:me.empresa_id||null});}catch(e){console.error(e);}
 }
 
 let geoInterval=null;
@@ -2282,7 +2284,7 @@ if(!fechaInput.value) fechaInput.value=hoy;
 
 const sel=document.getElementById('hist-driver');
 if(sel.options.length<=1){
-const{data}=await sb.from('usuarios').select('name').eq('activo',true).neq('role','manager');
+const{data}=await sb.from('usuarios').select('name').eq('activo',true).neq('role','manager').eq('empresa_id',me.empresa_id);
 if(data) data.forEach(u=>{
 const o=document.createElement('option');
 o.value=u.name;o.textContent=u.name;
@@ -2299,7 +2301,7 @@ const list=document.getElementById('hist-list');
 if(!fecha){list.innerHTML='<div class="empty">Selecciona una fecha</div>';return;}
 list.innerHTML='<div class="empty">Cargando...</div>';
 
-let query=sb.from('rutas').select('*').eq('fecha',fecha).order('created_at',{ascending:true});
+let query=sb.from('rutas').select('*').eq('fecha',fecha).eq('empresa_id',me.empresa_id).order('created_at',{ascending:true});
 if(driver!=='all') query=query.eq('driver',driver);
 const{data:rutas}=await query;
 
