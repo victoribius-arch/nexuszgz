@@ -188,7 +188,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 <div id="login">
   <div class="lcard">
     <div class="llogo">NEXUS</div>
-    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v2036</span></div>
+    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v2042</span></div>
     <div class="lline"></div>
     <label class="llbl">Usuario</label>
     <input class="linp" id="ui" type="text" placeholder="tu usuario" autocapitalize="none" autocorrect="off">
@@ -2445,6 +2445,8 @@ body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:200,messages:[{role:'u
 clearTimeout(timer);
 const data=await resp.json();
 const txt=data.content?.find(c=>c.type==='text')?.text||'';
+// === DEPURACIÓN TEMPORAL: ver qué devuelve la IA ===
+alert('IA respondió:\n\n'+(txt||JSON.stringify(data).slice(0,300)));
 let parsed=null;
 try{parsed=JSON.parse(txt.replace(/```json?|```/g,'').trim());}catch(e){const m=txt.match(/\{[\s\S]*\}/);if(m)try{parsed=JSON.parse(m[0]);}catch(e2){}}
 if(parsed&&parsed.addr){
@@ -2452,7 +2454,7 @@ slot.name=parsed.name||'Particular';slot.addr=parsed.addr;slot.codigo=parsed.cod
 }else{
 slot._error=true;slot._leyendo=false;
 }
-}catch(e){slot._error=true;slot._leyendo=false;}
+}catch(e){slot._error=true;slot._leyendo=false;alert('Error al leer: '+e.message);}
 _cargaPendientes--;
 // Actualizar contador de errores si los hay
 const errs=_cargaPaquetes.filter(p=>p._error).length;
