@@ -188,7 +188,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 <div id="login">
   <div class="lcard">
     <div class="llogo">NEXUS</div>
-    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v2209</span></div>
+    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v2214</span></div>
     <div class="lline"></div>
     <label class="llbl">Usuario</label>
     <input class="linp" id="ui" type="text" placeholder="tu usuario" autocapitalize="none" autocorrect="off">
@@ -2649,14 +2649,14 @@ if(!video||!video.videoWidth){toast('Cámara no lista todavía','err');return;}
 const resultEl=document.getElementById('scanner-result');
 resultEl.textContent='🔍 Leyendo etiqueta con IA...';
 // Capturar el frame PRIMERO, mientras el vídeo sigue vivo
+// Usar la imagen completa (sin recortar) para no dejar fuera la dirección
 const vw=video.videoWidth,vh=video.videoHeight;
-const cropX=vw*0.05,cropY=vh*0.20,cropW=vw*0.9,cropH=vh*0.6;
-const maxW=900;
-const scale=Math.min(1,maxW/cropW);
+const maxW=1280;
+const scale=Math.min(1,maxW/vw);
 const canvas=document.createElement('canvas');
-canvas.width=Math.round(cropW*scale);canvas.height=Math.round(cropH*scale);
-canvas.getContext('2d').drawImage(video,cropX,cropY,cropW,cropH,0,0,canvas.width,canvas.height);
-const b64=canvas.toDataURL('image/jpeg',0.7).split(',')[1];
+canvas.width=Math.round(vw*scale);canvas.height=Math.round(vh*scale);
+canvas.getContext('2d').drawImage(video,0,0,vw,vh,0,0,canvas.width,canvas.height);
+const b64=canvas.toDataURL('image/jpeg',0.82).split(',')[1];
 // Ahora sí, parar el lector de código (ya tenemos la foto)
 if(_scannerInterval){clearInterval(_scannerInterval);_scannerInterval=null;}
 if(window._codeReader){try{window._codeReader.reset();}catch(e){}}
@@ -2667,7 +2667,7 @@ const timer=setTimeout(()=>ctrl.abort(),15000);
 const resp=await fetch(WORKER_URL,{method:'POST',signal:ctrl.signal,headers:{'Content-Type':'application/json'},
 body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:200,messages:[{role:'user',content:[
 {type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},
-{type:'text',text:'Lee la etiqueta de envío. Extrae la dirección de entrega (calle y número). Devuelve SOLO JSON: {"addr":"calle y número o null","codigo":"número de seguimiento o null"}'}
+{type:'text',text:'Mira esta imagen de un paquete o etiqueta de envío. Busca y extrae la dirección de entrega (calle y número, y CP si se ve). Si ves cualquier texto que parezca una dirección de calle, devuélvelo aunque esté incompleto. Devuelve SOLO JSON: {"addr":"calle y número o null","codigo":"número de seguimiento o null"}'}
 ]}]})});
 clearTimeout(timer);
 const data=await resp.json();
