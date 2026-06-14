@@ -187,7 +187,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 <div id="login">
   <div class="lcard">
     <div class="llogo">NEXUS</div>
-    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v1841</span></div>
+    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v1845</span></div>
     <div class="lline"></div>
     <label class="llbl">Usuario</label>
     <input class="linp" id="ui" type="text" placeholder="tu usuario" autocapitalize="none" autocorrect="off">
@@ -1711,8 +1711,10 @@ if(gmap2){renderMap2Markers();dibujarRepartidoresEnMapa();}
 async function renderEquipo(){
 const list=document.getElementById('equipo-list');
 list.innerHTML='<div class="empty">Cargando...</div>';
-const{data:drivers}=await sb.from('usuarios').select('*').eq('role','driver').order('name');
-if(!drivers||!drivers.length){list.innerHTML='<div class="empty">No hay repartidores</div>';return;}
+let q=sb.from('usuarios').select('*').neq('id',me.id).order('role').order('name');
+if(me.empresa_id)q=q.eq('empresa_id',me.empresa_id);
+const{data:drivers}=await q;
+if(!drivers||!drivers.length){list.innerHTML='<div class="empty">No hay trabajadores</div>';return;}
 list.innerHTML=drivers.map(d=>{
 let pruebaInfo='';
 if(d.prueba&&d.prueba_fin){
@@ -1722,11 +1724,14 @@ const finTxt=new Date(d.prueba_fin).toLocaleString('es-ES',{day:'2-digit',month:
 pruebaInfo=`<div style="font-size:11px;font-weight:700;margin-top:3px;color:${caducada?'var(--red)':'var(--orange)'};">${caducada?'⏰ PRUEBA CADUCADA':'🎁 Prueba hasta '+finTxt}</div>`;
 }
 const modoTag=d.modo_simple?'<span style="font-size:10px;background:rgba(37,99,235,.12);color:var(--accent);padding:1px 6px;border-radius:5px;margin-left:4px;">simple</span>':'';
+const rolNombre=d.role==='manager'?'Gerente':d.role==='supervisor'?'Supervisor':'Repartidor';
+const rolColor=d.role==='manager'?'#8b5cf6':d.role==='supervisor'?'#2563eb':'#64748b';
+const rolTag=`<span style="font-size:10px;background:${rolColor}22;color:${rolColor};padding:1px 7px;border-radius:5px;font-weight:700;">${rolNombre}</span>`;
 return `
 <div style="background:var(--card);border:1px solid ${d.activo?'var(--border)':'var(--red)'};border-radius:12px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;">
 <div class="tav" style="width:36px;height:36px;font-size:15px;flex-shrink:0;background:${d.color||'var(--accent)'}">${d.init||d.name[0]}</div>
 <div style="flex:1">
-<div style="font-weight:700;font-size:14px">${d.name}${modoTag} ${!d.activo?'<span style="color:var(--red);font-size:11px">DESACTIVADO</span>':''}</div>
+<div style="font-weight:700;font-size:14px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">${d.name} ${rolTag}${modoTag} ${!d.activo?'<span style="color:var(--red);font-size:11px">DESACTIVADO</span>':''}</div>
 <div style="font-size:12px;color:var(--text2)">Usuario: <b style="color:var(--accent)">${d.username}</b></div>
 <div style="font-size:12px;color:var(--text2)">Contraseña: <b>${d.password}</b></div>
 ${pruebaInfo}
