@@ -188,7 +188,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 <div id="login">
   <div class="lcard">
     <div class="llogo">NEXUS</div>
-    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v2125</span></div>
+    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v2132</span></div>
     <div class="lline"></div>
     <label class="llbl">Usuario</label>
     <input class="linp" id="ui" type="text" placeholder="tu usuario" autocapitalize="none" autocorrect="off">
@@ -1041,12 +1041,18 @@ const destination=grupo[grupo.length-1].addr+', Zaragoza, España';
 const waypoints=grupo.slice(1,-1).map(p=>encodeURIComponent(p.addr+', Zaragoza, España')).join('|');
 const resp=await fetch(`${WORKER_URL}/directions?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&waypoints=${waypoints}`);
 const data=await resp.json();
+if(data.status!=='OK')console.warn('Google Directions status:',data.status,data.error_message||'');
 if(data.status==='OK'&&data.routes&&data.routes[0]){
-const order=data.routes[0].waypoint_order;
+const order=data.routes[0].waypoint_order||[];
 const middle=grupo.slice(1,-1);
-const orden=[grupo[0],...order.map(i=>middle[i]),grupo[grupo.length-1]].filter(Boolean);
+// Reconstruir el orden óptimo de los waypoints intermedios
+const mediasOrdenadas=order.map(i=>middle[i]).filter(Boolean);
+// Si Google no devolvió todos los índices, añadir los que falten en su orden original
+middle.forEach(p=>{if(!mediasOrdenadas.find(r=>r&&r.n===p.n))mediasOrdenadas.push(p);});
+const orden=[grupo[0],...mediasOrdenadas,grupo[grupo.length-1]].filter(Boolean);
+// Garantía final: ninguna parada del grupo se pierde
 grupo.forEach(p=>{if(!orden.find(r=>r.n===p.n))orden.push(p);});
-return{orden,legs:data.routes[0].legs};
+return{orden,legs:data.routes[0].legs||[]};
 }
 return null;
 }
