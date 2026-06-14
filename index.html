@@ -187,7 +187,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 <div id="login">
   <div class="lcard">
     <div class="llogo">NEXUS</div>
-    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v1905</span></div>
+    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v1913</span></div>
     <div class="lline"></div>
     <label class="llbl">Usuario</label>
     <input class="linp" id="ui" type="text" placeholder="tu usuario" autocapitalize="none" autocorrect="off">
@@ -2610,7 +2610,6 @@ body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:300,messages:[
 ]}]})});
 const data=await resp.json();
 const txt=data.content?.find(c=>c.type==='text')?.text||'';
-console.log('IA leyó (dirección):', txt);
 let parsed=null;
 try{parsed=JSON.parse(txt.replace(/```json?|```/g,'').trim());}catch(e){const m=txt.match(/\{[\s\S]*\}/);if(m)try{parsed=JSON.parse(m[0]);}catch(e2){}}
 // Si leyó un código, probar primero por código
@@ -2634,17 +2633,28 @@ return String(s).toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').r
 function buscarPorDireccion(addr){
 const objetivo=normTxt(addr);
 const numM=String(addr).match(/\d+/);
+const numObj=numM?numM[0]:null;
 let mejor=null,mejorScore=0;
 ruta.paradas.forEach(p=>{
 const pn=normTxt(p.addr);
-const palabras=objetivo.split(' ').filter(w=>w.length>2);
-if(!palabras.length)return;
-let score=palabras.filter(w=>pn.includes(w)).length/palabras.length;
-if(numM&&new RegExp('\\b'+numM[0]+'\\b').test(pn))score+=0.3;
+const palObj=objetivo.split(' ').filter(w=>w.length>2);
+const palPar=pn.split(' ').filter(w=>w.length>2);
+if(!palObj.length||!palPar.length)return;
+// Coincidencia de palabras en ambos sentidos (más flexible)
+const comunes=palObj.filter(w=>palPar.some(x=>x.includes(w)||w.includes(x))).length;
+let score=comunes/Math.max(palObj.length,palPar.length);
+// El número de portal es lo más identificativo: mucho peso
+const numPar=(p.addr.match(/\d+/)||[])[0];
+if(numObj&&numPar&&numObj===numPar)score+=0.5;
+else if(numObj&&numPar&&numObj!==numPar)score-=0.2; // número distinto penaliza
 if(score>mejorScore){mejorScore=score;mejor=p;}
 });
-if(mejor&&mejorScore>=0.5){
+if(mejor&&mejorScore>=0.35){
 resaltarParada(mejor);
+}else if(mejor){
+// Aunque no llegue al umbral, ofrecer la más parecida
+resaltarParada(mejor);
+toast(`Parada más parecida a "${addr}" — verifica que es correcta`,'');
 }else{
 toast(`"${addr}" no coincide con ninguna parada de tu ruta`,'err');
 }
