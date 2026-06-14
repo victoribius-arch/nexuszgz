@@ -188,7 +188,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 <div id="login">
   <div class="lcard">
     <div class="llogo">NEXUS</div>
-    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v2158</span></div>
+    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v2209</span></div>
     <div class="lline"></div>
     <label class="llbl">Usuario</label>
     <input class="linp" id="ui" type="text" placeholder="tu usuario" autocapitalize="none" autocorrect="off">
@@ -2648,19 +2648,18 @@ const video=document.getElementById('scanner-video');
 if(!video||!video.videoWidth){toast('Cámara no lista todavía','err');return;}
 const resultEl=document.getElementById('scanner-result');
 resultEl.textContent='🔍 Leyendo etiqueta con IA...';
-// Pausar el lector de código para liberar el frame del vídeo
-if(window._codeReader){try{window._codeReader.reset();}catch(e){}}
-if(_scannerInterval){clearInterval(_scannerInterval);_scannerInterval=null;}
-await new Promise(r=>setTimeout(r,150)); // dar tiempo a que el frame quede disponible
-// Recortar al recuadro central y comprimir fuerte (rápido de enviar)
+// Capturar el frame PRIMERO, mientras el vídeo sigue vivo
 const vw=video.videoWidth,vh=video.videoHeight;
 const cropX=vw*0.05,cropY=vh*0.20,cropW=vw*0.9,cropH=vh*0.6;
-const maxW=800;
+const maxW=900;
 const scale=Math.min(1,maxW/cropW);
 const canvas=document.createElement('canvas');
 canvas.width=Math.round(cropW*scale);canvas.height=Math.round(cropH*scale);
 canvas.getContext('2d').drawImage(video,cropX,cropY,cropW,cropH,0,0,canvas.width,canvas.height);
-const b64=canvas.toDataURL('image/jpeg',0.55).split(',')[1];
+const b64=canvas.toDataURL('image/jpeg',0.7).split(',')[1];
+// Ahora sí, parar el lector de código (ya tenemos la foto)
+if(_scannerInterval){clearInterval(_scannerInterval);_scannerInterval=null;}
+if(window._codeReader){try{window._codeReader.reset();}catch(e){}}
 try{
 // Límite de 12s para que no te tenga esperando si la red va lenta
 const ctrl=new AbortController();
