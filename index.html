@@ -187,7 +187,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 <div id="login">
   <div class="lcard">
     <div class="llogo">NEXUS</div>
-    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v1913</span></div>
+    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v1922</span></div>
     <div class="lline"></div>
     <label class="llbl">Usuario</label>
     <input class="linp" id="ui" type="text" placeholder="tu usuario" autocapitalize="none" autocorrect="off">
@@ -2598,18 +2598,24 @@ const video=document.getElementById('scanner-video');
 if(!video||!video.videoWidth){toast('Cámara no lista todavía','err');return;}
 const resultEl=document.getElementById('scanner-result');
 resultEl.textContent='🔍 Leyendo etiqueta con IA...';
+// Recortar al recuadro central y comprimir (más rápido de enviar)
+const vw=video.videoWidth,vh=video.videoHeight;
+const cropX=vw*0.05,cropY=vh*0.20,cropW=vw*0.9,cropH=vh*0.6;
+const maxW=1000;
+const scale=Math.min(1,maxW/cropW);
 const canvas=document.createElement('canvas');
-canvas.width=video.videoWidth;canvas.height=video.videoHeight;
-canvas.getContext('2d').drawImage(video,0,0);
-const b64=canvas.toDataURL('image/jpeg',0.85).split(',')[1];
+canvas.width=cropW*scale;canvas.height=cropH*scale;
+canvas.getContext('2d').drawImage(video,cropX,cropY,cropW,cropH,0,0,canvas.width,canvas.height);
+const b64=canvas.toDataURL('image/jpeg',0.7).split(',')[1];
 try{
 const resp=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},
-body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:300,messages:[{role:'user',content:[
+body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:200,messages:[{role:'user',content:[
 {type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},
-{type:'text',text:'Lee la etiqueta de envío de este paquete. Extrae la dirección de entrega visible. Devuelve SOLO JSON sin nada más: {"addr":"calle y número que veas o null","codigo":"número de seguimiento si lo ves o null"}'}
+{type:'text',text:'Lee la etiqueta de envío. Extrae la dirección de entrega (calle y número). Devuelve SOLO JSON: {"addr":"calle y número o null","codigo":"número de seguimiento o null"}'}
 ]}]})});
 const data=await resp.json();
 const txt=data.content?.find(c=>c.type==='text')?.text||'';
+console.log('IA leyó (dirección):', txt);
 let parsed=null;
 try{parsed=JSON.parse(txt.replace(/```json?|```/g,'').trim());}catch(e){const m=txt.match(/\{[\s\S]*\}/);if(m)try{parsed=JSON.parse(m[0]);}catch(e2){}}
 // Si leyó un código, probar primero por código
