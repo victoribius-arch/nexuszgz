@@ -187,7 +187,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 <div id="login">
   <div class="lcard">
     <div class="llogo">NEXUS</div>
-    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v1900</span></div>
+    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v1905</span></div>
     <div class="lline"></div>
     <label class="llbl">Usuario</label>
     <input class="linp" id="ui" type="text" placeholder="tu usuario" autocapitalize="none" autocorrect="off">
@@ -2610,6 +2610,7 @@ body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:300,messages:[
 ]}]})});
 const data=await resp.json();
 const txt=data.content?.find(c=>c.type==='text')?.text||'';
+console.log('IA leyó (dirección):', txt);
 let parsed=null;
 try{parsed=JSON.parse(txt.replace(/```json?|```/g,'').trim());}catch(e){const m=txt.match(/\{[\s\S]*\}/);if(m)try{parsed=JSON.parse(m[0]);}catch(e2){}}
 // Si leyó un código, probar primero por código
