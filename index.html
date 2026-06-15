@@ -188,7 +188,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 <div id="login">
   <div class="lcard">
     <div class="llogo">NEXUS</div>
-    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v2218</span></div>
+    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v0900</span></div>
     <div class="lline"></div>
     <label class="llbl">Usuario</label>
     <input class="linp" id="ui" type="text" placeholder="tu usuario" autocapitalize="none" autocorrect="off">
@@ -1021,9 +1021,18 @@ else if(mins>13*60){color='#f59e0b';bg='rgba(245,158,11,.15)';icon='⚡';}
 }
 etaTag=`<span class="tag" style="background:${bg};color:${color};font-weight:700;">${icon} ${s.eta}</span>`;
 }
-el.innerHTML=`<div class="sibar"></div><div class="sinum"><div class="nc">${s.n}</div></div>
+// Indicador de geolocalización: verde si localizada bien, rojo si no, gris si aún cargando
+let geoTag='';
+if(s.lat&&s.lng&&!s._aprox){
+geoTag='<span class="tag" style="background:rgba(22,163,74,.15);color:var(--green);font-weight:700;">📍 Localizada</span>';
+}else if(s._aprox){
+geoTag='<span class="tag" style="background:rgba(220,38,38,.15);color:var(--red);font-weight:700;">📍 Sin localizar</span>';
+}else if(s.lat===null&&s.lng===null){
+geoTag='<span class="tag" style="background:rgba(148,163,184,.15);color:var(--text3);font-weight:700;">📍 Localizando…</span>';
+}
+el.innerHTML=`<div class="sibar" style="${s.lat&&s.lng&&!s._aprox?'background:var(--green);':s._aprox?'background:var(--red);':''}"></div><div class="sinum"><div class="nc">${s.n}</div></div>
 <div class="sibody"><div class="siname">${s.name}${s.paquete?`<span style="margin-left:6px;background:var(--orange);color:#000;font-size:11px;font-weight:800;padding:2px 8px;border-radius:8px;">📦 Paq. ${s.paquete}</span>`:''}</div><div class="siaddr">${s.addr}</div>
-<div class="sitags"><span class="tag ts">Saca ${s.saco}</span><span class="tag tb2">${s.bultos}b</span>${etaTag}${tag}${s.codigo?`<span class="tag" style="background:rgba(251,146,60,.1);color:var(--orange);font-family:monospace;font-size:9px;">${s.codigo.slice(-8)}</span>`:''}</div></div>${acts}`;
+<div class="sitags"><span class="tag ts">Saca ${s.saco}</span><span class="tag tb2">${s.bultos}b</span>${geoTag}${etaTag}${tag}${s.codigo?`<span class="tag" style="background:rgba(251,146,60,.1);color:var(--orange);font-family:monospace;font-size:9px;">${s.codigo.slice(-8)}</span>`:''}</div></div>${acts}`;
 el.addEventListener('click',()=>{if(_modoBorrar)toggleSeleccion(s.n);else selStop(s.n);});
 return el;
 }
@@ -1571,6 +1580,55 @@ return result.map((s,i)=>({...s,n:i+1}));
 }
 
 async function cargarRuta(){
+if(!extractedStops.length)return;
+const btn=document.querySelector('#rarea .lbtn2');
+if(btn){btn.disabled=true;btn.textContent='Cargando...';}
+const sacas=['A','B','C','D','E'];
+
+const paradas=extractedStops.map((s,i)=>({
+n:s.n,name:s.name,addr:s.addr,
+saco:sacas[Math.floor(i/Math.max(1,extractedStops.length/5))%5],
+bultos:s.bultos||1,status:'pending',lat:null,lng:null,
+codigo:s.codigo||null,paquete:s.paquete||null
+}));
+
+// 1) AÑADIR YA a la lista (sin esperar al geocoding) — carga instantánea
+ruta.paradas.push(...paradas);
+renderLista();
+toast(`✓ ${paradas.length} paradas cargadas — localizando en segundo plano...`,'ok');
+
+// Limpiar la pantalla de escaneo enseguida
+extractedStops=[];uploadFiles=[];
+const _pg=document.getElementById('pgrid');if(_pg)_pg.innerHTML='';
+const _ra=document.getElementById('rarea');if(_ra)_ra.innerHTML='';
+if(btn){btn.disabled=false;btn.textContent='ANALIZAR CON IA';}
+
+// 2) GUARDAR en BD ya (sin coordenadas aún), para no perder nada
+await guardarParadasEnDB(paradas);
+
+// 3) GEOLOCALIZAR EN SEGUNDO PLANO — va actualizando mapa y BD según termina
+(async()=>{
+const batchSize=5;
+let hechas=0;
+for(let i=0;i<paradas.length;i+=batchSize){
+const chunk=paradas.slice(i,i+batchSize);
+await Promise.all(chunk.map(async p=>{
+try{
+const coords=await geocodeAddr(p.addr);
+p.lat=coords.lat;p.lng=coords.lng;p._aprox=coords._aprox||false;
+// Actualizar la parada en la BD con sus coordenadas
+if(ruta._rutaId)await sb.from('paradas').update({lat:p.lat,lng:p.lng}).eq('ruta_id',ruta._rutaId).eq('n',p.n);
+}catch(e){}
+hechas++;
+}));
+if(gmap1)renderMarkers1();
+renderLista();
+}
+toast(`📍 ${hechas} paradas localizadas en el mapa`,'ok');
+})();
+}
+
+async function cargarRutaVIEJA(){
 if(!extractedStops.length)return;
 const btn=document.querySelector('#rarea .lbtn2');
 if(btn){btn.disabled=true;btn.textContent='Localizando calles...';}
