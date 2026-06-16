@@ -188,7 +188,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 <div id="login">
   <div class="lcard">
     <div class="llogo">NEXUS</div>
-    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v0920</span></div>
+    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v1445</span></div>
     <div class="lline"></div>
     <label class="llbl">Usuario</label>
     <input class="linp" id="ui" type="text" placeholder="tu usuario" autocapitalize="none" autocorrect="off">
@@ -639,6 +639,26 @@ if(paradas_db&&paradas_db.length){
 ruta.paradas=paradas_db.map(p=>({n:p.n,name:p.name,addr:p.addr,saco:p.saco,bultos:p.bultos,status:p.status,lat:p.lat,lng:p.lng,_id:p.id,codigo:p.codigo_seguimiento,paquete:p.paquete}));
 renderLista();if(gmap1)renderMarkers1();
 toast(`✓ ${paradas_db.length} paradas cargadas del día`,'ok');
+
+// Geolocalizar las paradas que no tengan coordenadas (por si el geocoding no terminó antes)
+const sinCoords=ruta.paradas.filter(p=>!p.lat||!p.lng);
+if(sinCoords.length){
+toast(`📍 Localizando ${sinCoords.length} paradas...`,'');
+(async()=>{
+const batch=5;
+for(let i=0;i<sinCoords.length;i+=batch){
+await Promise.all(sinCoords.slice(i,i+batch).map(async p=>{
+try{
+const coords=await geocodeAddr(p.addr);
+p.lat=coords.lat;p.lng=coords.lng;p._aprox=coords._aprox||false;
+await sb.from('paradas').update({lat:p.lat,lng:p.lng}).eq('ruta_id',rutaId).eq('n',p.n);
+}catch(e){}
+}));
+renderLista();if(gmap1)renderMarkers1();
+}
+toast(`📍 Paradas localizadas en el mapa`,'ok');
+})();
+}
 }
 }
 
@@ -864,7 +884,15 @@ document.querySelectorAll('.bni').forEach(x=>x.classList.remove('on'));
 document.querySelectorAll('.scr').forEach(x=>x.classList.remove('on'));
 el.classList.add('on');
 document.getElementById(id).classList.add('on');
-if(id==='s-mapa') loadGMaps();
+if(id==='s-mapa'){
+loadGMaps();
+// Repintar pines al entrar (las paradas pueden haber llegado después de crear el mapa)
+const pintarMapa=()=>{
+if(gmReady&&gmap1){renderMarkers1();}
+else{setTimeout(pintarMapa,400);}
+};
+setTimeout(pintarMapa,200);
+}
 if(id==='s-gestor'){
 renderGestor();
 loadGMaps();
@@ -1213,7 +1241,9 @@ markers1.forEach(m=>m.setMap(null));
 markers1=[];
 const bounds=new google.maps.LatLngBounds();
 ruta.paradas.forEach((s,i)=>{
-const c=s.lat&&s.lng?{lat:s.lat,lng:s.lng}:coord(i);
+// No pintar paradas sin coordenadas reales (evita que se amontonen en un punto falso)
+if(!s.lat||!s.lng)return;
+const c={lat:s.lat,lng:s.lng};
 const isSel=selPin===s.n;
 const col=s.status==='delivered'?'#10b981':s.status==='failed'?'#f43f5e':'#00d4ff';
 const tc=s.status==='failed'?'#fff':'#000';
@@ -1224,7 +1254,7 @@ m.addListener('click',()=>selStop(s.n));
 markers1.push(m);
 bounds.extend(c);
 });
-if(!selPin)gmap1.fitBounds(bounds,{top:60,right:20,bottom:140,left:20});
+if(!selPin&&markers1.length)gmap1.fitBounds(bounds,{top:60,right:20,bottom:140,left:20});
 }
 
 function showMPop(s){
