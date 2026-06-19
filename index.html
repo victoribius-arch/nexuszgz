@@ -985,7 +985,7 @@ ${lista}
 Ordénalas para minimizar el recorrido total, teniendo en cuenta las calles de Zaragoza, sentidos únicos y zonas.
 Devuelve SOLO un array JSON con los números de parada en el orden óptimo: [3,1,5,2,4]`}];
 const resp=await fetch(WORKER_URL,{method:'POST',headers:workerHeaders(),
-body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:500,messages:[{role:'user',content}]})});
+body:JSON.stringify({model:'route',max_tokens:500,messages:[{role:'user',content}]})});
 const data=await resp.json();
 const txt=data.content?.find(c=>c.type==='text')?.text||'';
 let orden=null;
@@ -1186,7 +1186,7 @@ const content=[
 ];
 try{
 const resp=await fetch(WORKER_URL,{method:'POST',headers:workerHeaders(),
-body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:4000,messages:[{role:'user',content}]})});
+body:JSON.stringify({model:'vision',max_tokens:4000,messages:[{role:'user',content}]})});
 if(!resp.ok)return [];
 const respText=await resp.text();
 let data;
