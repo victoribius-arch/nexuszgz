@@ -306,6 +306,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
         </div>
       </div>
 
+      <button onclick="abrirCargaCamara()" style="width:100%;padding:16px;border:none;border-radius:14px;background:var(--accent);color:#fff;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:8px;">
+        📷 Escanear paquetes con la cámara
+      </button>
+      <div style="text-align:center;color:var(--text3);font-size:12px;margin-bottom:12px;">— o sube fotos —</div>
       <div class="uzone" id="uzone" onclick="document.getElementById('pda-file-input').click()">
         <input type="file" id="pda-file-input" accept="image/*" multiple style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;" onchange="onFiles(this.files)">
         <div class="uzic">📱</div>
@@ -498,6 +502,26 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
   </div>
   <div id="scanner-result" style="color:#fff;font-size:14px;margin-top:16px;text-align:center;padding:0 20px;">Apunta al código de barras del paquete</div>
   <button onclick="cerrarEscaner()" style="margin-top:20px;padding:14px 32px;border:2px solid #fff;border-radius:12px;background:transparent;color:#fff;font-size:15px;font-weight:700;cursor:pointer;">✕ Cerrar</button>
+</div>
+
+<!-- CÁMARA: CARGAR PAQUETES -->
+<div id="carga-overlay" style="display:none;position:fixed;inset:0;background:#000;z-index:1000;flex-direction:column;">
+  <div style="padding:calc(12px + env(safe-area-inset-top,0px)) 16px 10px;display:flex;align-items:center;justify-content:space-between;">
+    <div style="color:#fff;font-size:16px;font-weight:800;">📷 Cargar paquetes</div>
+    <div id="carga-contador" style="background:var(--accent);color:#fff;font-weight:800;font-size:14px;padding:4px 12px;border-radius:20px;">0 paquetes</div>
+  </div>
+  <div style="position:relative;flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+    <video id="carga-video" style="width:100%;height:100%;object-fit:cover;" autoplay playsinline></video>
+    <div style="position:absolute;left:8%;right:8%;top:30%;bottom:30%;border:3px solid var(--accent);border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,.45);pointer-events:none;"></div>
+    <div id="carga-ultimo" style="position:absolute;top:16px;left:16px;right:16px;background:rgba(16,185,129,.95);color:#fff;font-size:13px;font-weight:700;padding:10px 14px;border-radius:10px;display:none;"></div>
+  </div>
+  <div style="padding:16px 16px calc(20px + env(safe-area-inset-bottom,0px));text-align:center;">
+    <div id="carga-estado" style="color:#fff;font-size:13px;margin-bottom:14px;">Apunta a la etiqueta y pulsa Capturar</div>
+    <div style="display:flex;gap:10px;align-items:center;justify-content:center;">
+      <button onclick="cerrarCargaCamara()" style="padding:14px 18px;border:2px solid #fff;border-radius:12px;background:transparent;color:#fff;font-size:14px;font-weight:700;cursor:pointer;">Terminar</button>
+      <button id="carga-btn" onclick="capturarPaquete()" style="flex:1;max-width:200px;padding:16px;border:none;border-radius:14px;background:var(--accent);color:#fff;font-size:16px;font-weight:800;cursor:pointer;">📸 Capturar</button>
+    </div>
+  </div>
 </div>
 
 <!-- BOTTOM SHEET: INCIDENCIA -->
@@ -1090,6 +1114,95 @@ document.getElementById('mpacts').innerHTML=s.status==='pending'
 const pop=document.getElementById('mpop');
 pop.classList.add('show');
 clearTimeout(pop._t);pop._t=setTimeout(()=>pop.classList.remove('show'),5000);
+}
+
+// ===== ESCÁNER DE PAQUETES CON CÁMARA EN VIVO =====
+let _cargaStream=null, _cargaPaquetes=[], _cargaNum=0, _cargaProcesando=false;
+let _cargaPendientes=0;
+
+async function abrirCargaCamara(){
+_cargaPaquetes=[];
+const maxPaq=ruta.paradas.reduce((m,p)=>Math.max(m,Number(p.paquete)||Number(p.n)||0),0);
+_cargaNum=maxPaq;
+document.getElementById('carga-contador').textContent=maxPaq+' en ruta';
+document.getElementById('carga-ultimo').style.display='none';
+document.getElementById('carga-estado').textContent='Apunta a la etiqueta y pulsa Capturar';
+document.getElementById('carga-overlay').style.display='flex';
+try{
+_cargaStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1920},height:{ideal:1080}}});
+const v=document.getElementById('carga-video');
+v.srcObject=_cargaStream;await v.play();
+}catch(e){
+document.getElementById('carga-estado').textContent='Error de cámara: '+e.message;
+}
+}
+
+function capturarPaquete(){
+const v=document.getElementById('carga-video');
+if(!v||!v.videoWidth){toast('Cámara no lista','err');return;}
+const slot={num:null,name:'Particular',addr:null,codigo:null,_leyendo:true};
+_cargaPaquetes.push(slot);
+_cargaPendientes++;
+document.getElementById('carga-contador').textContent=_cargaPaquetes.length+(_cargaPaquetes.length===1?' capturado':' capturados');
+const ult=document.getElementById('carga-ultimo');
+ult.style.display='block';
+ult.innerHTML='📦 Leyendo etiqueta y buscando número escrito...';
+document.getElementById('carga-estado').textContent='Captura el siguiente cuando quieras';
+const vw=v.videoWidth,vh=v.videoHeight;
+const cropX=vw*0.05,cropY=vh*0.28,cropW=vw*0.9,cropH=vh*0.44;
+const maxW=1100;const scale=Math.min(1,maxW/cropW);
+const canvas=document.createElement('canvas');
+canvas.width=cropW*scale;canvas.height=cropH*scale;
+canvas.getContext('2d').drawImage(v,cropX,cropY,cropW,cropH,0,0,canvas.width,canvas.height);
+const b64=canvas.toDataURL('image/jpeg',0.82).split(',')[1];
+(async()=>{
+try{
+const ctrl=new AbortController();
+const timer=setTimeout(()=>ctrl.abort(),15000);
+const resp=await fetch(WORKER_URL,{method:'POST',signal:ctrl.signal,headers:workerHeaders(),
+body:JSON.stringify({model:'vision',max_tokens:200,messages:[{role:'user',content:[
+{type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},
+{type:'text',text:'Mira este paquete. 1) Lee la dirección de entrega de la etiqueta. 2) Busca un NÚMERO ESCRITO A MANO CON ROTULADOR sobre la caja (grande, manuscrito, NO impreso) que identifica el paquete. Ignora los números impresos de la etiqueta (código de barras, código postal, teléfono). Si NO hay ningún número manuscrito a rotulador, numero_manual debe ser null. Devuelve SOLO JSON: {"name":"nombre o Particular","addr":"calle número, CP ciudad","codigo":"seguimiento o null","numero_manual":número escrito a rotulador o null}'}
+]}]})});
+clearTimeout(timer);
+const data=await resp.json();
+const txt=data.content?.find(c=>c.type==='text')?.text||'';
+let parsed=null;
+try{parsed=JSON.parse(txt.replace(/```json?|```/g,'').trim());}catch(e){const m=txt.match(/\{[\s\S]*\}/);if(m)try{parsed=JSON.parse(m[0]);}catch(e2){}}
+if(parsed&&parsed.addr){
+const numManual=parsed.numero_manual!=null&&!isNaN(Number(parsed.numero_manual))?Number(parsed.numero_manual):null;
+if(numManual){slot.num=numManual;slot._marcado=true;}
+else{_cargaNum++;slot.num=_cargaNum;slot._marcado=false;}
+slot.name=parsed.name||'Particular';slot.addr=parsed.addr;slot.codigo=parsed.codigo||null;slot._leyendo=false;
+const ult2=document.getElementById('carga-ultimo');
+if(ult2){
+if(slot._marcado)ult2.innerHTML=`✓ Paquete #${slot.num} (número leído del rotulador) — ${esc(slot.addr)}`;
+else ult2.innerHTML=`📦 Paquete #${slot.num} — ESCRÍBELO en el paquete · ${esc(slot.addr)}`;
+}
+}else{slot._error=true;slot._leyendo=false;}
+}catch(e){slot._error=true;slot._leyendo=false;}
+_cargaPendientes--;
+const errs=_cargaPaquetes.filter(p=>p._error).length;
+if(errs>0)document.getElementById('carga-estado').textContent=`⚠️ ${errs} paquete(s) no se leyeron bien — revisa al terminar`;
+})();
+}
+
+async function cerrarCargaCamara(){
+if(_cargaPendientes>0){
+document.getElementById('carga-estado').textContent='Terminando de leer los últimos paquetes...';
+let intentos=0;
+while(_cargaPendientes>0&&intentos<60){await new Promise(r=>setTimeout(r,250));intentos++;}
+}
+if(_cargaStream){_cargaStream.getTracks().forEach(t=>t.stop());_cargaStream=null;}
+document.getElementById('carga-overlay').style.display='none';
+const v=document.getElementById('carga-video');if(v)v.srcObject=null;
+const validos=_cargaPaquetes.filter(p=>p.addr&&!p._error);
+const fallidos=_cargaPaquetes.length-validos.length;
+if(!validos.length){toast('No se leyó ningún paquete correctamente','err');return;}
+extractedStops=validos.map(p=>({n:p.num,name:p.name,addr:p.addr,bultos:1,codigo:p.codigo,paquete:p.num}));
+renderResults();
+setTimeout(()=>{const r=document.getElementById('rarea');if(r)r.scrollIntoView({behavior:'smooth',block:'start'});},200);
+toast(`✅ ${validos.length} paquetes leídos${fallidos?` · ${fallidos} fallaron, vuelve a escanearlos`:''} — carga en ruta`,fallidos?'':'ok');
 }
 
 function onFiles(files){
