@@ -12,9 +12,9 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
-  --bg:#0f172a; --bg2:#172033; --card:#1e293b; --border:#2a3a52;
-  --accent:#38bdf8; --accent2:#0ea5e9; --green:#34d399; --red:#fb7185;
-  --orange:#fb923c; --text:#e2e8f0; --text2:#94a3b8; --text3:#64748b;
+  --bg:#f8fafc; --bg2:#f1f5f9; --card:#ffffff; --border:#e2e8f0;
+  --accent:#2563eb; --accent2:#1d4ed8; --green:#16a34a; --red:#e11d48;
+  --orange:#ea580c; --text:#0f172a; --text2:#64748b; --text3:#94a3b8;
   --safe-top:env(safe-area-inset-top,0px); --safe-bot:env(safe-area-inset-bottom,0px);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -22,7 +22,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 
 /* LOGIN */
 #login{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:24px;z-index:100;}
-#login::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(56,189,248,.06),transparent 60%);pointer-events:none;}
+#login::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(37,99,235,.06),transparent 60%);pointer-events:none;}
 .lcard{width:100%;max-width:360px;position:relative;z-index:1;}
 .llogo{font-size:48px;font-weight:800;letter-spacing:3px;color:var(--accent);text-align:center;margin-bottom:2px;}
 .lsub{text-align:center;font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--text2);margin-bottom:6px;}
@@ -30,7 +30,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 .llbl{font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);margin-bottom:6px;display:block;}
 .linp{width:100%;background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;color:var(--text);font-size:16px;outline:none;-webkit-appearance:none;margin-bottom:14px;transition:border-color .2s;}
 .linp:focus{border-color:var(--accent);}
-.lbtn{width:100%;padding:15px;border:none;border-radius:10px;background:var(--accent);color:#0b1220;font-size:16px;font-weight:700;letter-spacing:.3px;cursor:pointer;margin-top:4px;transition:opacity .15s;}
+.lbtn{width:100%;padding:15px;border:none;border-radius:10px;background:var(--accent);color:#fff;font-size:16px;font-weight:700;letter-spacing:.3px;cursor:pointer;margin-top:4px;transition:opacity .15s;}
 .lbtn:active{opacity:.85;}
 .lhint{margin-top:18px;text-align:center;font-size:12px;color:var(--text3);line-height:2;}
 .lhint b{color:var(--accent);}
@@ -39,14 +39,14 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 #app{position:fixed;inset:0;display:none;flex-direction:column;}
 
 /* TOPBAR */
-.topbar{padding:calc(var(--safe-top) + 8px) 16px 8px;background:rgba(15,23,42,.95);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0;backdrop-filter:blur(12px);}
+.topbar{padding:calc(var(--safe-top) + 8px) 16px 8px;background:rgba(255,255,255,.95);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0;backdrop-filter:blur(12px);}
 .tlogo{font-size:20px;font-weight:800;letter-spacing:2px;color:var(--accent);}
 .tinfo{flex:1;font-size:12px;color:var(--text2);}
 .tinfo b{color:var(--text);font-weight:600;}
-.tav{width:30px;height:30px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#000;flex-shrink:0;}
+.tav{width:30px;height:30px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0;}
 
 /* BOTTOM NAV */
-.bnav{display:flex;background:rgba(15,23,42,.98);border-top:1px solid var(--border);padding-bottom:var(--safe-bot);flex-shrink:0;}
+.bnav{display:flex;background:rgba(255,255,255,.98);border-top:1px solid var(--border);padding-bottom:var(--safe-bot);flex-shrink:0;}
 .bni{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 4px 8px;cursor:pointer;position:relative;}
 .bni-ic{font-size:20px;margin-bottom:3px;}
 .bni-lb{font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text3);}
@@ -71,7 +71,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 .frow{display:flex;gap:5px;overflow-x:auto;padding-bottom:2px;}
 .frow::-webkit-scrollbar{display:none;}
 .ftb{padding:6px 12px;border-radius:8px;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;background:var(--card);border:1px solid var(--border);color:var(--text2);white-space:nowrap;cursor:pointer;}
-.ftb.on{background:var(--accent);border-color:var(--accent);color:#000;}
+.ftb.on{background:var(--accent);border-color:var(--accent);color:#fff;}
 
 .slist{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
 .slist::-webkit-scrollbar{display:none;}
@@ -92,27 +92,27 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 .siaddr{font-size:12px;color:var(--text2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .sitags{display:flex;gap:4px;margin-top:7px;flex-wrap:wrap;}
 .tag{font-size:10px;font-weight:600;padding:3px 7px;border-radius:5px;}
-.ts{background:rgba(56,189,248,.12);color:var(--accent);}
-.tb2{background:rgba(255,255,255,.07);color:var(--text2);}
-.tok{background:rgba(16,185,129,.15);color:#34d399;}
-.tko{background:rgba(244,63,94,.15);color:#fb7185;}
-.tpe{background:rgba(251,146,60,.15);color:#fb923c;}
+.ts{background:rgba(37,99,235,.12);color:var(--accent);}
+.tb2{background:rgba(15,23,42,.06);color:var(--text2);}
+.tok{background:rgba(16,185,129,.15);color:#16a34a;}
+.tko{background:rgba(244,63,94,.15);color:#e11d48;}
+.tpe{background:rgba(251,146,60,.15);color:#ea580c;}
 .siacts{display:flex;flex-direction:column;gap:5px;padding:12px 12px 12px 0;flex-shrink:0;justify-content:center;}
 .abt{padding:8px 10px;border-radius:8px;font-size:11px;font-weight:700;border:none;cursor:pointer;min-width:52px;text-align:center;}
 .ab-ok{background:rgba(16,185,129,.2);color:var(--green);}
 .ab-ko{background:rgba(244,63,94,.15);color:var(--red);}
-.ab-nav{background:rgba(56,189,248,.12);color:var(--accent);}
+.ab-nav{background:rgba(37,99,235,.12);color:var(--accent);}
 .si.del .sibody,.si.del .sinum{opacity:.45;}
 .empty{padding:40px;text-align:center;color:var(--text3);font-size:13px;}
 
 /* MAPA */
-.mscr{flex:1;position:relative;background:#0b1220;overflow:hidden;}
+.mscr{flex:1;position:relative;background:#e2e8f0;overflow:hidden;}
 #gmap{width:100%;height:100%;position:absolute;top:0;left:0;}
 .mstats{position:absolute;top:12px;left:12px;display:flex;flex-direction:column;gap:5px;z-index:5;}
-.msp{display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:20px;background:rgba(15,23,42,.88);border:1px solid var(--border);font-size:12px;font-weight:600;backdrop-filter:blur(8px);}
+.msp{display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:20px;background:rgba(255,255,255,.88);border:1px solid var(--border);font-size:12px;font-weight:600;backdrop-filter:blur(8px);}
 
 /* POPUP MAPA */
-.mpop{position:absolute;left:12px;right:12px;bottom:12px;background:rgba(30,41,59,.97);border:1px solid var(--accent);border-radius:16px;padding:14px 16px;z-index:10;transform:translateY(120%);transition:transform .35s cubic-bezier(.34,1.56,.64,1);}
+.mpop{position:absolute;left:12px;right:12px;bottom:12px;background:rgba(255,255,255,.97);border:1px solid var(--accent);border-radius:16px;padding:14px 16px;z-index:10;transform:translateY(120%);transition:transform .35s cubic-bezier(.34,1.56,.64,1);}
 .mpop.show{transform:translateY(0);}
 .mprow{display:flex;align-items:center;gap:12px;}
 .mpnum{font-size:36px;font-weight:900;color:var(--accent);line-height:1;flex-shrink:0;}
@@ -137,18 +137,18 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 .pthumb{position:relative;border-radius:10px;overflow:hidden;aspect-ratio:4/3;background:var(--card);}
 .pthumb img{width:100%;height:100%;object-fit:cover;}
 .pdel{position:absolute;top:5px;right:5px;width:24px;height:24px;border-radius:50%;background:rgba(244,63,94,.9);border:none;color:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
-.abtn{width:100%;padding:15px;border:none;border-radius:10px;background:var(--accent);color:#0b1220;font-size:16px;font-weight:700;letter-spacing:.3px;cursor:pointer;margin-bottom:16px;transition:opacity .15s;}
+.abtn{width:100%;padding:15px;border:none;border-radius:10px;background:var(--accent);color:#fff;font-size:16px;font-weight:700;letter-spacing:.3px;cursor:pointer;margin-bottom:16px;transition:opacity .15s;}
 .abtn:active{opacity:.85;}
 .abtn:disabled{opacity:.4;cursor:not-allowed;}
 .rbox{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:16px;}
 .rtit{font-size:14px;font-weight:700;color:var(--accent);margin-bottom:12px;letter-spacing:.5px;}
 .srow{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
 .srow:last-child{border-bottom:none;}
-.srnum{width:28px;height:28px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#000;flex-shrink:0;}
+.srnum{width:28px;height:28px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;}
 .srinfo{flex:1;min-width:0;}
 .srname{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .sraddr{font-size:11px;color:var(--text2);margin-top:1px;}
-.srsaco{font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:rgba(56,189,248,.12);color:var(--accent);flex-shrink:0;}
+.srsaco{font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:rgba(37,99,235,.12);color:var(--accent);flex-shrink:0;}
 .lbtn2{width:100%;padding:14px;border:1px solid var(--accent);border-radius:12px;background:transparent;color:var(--accent);font-size:16px;font-weight:700;letter-spacing:1px;cursor:pointer;}
 
 /* GESTOR */
@@ -167,15 +167,15 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 .pbar{height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:5px;}
 .pfill{height:100%;background:var(--accent);border-radius:2px;}
 .dnums{display:flex;gap:4px;}
-.dn{flex:1;text-align:center;background:rgba(255,255,255,.04);border-radius:5px;padding:5px 2px;}
+.dn{flex:1;text-align:center;background:rgba(15,23,42,.05);border-radius:5px;padding:5px 2px;}
 .dnv{font-size:14px;font-weight:700;}
 .dnl{font-size:9px;color:var(--text3);text-transform:uppercase;}
-.gmapw{flex:1;position:relative;background:#0b1220;overflow:hidden;}
+.gmapw{flex:1;position:relative;background:#e2e8f0;overflow:hidden;}
 #gmap2{width:100%;height:100%;position:absolute;top:0;left:0;}
 
 /* Company tabs */
 .emp-tab{flex:1;background:var(--card);border:2px solid var(--border);border-radius:12px;padding:12px 8px;text-align:center;cursor:pointer;transition:all .2s;}
-.emp-tab.on{border-color:var(--accent);background:rgba(56,189,248,.1);}
+.emp-tab.on{border-color:var(--accent);background:rgba(37,99,235,.1);}
 .emp-tab:active{opacity:.8;}
 
 /* TOAST */
@@ -215,7 +215,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
       <div class="frow" id="frow"></div>
       <div style="display:flex;gap:6px;margin-top:6px;">
         <button id="btn-zona" onclick="toggleZonas()" style="flex:1;padding:8px;border:1.5px solid var(--border);border-radius:8px;background:transparent;color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;">📦 Por zona</button>
-        <button onclick="navRutaCompleta(event)" style="flex:1;padding:8px;border:1.5px solid var(--accent);border-radius:8px;background:rgba(56,189,248,.1);color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;">🗺️ Ruta completa</button>
+        <button onclick="navRutaCompleta(event)" style="flex:1;padding:8px;border:1.5px solid var(--accent);border-radius:8px;background:rgba(37,99,235,.1);color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;">🗺️ Ruta completa</button>
         <button onclick="optimizarConIA()" style="flex:1;padding:8px;border:1.5px solid var(--green);border-radius:8px;background:rgba(16,185,129,.1);color:var(--green);font-size:12px;font-weight:700;cursor:pointer;">✨ Optimizar</button>
         <button onclick="abrirEscaner()" style="flex:1;padding:8px;border:1.5px solid var(--orange);border-radius:8px;background:rgba(251,146,60,.1);color:var(--orange);font-size:12px;font-weight:700;cursor:pointer;">📷 Escanear</button>
         <button onclick="borrarRuta()" style="padding:8px 10px;border:1.5px solid var(--red);border-radius:8px;background:rgba(244,63,94,.1);color:var(--red);font-size:12px;font-weight:700;cursor:pointer;" title="Borrar ruta">🗑️</button>
@@ -225,9 +225,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 
     <!-- FORMULARIO DE CIERRE PERMANENTE - nunca se elimina del DOM -->
     <div id="cierre-panel" style="display:none;position:fixed;left:0;right:0;bottom:60px;z-index:800;padding:0 8px;">
-      <div style="background:var(--bg2);border:2px solid #34d399;border-radius:16px;padding:16px;box-shadow:0 -4px 24px rgba(0,0,0,.4);">
+      <div style="background:var(--bg2);border:2px solid #16a34a;border-radius:16px;padding:16px;box-shadow:0 -4px 24px rgba(0,0,0,.4);">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-          <div style="font-size:14px;font-weight:800;color:#34d399;" id="cp-titulo">✓ Confirmar entrega</div>
+          <div style="font-size:14px;font-weight:800;color:#16a34a;" id="cp-titulo">✓ Confirmar entrega</div>
           <button onclick="cerrarCierrePanel()" style="background:none;border:none;color:var(--text2);font-size:22px;cursor:pointer;line-height:1;">×</button>
         </div>
         <div style="font-size:12px;color:var(--text2);margin-bottom:12px;" id="cp-addr"></div>
@@ -236,7 +236,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
         <!-- Selección de ruta -->
         <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">¿A qué ruta pertenece?</div>
         <div style="display:flex;gap:6px;margin-bottom:12px;">
-          <button id="cp-r1" onclick="cpSelectRuta('principal',this)" style="flex:1;padding:10px 4px;border-radius:10px;border:2px solid var(--accent);background:rgba(56,189,248,.15);color:var(--accent);font-size:11px;font-weight:700;cursor:pointer;">🚚 Principal<br><span style="font-weight:400;opacity:.8">Jon</span></button>
+          <button id="cp-r1" onclick="cpSelectRuta('principal',this)" style="flex:1;padding:10px 4px;border-radius:10px;border:2px solid var(--accent);background:rgba(37,99,235,.15);color:var(--accent);font-size:11px;font-weight:700;cursor:pointer;">🚚 Principal<br><span style="font-weight:400;opacity:.8">Jon</span></button>
           <button id="cp-r2" onclick="cpSelectRuta('andarin',this)" style="flex:1;padding:10px 4px;border-radius:10px;border:1.5px solid var(--border);background:transparent;color:var(--text2);font-size:11px;font-weight:700;cursor:pointer;">🚶 Andarin<br><span style="font-weight:400;opacity:.8">Andrea</span></button>
           <button id="cp-r3" onclick="cpSelectRuta('50008',this)" style="flex:1;padding:10px 4px;border-radius:10px;border:1.5px solid var(--border);background:transparent;color:var(--text2);font-size:11px;font-weight:700;cursor:pointer;">📦 50008<br><span style="font-weight:400;opacity:.8">Camilo</span></button>
         </div>
@@ -256,7 +256,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
           ⚡ Marcar como preferente (13h/14h)
         </button>
 
-        <button onclick="cpConfirmar()" style="width:100%;padding:14px;border:none;border-radius:12px;background:#34d399;color:#fff;font-size:16px;font-weight:800;cursor:pointer;">
+        <button onclick="cpConfirmar()" style="width:100%;padding:14px;border:none;border-radius:12px;background:#16a34a;color:#fff;font-size:16px;font-weight:800;cursor:pointer;">
           ✓ Confirmar entrega
         </button>
       </div>
@@ -409,7 +409,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
           <option value="all">Todos los repartidores</option>
         </select>
       </div>
-      <button onclick="cargarHistorial()" style="width:100%;padding:12px;border:none;border-radius:10px;background:var(--accent);color:#000;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:4px;">🔍 Buscar</button>
+      <button onclick="cargarHistorial()" style="width:100%;padding:12px;border:none;border-radius:10px;background:var(--accent);color:#fff;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:4px;">🔍 Buscar</button>
     </div>
     <div class="slist" id="hist-list"></div>
   </div>
@@ -428,7 +428,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
     <div style="font-size:13px;color:var(--text2);margin-bottom:20px;" id="cierre-addr1"></div>
     <div style="font-size:13px;font-weight:700;color:var(--text2);margin-bottom:12px;">¿Cómo registras esta entrega?</div>
     <div style="display:flex;flex-direction:column;gap:10px;">
-      <button style="padding:18px;border-radius:14px;border:2px solid var(--accent);background:rgba(56,189,248,.12);color:var(--accent);font-size:16px;font-weight:700;cursor:pointer;text-align:left;" onclick="cierre_paso2(true)">
+      <button style="padding:18px;border-radius:14px;border:2px solid var(--accent);background:rgba(37,99,235,.12);color:var(--accent);font-size:16px;font-weight:700;cursor:pointer;text-align:left;" onclick="cierre_paso2(true)">
         📷 Con foto de etiqueta CTT<br><span style="font-size:12px;font-weight:400;opacity:.7">Sube la foto + nombre y DNI</span>
       </button>
       <button style="padding:18px;border-radius:14px;border:2px solid var(--green);background:rgba(16,185,129,.12);color:var(--green);font-size:16px;font-weight:700;cursor:pointer;text-align:left;" onclick="cierre_paso2(false)">
@@ -600,11 +600,11 @@ return{n:idx, name:`${neg} ${ape}`, addr:`${cal}, ${num}`, saco, bultos, status}
 }
 
 const RUTAS=[
-{driver:'Jon',     did:0,color:'#38bdf8',paradas:[]},
+{driver:'Jon',     did:0,color:'#2563eb',paradas:[]},
 {driver:'Sebas',   did:1,color:'#a78bfa',paradas:[]},
-{driver:'Andrea',  did:2,color:'#34d399',paradas:[]},
+{driver:'Andrea',  did:2,color:'#16a34a',paradas:[]},
 {driver:'Camilo',  did:3,color:'#f59e0b',paradas:[]},
-{driver:'Steward', did:4,color:'#fb7185',paradas:[]},
+{driver:'Steward', did:4,color:'#e11d48',paradas:[]},
 ];
 const USERS={
 victor:  {pass:'1234',  role:'manager',name:'Victor',  init:'V'},
@@ -710,7 +710,7 @@ if(usuarios){
 
 usuarios.forEach(d=>{
 if(!RUTAS.find(r=>r.driver===d.name)){
-RUTAS.push({driver:d.name,did:d.did||0,color:d.color||'#38bdf8',paradas:[]});
+RUTAS.push({driver:d.name,did:d.did||0,color:d.color||'#2563eb',paradas:[]});
 }
 });
 
@@ -739,10 +739,10 @@ me={...user};
 if(me.role==='manager'){
 const drivers=(await fetchDrivers()).filter(d=>d.activo);
 RUTAS.length=0;
-drivers.forEach(d=>{RUTAS.push({driver:d.name,did:d.did||0,color:d.color||'#38bdf8',paradas:[]});});
-ruta=RUTAS[0]||{driver:'',did:0,color:'#38bdf8',paradas:[]};
+drivers.forEach(d=>{RUTAS.push({driver:d.name,did:d.did||0,color:d.color||'#2563eb',paradas:[]});});
+ruta=RUTAS[0]||{driver:'',did:0,color:'#2563eb',paradas:[]};
 } else {
-ruta=RUTAS.find(r=>r.driver===me.name)||{driver:me.name,did:me.did||0,color:me.color||'#38bdf8',paradas:[]};
+ruta=RUTAS.find(r=>r.driver===me.name)||{driver:me.name,did:me.did||0,color:me.color||'#2563eb',paradas:[]};
 if(!RUTAS.find(r=>r.driver===me.name))RUTAS.push(ruta);
 }
 document.getElementById('login').style.display='none';
@@ -919,7 +919,7 @@ _zonaMode=!_zonaMode;
 const btn=document.getElementById('btn-zona');
 if(btn){
 btn.style.borderColor=_zonaMode?'var(--accent)':'var(--border)';
-btn.style.background=_zonaMode?'rgba(56,189,248,.1)':'transparent';
+btn.style.background=_zonaMode?'rgba(37,99,235,.1)':'transparent';
 btn.style.color=_zonaMode?'var(--accent)':'var(--text2)';
 btn.textContent=_zonaMode?'📦 Agrupado por zona':'📦 Agrupar por zona';
 }
@@ -937,7 +937,7 @@ zonas[calle].push(s);
 lista.innerHTML='';
 Object.entries(zonas).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([zona,paradas])=>{
 const header=document.createElement('div');
-header.style.cssText='padding:6px 16px;background:rgba(56,189,248,.06);border-bottom:1px solid var(--border);font-size:11px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;';
+header.style.cssText='padding:6px 16px;background:rgba(37,99,235,.06);border-bottom:1px solid var(--border);font-size:11px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;';
 header.textContent='📍 '+zona+' ('+paradas.length+')';
 lista.appendChild(header);
 paradas.forEach(s=>lista.appendChild(crearElementoParada(s)));
@@ -1026,13 +1026,13 @@ if(document.getElementById('s-gestor').classList.contains('on'))initMap2();
 };
 
 const MAP_STYLE=[
-{elementType:'geometry',stylers:[{color:'#0f172a'}]},
-{elementType:'labels.text.fill',stylers:[{color:'#94a3b8'}]},
-{elementType:'labels.text.stroke',stylers:[{color:'#0f172a'}]},
-{featureType:'road',elementType:'geometry',stylers:[{color:'#1e293b'}]},
-{featureType:'road.arterial',elementType:'geometry',stylers:[{color:'#2a3a52'}]},
-{featureType:'road.highway',elementType:'geometry',stylers:[{color:'#243d5c'}]},
-{featureType:'water',elementType:'geometry',stylers:[{color:'#0d2137'}]},
+{elementType:'geometry',stylers:[{color:'#f1f5f9'}]},
+{elementType:'labels.text.fill',stylers:[{color:'#64748b'}]},
+{elementType:'labels.text.stroke',stylers:[{color:'#ffffff'}]},
+{featureType:'road',elementType:'geometry',stylers:[{color:'#ffffff'}]},
+{featureType:'road.arterial',elementType:'geometry',stylers:[{color:'#ffffff'}]},
+{featureType:'road.highway',elementType:'geometry',stylers:[{color:'#e2e8f0'}]},
+{featureType:'water',elementType:'geometry',stylers:[{color:'#dbeafe'}]},
 {featureType:'poi',stylers:[{visibility:'off'}]},
 {featureType:'transit',stylers:[{visibility:'off'}]},
 ];
@@ -1065,8 +1065,8 @@ const bounds=new google.maps.LatLngBounds();
 ruta.paradas.forEach((s,i)=>{
 const c=s.lat&&s.lng?{lat:s.lat,lng:s.lng}:coord(i);
 const isSel=selPin===s.n;
-const col=s.status==='delivered'?'#34d399':s.status==='failed'?'#fb7185':'#38bdf8';
-const tc=s.status==='failed'?'#fff':'#000';
+const col=s.status==='delivered'?'#16a34a':s.status==='failed'?'#e11d48':'#2563eb';
+const tc='#fff';
 const svg=pinSVG(s.n,col,tc,isSel);
 const icon={url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg),scaledSize:new google.maps.Size(44,54),anchor:new google.maps.Point(22,54)};
 const m=new google.maps.Marker({position:c,map:gmap1,icon,title:`#${s.n} ${s.name}`,zIndex:isSel?999:s.n});
@@ -1487,9 +1487,9 @@ card.style.border=isSelected?'2px solid var(--accent)':'1px solid var(--border)'
 card.style.transition='all .2s';
 card.innerHTML=`
 <div class="dtop">
-<div class="tav" style="background:${r.color};color:#000;width:26px;height:26px;font-size:12px">${esc((r.driver||'?')[0])}</div>
+<div class="tav" style="background:${r.color};color:#fff;width:26px;height:26px;font-size:12px">${esc((r.driver||'?')[0])}</div>
 <div><div class="dname">${esc(r.driver)}</div><div style="font-size:10px;color:var(--text3)">${total} paradas</div></div>
-<div class="don" style="background:${isSelected?'rgba(56,189,248,.2)':'rgba(16,185,129,.15)'};color:${isSelected?'var(--accent)':'var(--green)'}">
+<div class="don" style="background:${isSelected?'rgba(37,99,235,.2)':'rgba(16,185,129,.15)'};color:${isSelected?'var(--accent)':'var(--green)'}">
 ${isSelected?'● Activo':'● Live'}
 </div>
 </div>
@@ -1530,13 +1530,13 @@ RUTAS.forEach(r=>{
 if(selectedDriver2&&r.driver!==selectedDriver2)return;
 r.paradas.forEach(s=>{
 if(!s.lat||!s.lng)return;
-const col=s.status==='delivered'?'#34d399':s.status==='failed'?'#fb7185':r.color;
-const tc=s.status==='failed'?'#fff':'#000';
+const col=s.status==='delivered'?'#16a34a':s.status==='failed'?'#e11d48':r.color;
+const tc='#fff';
 const svg=pinSVG(s.n,col,tc,false);
 const icon={url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg),scaledSize:new google.maps.Size(32,40),anchor:new google.maps.Point(16,40)};
 const m=new google.maps.Marker({position:{lat:s.lat,lng:s.lng},map:gmap2,icon,title:`#${s.n} ${s.name} — ${r.driver}`,zIndex:s.n});
 m.addListener('click',()=>{
-const info=new google.maps.InfoWindow({content:`<div style="color:#000;font-size:13px;"><b>#${s.n}</b> ${esc(s.name)}<br>${esc(s.addr)}<br><span style="color:${col}">${s.status==='delivered'?'✓ Entregado':s.status==='failed'?'✗ Fallido':'Pendiente'}</span></div>`});
+const info=new google.maps.InfoWindow({content:`<div style="color:#0f172a;font-size:13px;"><b>#${s.n}</b> ${esc(s.name)}<br>${esc(s.addr)}<br><span style="color:${col}">${s.status==='delivered'?'✓ Entregado':s.status==='failed'?'✗ Fallido':'Pendiente'}</span></div>`});
 info.open(gmap2,m);
 });
 window._stopMarkers2.push(m);
@@ -1711,12 +1711,12 @@ const fecha=new Date(c.created_at).toLocaleString('es-ES',{day:'2-digit',month:'
 return `<div style="margin:8px;background:var(--card);border-radius:16px;overflow:hidden;border:1px solid var(--border);">
 <!-- Cabecera -->
 <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;">
-<div style="width:36px;height:36px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#000;flex-shrink:0;">${esc((c.driver||'?')[0])}</div>
+<div style="width:36px;height:36px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;flex-shrink:0;">${esc((c.driver||'?')[0])}</div>
 <div style="flex:1;min-width:0;">
 <div style="font-weight:700;font-size:14px;">${esc(c.driver)}</div>
 <div style="display:flex;gap:6px;align-items:center;margin-top:2px;">
 <span style="font-size:11px;color:var(--text3);">${fecha}</span>
-${c.ruta_tipo?`<span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;background:rgba(56,189,248,.15);color:var(--accent);">${c.ruta_tipo==='principal'?'🚚 Principal':c.ruta_tipo==='andarin'?'🚶 Andarin':'📦 50008'}</span>`:''}
+${c.ruta_tipo?`<span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;background:rgba(37,99,235,.15);color:var(--accent);">${c.ruta_tipo==='principal'?'🚚 Principal':c.ruta_tipo==='andarin'?'🚶 Andarin':'📦 50008'}</span>`:''}
 ${c.preferente?`<span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;background:rgba(245,158,11,.2);color:#f59e0b;">⚡ Preferente</span>`:''}
 </div>
 </div>
@@ -1758,7 +1758,7 @@ const b=document.getElementById(id);
 if(b){b.style.border='1.5px solid var(--border)';b.style.background='transparent';b.style.color='var(--text2)';}
 });
 btn.style.border='2px solid var(--accent)';
-btn.style.background='rgba(56,189,248,.15)';
+btn.style.background='rgba(37,99,235,.15)';
 btn.style.color='var(--accent)';
 }
 
@@ -1958,9 +1958,9 @@ if(!gmap2)return;
 if(window._driverMarkers){window._driverMarkers.forEach(m=>m.setMap(null));}
 window._driverMarkers=[];
 Object.entries(driverLocations).forEach(([driver,loc])=>{
-const r=RUTAS.find(x=>x.driver===driver);const color=r?r.color:'#38bdf8';
+const r=RUTAS.find(x=>x.driver===driver);const color=r?r.color:'#2563eb';
 const mins=Math.round((Date.now()-new Date(loc.updated_at).getTime())/60000);
-const svg='<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><circle cx="24" cy="24" r="22" fill="'+color+'" stroke="#fff" stroke-width="3"/><text x="24" y="29" text-anchor="middle" fill="#000" font-size="16" font-weight="800" font-family="sans-serif">'+driver[0]+'</text></svg>';
+const svg='<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><circle cx="24" cy="24" r="22" fill="'+color+'" stroke="#fff" stroke-width="3"/><text x="24" y="29" text-anchor="middle" fill="#fff" font-size="16" font-weight="800" font-family="sans-serif">'+driver[0]+'</text></svg>';
 const icon={url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg),scaledSize:new google.maps.Size(48,48),anchor:new google.maps.Point(24,24)};
 const m=new google.maps.Marker({position:{lat:loc.lat,lng:loc.lng},map:gmap2,icon,title:driver+' — hace '+mins+' min',zIndex:1000});
 window._driverMarkers.push(m);
@@ -2027,7 +2027,7 @@ const pct=total?Math.round(ok/total*100):0;
 
 html+=`<div style="margin:8px;background:var(--card);border-radius:14px;padding:14px;border:1px solid var(--border);">
 <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-<div style="width:36px;height:36px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#000;">${esc((r.driver||'?')[0])}</div>
+<div style="width:36px;height:36px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;">${esc((r.driver||'?')[0])}</div>
 <div style="flex:1;">
 <div style="font-weight:700;font-size:15px;">${esc(r.driver)}</div>
 <div style="font-size:11px;color:var(--text3);">${fecha} · ${esc(r.empresa||'CTT')}</div>
