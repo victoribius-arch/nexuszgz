@@ -2534,7 +2534,7 @@ if(_cargaPendientes>0){
 const total=_cargaPaquetes.length||1;
 const est=document.getElementById('carga-estado');
 const btn=document.getElementById('carga-btn');if(btn){btn.disabled=true;btn.style.opacity='.5';}
-const maxMs=25000;const t0=Date.now();
+const maxMs=15000;const t0=Date.now();
 while(_cargaPendientes>0&&Date.now()-t0<maxMs){
 const leidos=_cargaPaquetes.length-_cargaPendientes;
 const pct=Math.round(leidos/total*100);
