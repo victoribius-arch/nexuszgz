@@ -2529,11 +2529,23 @@ if(errs>0)document.getElementById('carga-estado').textContent=`⚠️ ${errs} pa
 }
 
 async function cerrarCargaCamara(){
-// Esperar a que terminen las lecturas en curso
+// Esperar a que terminen las lecturas en curso, con progreso + cuenta atrás visible
 if(_cargaPendientes>0){
-document.getElementById('carga-estado').textContent='Terminando de leer los últimos paquetes...';
-let intentos=0;
-while(_cargaPendientes>0&&intentos<60){await new Promise(r=>setTimeout(r,250));intentos++;}
+const total=_cargaPaquetes.length||1;
+const est=document.getElementById('carga-estado');
+const btn=document.getElementById('carga-btn');if(btn){btn.disabled=true;btn.style.opacity='.5';}
+const maxMs=25000;const t0=Date.now();
+while(_cargaPendientes>0&&Date.now()-t0<maxMs){
+const leidos=_cargaPaquetes.length-_cargaPendientes;
+const pct=Math.round(leidos/total*100);
+const seg=Math.max(1,Math.ceil((maxMs-(Date.now()-t0))/1000));
+est.innerHTML=`<div style="font-weight:800;font-size:17px;margin-bottom:8px;">⏳ Leyendo paquetes… ${leidos}/${total}</div>`+
+`<div style="font-size:13px;opacity:.85;margin-bottom:10px;">Faltan ${_cargaPendientes} · máx ${seg}s</div>`+
+`<div style="height:10px;background:rgba(255,255,255,.25);border-radius:6px;overflow:hidden;max-width:280px;margin:0 auto;"><div style="height:100%;width:${pct}%;background:var(--accent);transition:width .2s;"></div></div>`;
+await new Promise(r=>setTimeout(r,200));
+}
+est.textContent='✓ Lecturas completadas';
+if(btn){btn.disabled=false;btn.style.opacity='1';}
 }
 if(_cargaStream){_cargaStream.getTracks().forEach(t=>t.stop());_cargaStream=null;}
 document.getElementById('carga-overlay').style.display='none';
