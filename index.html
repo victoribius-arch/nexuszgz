@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>NEXUS</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,9 +13,9 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
-  --bg:#f8fafc; --bg2:#f1f5f9; --card:#ffffff; --border:#e2e8f0;
-  --accent:#2563eb; --accent2:#1d4ed8; --green:#16a34a; --red:#e11d48;
-  --orange:#ea580c; --text:#0f172a; --text2:#64748b; --text3:#94a3b8;
+  --bg:#f5f7fa; --bg2:#ffffff; --card:#ffffff; --border:#e2e8f0;
+  --accent:#2563eb; --accent2:#1d4ed8; --green:#16a34a; --red:#dc2626;
+  --orange:#f59e0b; --text:#1e293b; --text2:#64748b; --text3:#94a3b8;
   --safe-top:env(safe-area-inset-top,0px); --safe-bot:env(safe-area-inset-bottom,0px);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -22,16 +23,15 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 
 /* LOGIN */
 #login{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:24px;z-index:100;}
-#login::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(37,99,235,.06),transparent 60%);pointer-events:none;}
+#login::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 40% 40%,rgba(37,99,235,.08),transparent 55%),radial-gradient(ellipse at 70% 70%,rgba(29,78,216,.06),transparent 50%);pointer-events:none;}
 .lcard{width:100%;max-width:360px;position:relative;z-index:1;}
-.llogo{font-size:48px;font-weight:800;letter-spacing:3px;color:var(--accent);text-align:center;margin-bottom:2px;}
+.llogo{font-size:56px;font-weight:900;letter-spacing:8px;background:var(--accent);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center;margin-bottom:2px;}
 .lsub{text-align:center;font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--text2);margin-bottom:6px;}
-.lline{width:40px;height:2px;background:var(--accent);opacity:.55;border-radius:2px;margin:0 auto 32px;}
+.lline{width:60px;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);margin:0 auto 32px;}
 .llbl{font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);margin-bottom:6px;display:block;}
 .linp{width:100%;background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;color:var(--text);font-size:16px;outline:none;-webkit-appearance:none;margin-bottom:14px;transition:border-color .2s;}
 .linp:focus{border-color:var(--accent);}
-.lbtn{width:100%;padding:15px;border:none;border-radius:10px;background:var(--accent);color:#fff;font-size:16px;font-weight:700;letter-spacing:.3px;cursor:pointer;margin-top:4px;transition:opacity .15s;}
-.lbtn:active{opacity:.85;}
+.lbtn{width:100%;padding:16px;border:none;border-radius:12px;background:var(--accent);color:#fff;font-size:18px;font-weight:800;letter-spacing:2px;cursor:pointer;margin-top:4px;box-shadow:0 4px 20px rgba(37,99,235,.3);}
 .lhint{margin-top:18px;text-align:center;font-size:12px;color:var(--text3);line-height:2;}
 .lhint b{color:var(--accent);}
 
@@ -40,7 +40,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 
 /* TOPBAR */
 .topbar{padding:calc(var(--safe-top) + 8px) 16px 8px;background:rgba(255,255,255,.95);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0;backdrop-filter:blur(12px);}
-.tlogo{font-size:20px;font-weight:800;letter-spacing:2px;color:var(--accent);}
+.tlogo{font-size:22px;font-weight:900;letter-spacing:4px;background:var(--accent);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
 .tinfo{flex:1;font-size:12px;color:var(--text2);}
 .tinfo b{color:var(--text);font-weight:600;}
 .tav{width:30px;height:30px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0;}
@@ -48,8 +48,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 /* BOTTOM NAV */
 .bnav{display:flex;background:rgba(255,255,255,.98);border-top:1px solid var(--border);padding-bottom:var(--safe-bot);flex-shrink:0;}
 .bni{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 4px 8px;cursor:pointer;position:relative;}
-.bni-ic{font-size:20px;margin-bottom:3px;}
+.bni-ic{margin-bottom:3px;color:var(--text3);display:flex;align-items:center;justify-content:center;}
+.bni-ic svg{width:22px;height:22px;display:block;}
 .bni-lb{font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text3);}
+.bni.on .bni-ic{color:var(--accent);}
 .bni.on .bni-lb{color:var(--accent);}
 .bni::after{content:'';position:absolute;top:0;left:20%;right:20%;height:2px;background:var(--accent);border-radius:0 0 2px 2px;opacity:0;}
 .bni.on::after{opacity:1;}
@@ -82,21 +84,21 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 .si.pend .sibar{background:var(--accent);}
 .si.del .sibar{background:var(--green);}
 .si.fail .sibar{background:var(--red);}
-.sinum{width:48px;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:16px 0;}
+.sinum{width:48px;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:14px 0;}
 .nc{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;background:var(--card);}
 .si.pend .nc{border-color:var(--accent);color:var(--accent);}
 .si.del .nc{border-color:var(--green);color:var(--green);background:rgba(16,185,129,.1);}
 .si.fail .nc{border-color:var(--red);color:var(--red);background:rgba(244,63,94,.1);}
-.sibody{flex:1;padding:16px 10px 16px 0;min-width:0;}
+.sibody{flex:1;padding:14px 10px 14px 0;min-width:0;}
 .siname{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .siaddr{font-size:12px;color:var(--text2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .sitags{display:flex;gap:4px;margin-top:7px;flex-wrap:wrap;}
 .tag{font-size:10px;font-weight:600;padding:3px 7px;border-radius:5px;}
 .ts{background:rgba(37,99,235,.12);color:var(--accent);}
-.tb2{background:rgba(15,23,42,.06);color:var(--text2);}
-.tok{background:rgba(16,185,129,.15);color:#16a34a;}
-.tko{background:rgba(244,63,94,.15);color:#e11d48;}
-.tpe{background:rgba(251,146,60,.15);color:#ea580c;}
+.tb2{background:rgba(255,255,255,.07);color:var(--text2);}
+.tok{background:rgba(16,185,129,.15);color:#34d399;}
+.tko{background:rgba(244,63,94,.15);color:#fb7185;}
+.tpe{background:rgba(251,146,60,.15);color:#fb923c;}
 .siacts{display:flex;flex-direction:column;gap:5px;padding:12px 12px 12px 0;flex-shrink:0;justify-content:center;}
 .abt{padding:8px 10px;border-radius:8px;font-size:11px;font-weight:700;border:none;cursor:pointer;min-width:52px;text-align:center;}
 .ab-ok{background:rgba(16,185,129,.2);color:var(--green);}
@@ -106,13 +108,13 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 .empty{padding:40px;text-align:center;color:var(--text3);font-size:13px;}
 
 /* MAPA */
-.mscr{flex:1;position:relative;background:#e2e8f0;overflow:hidden;}
+.mscr{flex:1;position:relative;background:#08131e;overflow:hidden;}
 #gmap{width:100%;height:100%;position:absolute;top:0;left:0;}
 .mstats{position:absolute;top:12px;left:12px;display:flex;flex-direction:column;gap:5px;z-index:5;}
-.msp{display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:20px;background:rgba(255,255,255,.88);border:1px solid var(--border);font-size:12px;font-weight:600;backdrop-filter:blur(8px);}
+.msp{display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:20px;background:rgba(8,19,30,.88);border:1px solid var(--border);font-size:12px;font-weight:600;backdrop-filter:blur(8px);}
 
 /* POPUP MAPA */
-.mpop{position:absolute;left:12px;right:12px;bottom:12px;background:rgba(255,255,255,.97);border:1px solid var(--accent);border-radius:16px;padding:14px 16px;z-index:10;transform:translateY(120%);transition:transform .35s cubic-bezier(.34,1.56,.64,1);}
+.mpop{position:absolute;left:12px;right:12px;bottom:12px;background:rgba(17,34,64,.97);border:1px solid var(--accent);border-radius:16px;padding:14px 16px;z-index:10;transform:translateY(120%);transition:transform .35s cubic-bezier(.34,1.56,.64,1);}
 .mpop.show{transform:translateY(0);}
 .mprow{display:flex;align-items:center;gap:12px;}
 .mpnum{font-size:36px;font-weight:900;color:var(--accent);line-height:1;flex-shrink:0;}
@@ -137,8 +139,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 .pthumb{position:relative;border-radius:10px;overflow:hidden;aspect-ratio:4/3;background:var(--card);}
 .pthumb img{width:100%;height:100%;object-fit:cover;}
 .pdel{position:absolute;top:5px;right:5px;width:24px;height:24px;border-radius:50%;background:rgba(244,63,94,.9);border:none;color:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
-.abtn{width:100%;padding:15px;border:none;border-radius:10px;background:var(--accent);color:#fff;font-size:16px;font-weight:700;letter-spacing:.3px;cursor:pointer;margin-bottom:16px;transition:opacity .15s;}
-.abtn:active{opacity:.85;}
+.abtn{width:100%;padding:16px;border:none;border-radius:12px;background:var(--accent);color:#fff;font-size:18px;font-weight:800;letter-spacing:2px;cursor:pointer;margin-bottom:16px;box-shadow:0 4px 20px rgba(37,99,235,.3);}
 .abtn:disabled{opacity:.4;cursor:not-allowed;}
 .rbox{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:16px;}
 .rtit{font-size:14px;font-weight:700;color:var(--accent);margin-bottom:12px;letter-spacing:.5px;}
@@ -165,12 +166,12 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 .dname{font-weight:600;font-size:13px;}
 .don{margin-left:auto;font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;background:rgba(16,185,129,.15);color:var(--green);}
 .pbar{height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:5px;}
-.pfill{height:100%;background:var(--accent);border-radius:2px;}
+.pfill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:2px;}
 .dnums{display:flex;gap:4px;}
-.dn{flex:1;text-align:center;background:rgba(15,23,42,.05);border-radius:5px;padding:5px 2px;}
+.dn{flex:1;text-align:center;background:rgba(255,255,255,.04);border-radius:5px;padding:5px 2px;}
 .dnv{font-size:14px;font-weight:700;}
 .dnl{font-size:9px;color:var(--text3);text-transform:uppercase;}
-.gmapw{flex:1;position:relative;background:#e2e8f0;overflow:hidden;}
+.gmapw{flex:1;position:relative;background:#08131e;overflow:hidden;}
 #gmap2{width:100%;height:100%;position:absolute;top:0;left:0;}
 
 /* Company tabs */
@@ -190,7 +191,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 <div id="login">
   <div class="lcard">
     <div class="llogo">NEXUS</div>
-    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v1756</span></div>
+    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v1524</span></div>
     <div class="lline"></div>
     <label class="llbl">Usuario</label>
     <input class="linp" id="ui" type="text" placeholder="tu usuario" autocapitalize="none" autocorrect="off">
@@ -225,20 +226,22 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 
     <!-- FORMULARIO DE CIERRE PERMANENTE - nunca se elimina del DOM -->
     <div id="cierre-panel" style="display:none;position:fixed;left:0;right:0;bottom:60px;z-index:800;padding:0 8px;">
-      <div style="background:var(--bg2);border:2px solid #16a34a;border-radius:16px;padding:16px;box-shadow:0 -4px 24px rgba(0,0,0,.4);">
+      <div style="background:var(--bg2);border:2px solid #10b981;border-radius:16px;padding:16px;box-shadow:0 -4px 24px rgba(0,0,0,.4);">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-          <div style="font-size:14px;font-weight:800;color:#16a34a;" id="cp-titulo">✓ Confirmar entrega</div>
+          <div style="font-size:14px;font-weight:800;color:#10b981;" id="cp-titulo">✓ Confirmar entrega</div>
           <button onclick="cerrarCierrePanel()" style="background:none;border:none;color:var(--text2);font-size:22px;cursor:pointer;line-height:1;">×</button>
         </div>
         <div style="font-size:12px;color:var(--text2);margin-bottom:12px;" id="cp-addr"></div>
         <input type="hidden" id="cp-n">
 
         <!-- Selección de ruta -->
+        <div id="cp-ruta-sel">
         <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">¿A qué ruta pertenece?</div>
         <div style="display:flex;gap:6px;margin-bottom:12px;">
           <button id="cp-r1" onclick="cpSelectRuta('principal',this)" style="flex:1;padding:10px 4px;border-radius:10px;border:2px solid var(--accent);background:rgba(37,99,235,.15);color:var(--accent);font-size:11px;font-weight:700;cursor:pointer;">🚚 Principal<br><span style="font-weight:400;opacity:.8">Jon</span></button>
           <button id="cp-r2" onclick="cpSelectRuta('andarin',this)" style="flex:1;padding:10px 4px;border-radius:10px;border:1.5px solid var(--border);background:transparent;color:var(--text2);font-size:11px;font-weight:700;cursor:pointer;">🚶 Andarin<br><span style="font-weight:400;opacity:.8">Andrea</span></button>
-          <button id="cp-r3" onclick="cpSelectRuta('50008',this)" style="flex:1;padding:10px 4px;border-radius:10px;border:1.5px solid var(--border);background:transparent;color:var(--text2);font-size:11px;font-weight:700;cursor:pointer;">📦 50008<br><span style="font-weight:400;opacity:.8">Camilo</span></button>
+          <button id="cp-r3" onclick="cpSelectRuta('50008',this)" style="flex:1;padding:10px 4px;border-radius:10px;border:1.5px solid var(--border);background:transparent;color:var(--text2);font-size:11px;font-weight:700;cursor:pointer;">📦 50008<br><span style="font-weight:400;opacity:.8">Sebas</span></button>
+        </div>
         </div>
 
         <!-- Foto -->
@@ -256,7 +259,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
           ⚡ Marcar como preferente (13h/14h)
         </button>
 
-        <button onclick="cpConfirmar()" style="width:100%;padding:14px;border:none;border-radius:12px;background:#16a34a;color:#fff;font-size:16px;font-weight:800;cursor:pointer;">
+        <button onclick="cpConfirmar()" style="width:100%;padding:14px;border:none;border-radius:12px;background:#10b981;color:#fff;font-size:16px;font-weight:800;cursor:pointer;">
           ✓ Confirmar entrega
         </button>
       </div>
@@ -309,16 +312,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
       <button onclick="abrirCargaCamara()" style="width:100%;padding:16px;border:none;border-radius:14px;background:var(--accent);color:#fff;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:8px;">
         📷 Escanear paquetes con la cámara
       </button>
-      <div style="text-align:center;color:var(--text3);font-size:12px;margin-bottom:12px;">— o sube fotos —</div>
-      <div class="uzone" id="uzone" onclick="document.getElementById('pda-file-input').click()">
-        <input type="file" id="pda-file-input" accept="image/*" multiple style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;" onchange="onFiles(this.files)">
-        <div class="uzic">📱</div>
-        <div class="uztit">Toca para subir fotos</div>
-        <div class="uzsub" id="uzsub">Capturas de pantalla de tu PDA CTT Express</div>
-      </div>
+      <div style="text-align:center;font-size:11px;color:var(--text3);margin-bottom:14px;">Lee cada etiqueta y numera los paquetes uno a uno</div>
 
-      <div class="pgrid" id="pgrid"></div>
-      <button class="abtn" id="abtn" disabled onclick="analyze()">ANALIZAR CON IA</button>
       <div id="rarea"></div>
 
       <!-- Añadir parada manual -->
@@ -384,9 +379,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
   <div class="scr" id="s-equipo">
     <div class="pdascr">
       <div class="pdatit">👥 Equipo NEXUS</div>
-      <div class="pdasub">Gestiona los accesos de tu equipo</div>
+      <div class="pdasub">Gestiona los accesos de tus repartidores</div>
       <div id="equipo-list"></div>
       <button class="abtn" style="margin-top:16px" onclick="showAddDriver()">+ AÑADIR REPARTIDOR</button>
+      <button onclick="crearClientePrueba()" style="width:100%;padding:14px;border:1.5px solid var(--accent);border-radius:12px;background:rgba(37,99,235,.08);color:var(--accent);font-size:14px;font-weight:700;cursor:pointer;margin-top:10px;">🎁 Crear cliente de prueba (1 día)</button>
       <div id="add-driver-form" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-top:12px;">
         <div style="font-size:14px;font-weight:700;margin-bottom:12px;color:var(--accent)">Nuevo repartidor</div>
         <label class="llbl">Nombre</label>
@@ -400,7 +396,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
           <button class="lbtn" style="flex:1;margin-top:0" onclick="addDriver()">Guardar</button>
         </div>
       </div>
-      <button class="abtn" style="margin-top:24px;border-color:var(--red);color:var(--red)" onclick="resetAllPasswords()">🔑 Resetear TODAS las contraseñas (menos la tuya)</button>
     </div>
   </div>
   <!-- HISTORIAL -->
@@ -467,7 +462,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 
     <div style="display:flex;gap:10px;">
       <button class="lbtn2" style="flex:1" id="btn-cancelar-cierre" onclick="cerrarTodoCierre()">Cancelar</button>
-      <button class="lbtn" style="flex:1;margin-top:0;background:var(--green);" id="btn-confirmar-cierre" onclick="(async function(){
+      <button class="lbtn" style="flex:1;margin-top:0;background:linear-gradient(135deg,#10b981,#059669);box-shadow:0 4px 15px rgba(16,185,129,.3);" id="btn-confirmar-cierre" onclick="(async function(){
         var n=parseInt(document.getElementById('cierre-parada-n').value||'0');
         var nom=document.getElementById('cierre-nombre').value.trim();
         var dni=document.getElementById('cierre-dni').value.trim();
@@ -484,7 +479,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
             var r=await sb.storage.from('cierres').upload(fn,c,{contentType:'image/jpeg',upsert:true});
             if(!r.error){url=sb.storage.from('cierres').getPublicUrl(fn).data.publicUrl;}
           }
-          await sb.from('cierres').insert({driver:me.name,parada_n:n,addr:p?p.addr:'',foto_url:url,nombre_cliente:nom||null,dni_cliente:dni||null});
+          await sb.from('cierres').insert({driver:me.name,parada_n:n,addr:p?p.addr:'',foto_url:url,nombre_cliente:nom||null,dni_cliente:dni||null,empresa_id:me.empresa_id||null});
         }catch(e){console.error(e);}
       })()">✓ Confirmar</button>
     </div>
@@ -494,17 +489,20 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 <div class="toast" id="toast"></div>
 
 <!-- ESCÁNER CÓDIGO DE BARRAS -->
-<div id="scanner-overlay" style="display:none;position:fixed;inset:0;background:#000;z-index:1000;flex-direction:column;align-items:center;justify-content:center;">
-  <div style="position:relative;width:100%;max-width:400px;">
-    <video id="scanner-video" style="width:100%;border-radius:12px;" autoplay playsinline></video>
+<div id="scanner-overlay" style="display:none;position:fixed;inset:0;background:#000;z-index:1000;flex-direction:column;align-items:center;justify-content:center;padding:calc(12px + env(safe-area-inset-top,0px)) 12px calc(12px + env(safe-area-inset-bottom,0px));overflow:hidden;">
+  <div style="position:relative;width:100%;max-width:400px;flex:0 1 auto;min-height:0;display:flex;align-items:center;justify-content:center;">
+    <video id="scanner-video" style="width:100%;max-height:55vh;object-fit:cover;border-radius:12px;" autoplay playsinline></video>
     <div style="position:absolute;inset:0;border:3px solid var(--accent);border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,.5);"></div>
     <div style="position:absolute;top:50%;left:10%;right:10%;height:2px;background:var(--accent);transform:translateY(-50%);opacity:.8;"></div>
   </div>
-  <div id="scanner-result" style="color:#fff;font-size:14px;margin-top:16px;text-align:center;padding:0 20px;">Apunta al código de barras del paquete</div>
-  <button onclick="cerrarEscaner()" style="margin-top:20px;padding:14px 32px;border:2px solid #fff;border-radius:12px;background:transparent;color:#fff;font-size:15px;font-weight:700;cursor:pointer;">✕ Cerrar</button>
+  <div id="scanner-result" style="color:#fff;font-size:14px;margin-top:12px;text-align:center;padding:0 20px;flex-shrink:0;">Apunta al código de barras del paquete</div>
+  <div style="display:flex;gap:10px;margin-top:14px;flex-shrink:0;flex-wrap:wrap;justify-content:center;">
+    <button onclick="leerDireccionIA()" style="padding:14px 22px;border:none;border-radius:12px;background:var(--accent);color:#fff;font-size:15px;font-weight:800;cursor:pointer;">🔍 Leer dirección (IA)</button>
+    <button onclick="cerrarEscaner()" style="padding:14px 22px;border:2px solid #fff;border-radius:12px;background:transparent;color:#fff;font-size:15px;font-weight:700;cursor:pointer;">✕ Cerrar</button>
+  </div>
 </div>
 
-<!-- CÁMARA: CARGAR PAQUETES -->
+<!-- CÁMARA DE CARGA: escanear paquetes y numerarlos -->
 <div id="carga-overlay" style="display:none;position:fixed;inset:0;background:#000;z-index:1000;flex-direction:column;">
   <div style="padding:calc(12px + env(safe-area-inset-top,0px)) 16px 10px;display:flex;align-items:center;justify-content:space-between;">
     <div style="color:#fff;font-size:16px;font-weight:800;">📷 Cargar paquetes</div>
@@ -545,40 +543,15 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 
 <script>
 
-// Clave SOLO para cargar el JS de Google Maps en el navegador (no se puede
-// proxyar). DEBE estar restringida en Google Cloud Console por referrer HTTP
-// (tu dominio) y por API (Maps JavaScript API). El geocoding y directions ya
-// NO usan esta clave: van por el Worker.
 const MAPS_JS_KEY = 'AIzaSyDDyfpWWMdNxVP8UtZEZA2GBmC2GzXUo7o';
 const WORKER_URL = 'https://nexus-api.victoribius.workers.dev';
-// Debe coincidir con el secret APP_TOKEN del Worker. Vacío = sin exigir token.
 const APP_TOKEN = '2291ecd1e0c00d5d3cf6b86d5be670a3737710cd0ba6c2638cd0fe3beb9be63f';
-
-// --- Helpers de escape contra XSS/inyección ---
-// esc: para texto que se inserta en HTML (innerHTML).
-function esc(s){return String(s==null?'':s)
-  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-  .replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
-// escJs: para insertar una cadena dentro de un string JS entre comillas simples
-// que a su vez va en un atributo HTML entre comillas dobles (p.ej. onclick="f('AQUI')").
-function escJs(s){return String(s==null?'':s)
-  .replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n').replace(/\r/g,'\\r')
-  .replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-// Cabeceras para llamar al Worker (incluye token si está configurado).
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function escJs(s){return String(s==null?'':s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n').replace(/\r/g,'\\r').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function workerHeaders(){const h={'Content-Type':'application/json'};if(APP_TOKEN)h['X-App-Token']=APP_TOKEN;return h;}
-
-// --- Sesión / API autenticada (Fase 2) ---
 let sessionToken = localStorage.getItem('nexus_token') || '';
 function authHeaders(){const h=workerHeaders();if(sessionToken)h['Authorization']='Bearer '+sessionToken;return h;}
-async function api(path,method,body){
-  const opt={method:method||'GET',headers:authHeaders()};
-  if(body!==undefined)opt.body=JSON.stringify(body);
-  const r=await fetch(WORKER_URL+path,opt);
-  let d={};try{d=await r.json();}catch(e){}
-  if(!r.ok)throw new Error(d.error||('HTTP '+r.status));
-  return d;
-}
-// Roster de conductores (vía Worker; la tabla usuarios ya no se lee desde el cliente).
+async function api(path,method,body){const opt={method:method||'GET',headers:authHeaders()};if(body!==undefined)opt.body=JSON.stringify(body);const r=await fetch(WORKER_URL+path,opt);let d={};try{d=await r.json();}catch(e){}if(!r.ok)throw new Error(d.error||('HTTP '+r.status));return d;}
 async function fetchDrivers(){try{const d=await api('/admin/drivers');return d.drivers||[];}catch(e){return [];}}
 
 const CALLES = ['C/ Alfonso I','C/ Don Jaime I','Pº Independencia','C/ Coso','C/ San Miguel','Avda. Goya','C/ Manifestación','C/ San Vicente','C/ Prudencio','C/ Espoz y Mina','C/ Contamina','C/ Hernán Cortés','C/ San Juan de la Cruz','C/ Bilbao','C/ Santa Inés','C/ Las Fuentes','C/ Tenor Fleta','Avda. Cataluña','C/ César Augusto','C/ Predicadores','C/ Las Armas','C/ San Gil','C/ Boggiero','C/ Zurita','C/ Cinco de Marzo'];
@@ -624,11 +597,11 @@ return{n:idx, name:`${neg} ${ape}`, addr:`${cal}, ${num}`, saco, bultos, status}
 }
 
 const RUTAS=[
-{driver:'Jon',     did:0,color:'#2563eb',paradas:[]},
+{driver:'Jon',     did:0,color:'#00d4ff',paradas:[]},
 {driver:'Sebas',   did:1,color:'#a78bfa',paradas:[]},
-{driver:'Andrea',  did:2,color:'#16a34a',paradas:[]},
+{driver:'Andrea',  did:2,color:'#10b981',paradas:[]},
 {driver:'Camilo',  did:3,color:'#f59e0b',paradas:[]},
-{driver:'Steward', did:4,color:'#e11d48',paradas:[]},
+{driver:'Steward', did:4,color:'#f43f5e',paradas:[]},
 ];
 const USERS={
 victor:  {pass:'1234',  role:'manager',name:'Victor',  init:'V'},
@@ -674,9 +647,29 @@ ruta._rutaId=rutaId;
 ruta._fecha=hoy;
 const{data:paradas_db}=await sb.from('paradas').select('*').eq('ruta_id',rutaId).order('n');
 if(paradas_db&&paradas_db.length){
-ruta.paradas=paradas_db.map(p=>({n:p.n,name:p.name,addr:p.addr,saco:p.saco,bultos:p.bultos,status:p.status,lat:p.lat,lng:p.lng,_id:p.id}));
+ruta.paradas=paradas_db.map(p=>({n:p.n,name:p.name,addr:p.addr,saco:p.saco,bultos:p.bultos,status:p.status,lat:p.lat,lng:p.lng,_id:p.id,codigo:p.codigo_seguimiento,paquete:p.paquete}));
 renderLista();if(gmap1)renderMarkers1();
 toast(`✓ ${paradas_db.length} paradas cargadas del día`,'ok');
+
+// Geolocalizar las paradas que no tengan coordenadas (por si el geocoding no terminó antes)
+const sinCoords=ruta.paradas.filter(p=>!p.lat||!p.lng);
+if(sinCoords.length){
+toast(`📍 Localizando ${sinCoords.length} paradas...`,'');
+(async()=>{
+const batch=5;
+for(let i=0;i<sinCoords.length;i+=batch){
+await Promise.all(sinCoords.slice(i,i+batch).map(async p=>{
+try{
+const coords=await geocodeAddr(p.addr);
+p.lat=coords.lat;p.lng=coords.lng;p._aprox=coords._aprox||false;
+await sb.from('paradas').update({lat:p.lat,lng:p.lng}).eq('ruta_id',rutaId).eq('n',p.n);
+}catch(e){}
+}));
+renderLista();if(gmap1)renderMarkers1();
+}
+toast(`📍 Paradas localizadas en el mapa`,'ok');
+})();
+}
 }
 }
 
@@ -691,12 +684,18 @@ rutaId=existente[0].id;
 ruta._rutaId=rutaId;
 } else {
 
-const{data:nuevaRuta}=await sb.from('rutas').insert({driver:me.name,fecha:hoy,empresa}).select().single();
+const{data:nuevaRuta}=await sb.from('rutas').insert({driver:me.name,fecha:hoy,empresa,empresa_id:me.empresa_id||null}).select().single();
 if(nuevaRuta){rutaId=nuevaRuta.id;ruta._rutaId=rutaId;}
 }
 }
 if(!rutaId)return;
-const rows=paradas.map(p=>({ruta_id:rutaId,n:p.n,name:p.name,addr:p.addr,saco:p.saco,bultos:p.bultos,status:p.status,lat:p.lat||null,lng:p.lng||null,codigo_seguimiento:p.codigo||null}));
+// Evitar duplicados reales: misma parada (número + dirección). 
+// Así dos paquetes distintos no se borran aunque compartan número de lote.
+const{data:existentes}=await sb.from('paradas').select('n,addr').eq('ruta_id',rutaId);
+const clavesExistentes=new Set((existentes||[]).map(x=>Number(x.n)+'|'+(x.addr||'').trim().toLowerCase()));
+const nuevas=paradas.filter(p=>!clavesExistentes.has(Number(p.n)+'|'+(p.addr||'').trim().toLowerCase()));
+if(!nuevas.length)return;
+const rows=nuevas.map(p=>({ruta_id:rutaId,n:p.n,name:p.name,addr:p.addr,saco:p.saco,bultos:p.bultos,status:p.status,lat:p.lat||null,lng:p.lng||null,codigo_seguimiento:p.codigo||null,paquete:p.paquete||null}));
 await sb.from('paradas').insert(rows);
 }
 
@@ -734,7 +733,7 @@ if(usuarios){
 
 usuarios.forEach(d=>{
 if(!RUTAS.find(r=>r.driver===d.name)){
-RUTAS.push({driver:d.name,did:d.did||0,color:d.color||'#2563eb',paradas:[]});
+RUTAS.push({driver:d.name,did:d.did||0,color:d.color||'#00d4ff',paradas:[]});
 }
 });
 
@@ -742,13 +741,13 @@ for(let i=RUTAS.length-1;i>=0;i--){
 if(!usuarios.find(u=>u.name===RUTAS[i].driver))RUTAS.splice(i,1);
 }
 }
-const{data:rutas_hoy}=await sb.from('rutas').select('*').eq('fecha',hoy);
+const{data:rutas_hoy}=await sb.from('rutas').select('*').eq('fecha',hoy).eq('empresa_id',me.empresa_id);
 for(const r of RUTAS){
 if(!rutas_hoy||!rutas_hoy.length){r.paradas=[];continue;}
 const rutaDB=rutas_hoy.find(x=>x.driver===r.driver);
 if(!rutaDB){r.paradas=[];continue;}
 const{data:paradas_db}=await sb.from('paradas').select('*').eq('ruta_id',rutaDB.id).order('n');
-if(paradas_db)r.paradas=paradas_db.map(p=>({n:p.n,name:p.name,addr:p.addr,saco:p.saco,bultos:p.bultos,status:p.status,lat:p.lat,lng:p.lng,_id:p.id}));
+if(paradas_db)r.paradas=paradas_db.map(p=>({n:p.n,name:p.name,addr:p.addr,saco:p.saco,bultos:p.bultos,status:p.status,lat:p.lat,lng:p.lng,_id:p.id,codigo:p.codigo_seguimiento,paquete:p.paquete}));
 else r.paradas=[];
 }
 renderGestor();
@@ -757,9 +756,13 @@ renderGestor();
 document.getElementById('lbtn').onclick=doLogin;
 document.getElementById('pi').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 
-// Lógica común tras autenticar (login nuevo o sesión restaurada).
 async function aplicarSesion(user){
 me={...user};
+if(me.prueba&&me.prueba_fin&&Date.now()>new Date(me.prueba_fin).getTime()){
+sessionToken='';localStorage.removeItem('nexus_token');
+toast('⏰ Tu prueba ha caducado. Contacta para activar tu cuenta','err');
+throw new Error('trial-expired');
+}
 if(me.role==='manager'){
 const drivers=(await fetchDrivers()).filter(d=>d.activo);
 RUTAS.length=0;
@@ -791,17 +794,14 @@ const res=await api('/auth/login','POST',{username:u,password:p});
 sessionToken=res.token;localStorage.setItem('nexus_token',sessionToken);
 await aplicarSesion(res.user);
 }catch(e){
-const bad=e.message==='invalid'||e.message==='missing credentials';
-toast(bad?'Usuario o contraseña incorrectos':'Error de conexión','err');
+if(e.message!=='trial-expired'){const bad=e.message==='invalid'||e.message==='missing credentials';toast(bad?'Usuario o contraseña incorrectos':'Error de conexión','err');}
 }
 btn.textContent='ENTRAR';btn.disabled=false;
 }
 
 function cerrarSesion(){
 if(!confirm('¿Cerrar sesión?'))return;
-sessionToken='';
-localStorage.removeItem('nexus_token');
-localStorage.removeItem('nexus_session');
+sessionToken='';localStorage.removeItem('nexus_token');localStorage.removeItem('nexus_session');
 location.reload();
 }
 
@@ -815,9 +815,7 @@ return true;
 }
 
 window.addEventListener('load',()=>{
-
 document.getElementById('login').style.display='flex';
-
 setTimeout(async()=>{
 try{
 if(!sessionToken)return;
@@ -827,29 +825,53 @@ if(!ok){sessionToken='';localStorage.removeItem('nexus_token');}
 },100);
 });
 
-const TABS_D=[{id:'s-lista',ic:'📋',lb:'Lista'},{id:'s-mapa',ic:'🗺️',lb:'Mapa'},{id:'s-pda',ic:'📸',lb:'Fotos PDA'}];
-const TABS_S=[{id:'s-lista',ic:'📋',lb:'Lista'},{id:'s-mapa',ic:'🗺️',lb:'Mapa'},{id:'s-pda',ic:'📸',lb:'Fotos PDA'},{id:'s-cierres',ic:'📷',lb:'Cierres'},{id:'s-historial',ic:'📅',lb:'Historial'}];
-const TABS_M=[{id:'s-lista',ic:'📋',lb:'Lista'},{id:'s-mapa',ic:'🗺️',lb:'Mapa'},{id:'s-pda',ic:'📸',lb:'Fotos PDA'},{id:'s-cierres',ic:'📷',lb:'Cierres'},{id:'s-gestor',ic:'📊',lb:'Gestión'},{id:'s-equipo',ic:'👥',lb:'Equipo'},{id:'s-historial',ic:'📅',lb:'Historial'}];
+const ICONS={
+'s-lista':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>',
+'s-mapa':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>',
+'s-pda':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>',
+'s-cierres':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>',
+'s-gestor':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>',
+'s-equipo':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+'s-historial':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>'
+};
+
+const TABS_D=[{id:'s-lista',lb:'Lista'},{id:'s-mapa',lb:'Mapa'},{id:'s-pda',lb:'Fotos PDA'}];
+const TABS_S=[{id:'s-lista',lb:'Lista'},{id:'s-mapa',lb:'Mapa'},{id:'s-pda',lb:'Fotos PDA'},{id:'s-cierres',lb:'Cierres'},{id:'s-historial',lb:'Historial'}];
+const TABS_M=[{id:'s-lista',lb:'Lista'},{id:'s-mapa',lb:'Mapa'},{id:'s-pda',lb:'Fotos PDA'},{id:'s-cierres',lb:'Cierres'},{id:'s-gestor',lb:'Gestión'},{id:'s-equipo',lb:'Equipo'},{id:'s-historial',lb:'Historial'}];
 
 function buildNav(){
-const tabs=me.role==='manager'?TABS_M:(me.role==='supervisor'?TABS_S:TABS_D);
+let tabs=me.role==='manager'?TABS_M:(me.role==='supervisor'?TABS_S:TABS_D);
+// Modo simple: ruta + sus cierres privados (sin gestión ni equipo)
+if(me.modo_simple){
+tabs=[{id:'s-lista',lb:'Lista'},{id:'s-mapa',lb:'Mapa'},{id:'s-pda',lb:'Fotos PDA'},{id:'s-cierres',lb:'Cierres'}];
+}
 const bnav=document.getElementById('bnav');
 bnav.innerHTML='';
 tabs.forEach((t,i)=>{
 const d=document.createElement('div');
 d.className='bni'+(i===0?' on':'');
-d.innerHTML=`<div class="bni-ic">${t.ic}</div><div class="bni-lb">${t.lb}</div>`;
+d.innerHTML=`<div class="bni-ic">${ICONS[t.id]||''}</div><div class="bni-lb">${t.lb}</div>`;
 d.onclick=()=>switchTab(t.id,d);
 bnav.appendChild(d);
 });
 }
 
 function switchTab(id,el){
+// Modo simple (cliente de prueba): ruta, mapa, fotos y sus cierres
+if(me.modo_simple&&!['s-lista','s-mapa','s-pda','s-cierres'].includes(id))return;
 document.querySelectorAll('.bni').forEach(x=>x.classList.remove('on'));
 document.querySelectorAll('.scr').forEach(x=>x.classList.remove('on'));
 el.classList.add('on');
 document.getElementById(id).classList.add('on');
-if(id==='s-mapa') loadGMaps();
+if(id==='s-mapa'){
+loadGMaps();
+// Repintar pines al entrar (las paradas pueden haber llegado después de crear el mapa)
+const pintarMapa=()=>{
+if(gmReady&&gmap1){renderMarkers1();}
+else{setTimeout(pintarMapa,400);}
+};
+setTimeout(pintarMapa,200);
+}
 if(id==='s-gestor'){
 renderGestor();
 loadGMaps();
@@ -989,9 +1011,35 @@ const acts=_modoBorrar
 const el=document.createElement('div');
 el.className=`si ${cls}`;el.id='li-'+s.n;
 if(_modoBorrar&&sel)el.style.background='rgba(244,63,94,.08)';
-el.innerHTML=`<div class="sibar"></div><div class="sinum"><div class="nc">${s.n}</div></div>
-<div class="sibody"><div class="siname">${esc(s.name)}</div><div class="siaddr">${esc(s.addr)}</div>
-<div class="sitags"><span class="tag ts">Saca ${esc(s.saco)}</span><span class="tag tb2">${esc(s.bultos)}b</span>${tag}${s.codigo?`<span class="tag" style="background:rgba(251,146,60,.1);color:var(--orange);font-family:monospace;font-size:9px;">${esc(String(s.codigo).slice(-8))}</span>`:''}</div></div>${acts}`;
+// Etiqueta de hora estimada de llegada
+let etaTag='';
+if(s.eta&&s.status==='pending'){
+let color='var(--accent)',bg='rgba(37,99,235,.12)',icon='🕐';
+// Aviso para preferentes: si la ETA supera su franja
+if(s.eta){
+const h=parseInt(s.eta.split(':')[0]);
+const m=parseInt(s.eta.split(':')[1]);
+const mins=h*60+m;
+const esPref=/preferente|13h|14h/i.test(s.name+' '+s.addr);
+if(esPref){
+if(mins>14*60){color='#f43f5e';bg='rgba(244,63,94,.15)';icon='⚠️';}
+else if(mins>13*60){color='#f59e0b';bg='rgba(245,158,11,.15)';icon='⚡';}
+}
+}
+etaTag=`<span class="tag" style="background:${bg};color:${color};font-weight:700;">${icon} ${s.eta}</span>`;
+}
+// Indicador de geolocalización: verde si localizada bien, rojo si no, gris si aún cargando
+let geoTag='';
+if(s.lat&&s.lng&&!s._aprox){
+geoTag='<span class="tag" style="background:rgba(22,163,74,.15);color:var(--green);font-weight:700;">📍 Localizada</span>';
+}else if(s._aprox){
+geoTag='<span class="tag" style="background:rgba(220,38,38,.15);color:var(--red);font-weight:700;">📍 Sin localizar</span>';
+}else if(s.lat===null&&s.lng===null){
+geoTag='<span class="tag" style="background:rgba(148,163,184,.15);color:var(--text3);font-weight:700;">📍 Localizando…</span>';
+}
+el.innerHTML=`<div class="sibar" style="${s.lat&&s.lng&&!s._aprox?'background:var(--green);':s._aprox?'background:var(--red);':''}"></div><div class="sinum"><div class="nc">${s.n}</div></div>
+<div class="sibody"><div class="siname">${esc(s.name)}${s.paquete?`<span style="margin-left:6px;background:var(--orange);color:#000;font-size:11px;font-weight:800;padding:2px 8px;border-radius:8px;">📦 Paq. ${esc(s.paquete)}</span>`:''}</div><div class="siaddr">${esc(s.addr)}</div>
+<div class="sitags"><span class="tag ts">Saca ${esc(s.saco)}</span><span class="tag tb2">${esc(s.bultos)}b</span>${geoTag}${etaTag}${tag}${s.codigo?`<span class="tag" style="background:rgba(251,146,60,.1);color:var(--orange);font-family:monospace;font-size:9px;">${esc(String(s.codigo).slice(-8))}</span>`:''}</div></div>${acts}`;
 el.addEventListener('click',()=>{if(_modoBorrar)toggleSeleccion(s.n);else selStop(s.n);});
 return el;
 }
@@ -999,13 +1047,101 @@ return el;
 async function optimizarConIA(){
 const pendientes=ruta.paradas.filter(p=>p.status==='pending');
 if(pendientes.length<2){toast('Necesitas al menos 2 paradas pendientes','err');return;}
-toast('✨ Optimizando orden con IA...','');
+if(pendientes.length>110){toast('Máximo 110 paradas','err');return;}
+toast('🗺️ Calculando ruta óptima...','');
+
+// Optimiza un bloque (máx 25 puntos) con Google Directions. Devuelve {orden, legs} o null
+async function optimizarBloque(grupo){
+if(grupo.length<2)return{orden:grupo,legs:[]};
+const origin=grupo[0].addr+', Zaragoza, España';
+const destination=grupo[grupo.length-1].addr+', Zaragoza, España';
+const waypoints=grupo.slice(1,-1).map(p=>encodeURIComponent(p.addr+', Zaragoza, España')).join('|');
+const resp=await fetch(`${WORKER_URL}/directions?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&waypoints=${waypoints}`,{headers:APP_TOKEN?{'X-App-Token':APP_TOKEN}:{}});
+const data=await resp.json();
+if(data.status!=='OK')console.warn('Google Directions status:',data.status,data.error_message||'');
+if(data.status==='OK'&&data.routes&&data.routes[0]){
+const order=data.routes[0].waypoint_order||[];
+const middle=grupo.slice(1,-1);
+// Reconstruir el orden óptimo de los waypoints intermedios
+const mediasOrdenadas=order.map(i=>middle[i]).filter(Boolean);
+// Si Google no devolvió todos los índices, añadir los que falten en su orden original
+middle.forEach(p=>{if(!mediasOrdenadas.find(r=>r&&r.n===p.n))mediasOrdenadas.push(p);});
+const orden=[grupo[0],...mediasOrdenadas,grupo[grupo.length-1]].filter(Boolean);
+// Garantía final: ninguna parada del grupo se pierde
+grupo.forEach(p=>{if(!orden.find(r=>r.n===p.n))orden.push(p);});
+return{orden,legs:data.routes[0].legs||[]};
+}
+return null;
+}
+
+try{
+let reordenadas=[],allLegs=[];
+
+if(pendientes.length<=2){
+// Con 1-2 paradas no hay nada que optimizar: mantener tal cual, sin tocar Google
+reordenadas=pendientes;allLegs=[];
+}else if(pendientes.length<=25){
+// Caso normal: un solo bloque
+const r=await optimizarBloque(pendientes);
+if(!r)throw new Error('Google falló');
+reordenadas=r.orden;allLegs=r.legs;
+}else{
+// Muchas paradas: agrupar por código postal (zona) y optimizar cada grupo
+toast('🗺️ Optimizando ruta larga por zonas...','');
+const grupos={};
+pendientes.forEach(p=>{
+const cp=(p.addr.match(/\b50\d{3}\b/)||['50000'])[0];
+if(!grupos[cp])grupos[cp]=[];
+grupos[cp].push(p);
+});
+// Ordenar las zonas por CP y optimizar cada una (en sublotes de 25 si hiciera falta)
+for(const cp of Object.keys(grupos).sort()){
+let zona=grupos[cp];
+for(let i=0;i<zona.length;i+=25){
+const sub=zona.slice(i,i+25);
+const r=await optimizarBloque(sub);
+if(r){reordenadas.push(...r.orden);allLegs.push(...r.legs);}
+else{reordenadas.push(...sub);}
+}
+}
+}
+
+if(!reordenadas.length)throw new Error('Sin resultado');
+
+// RED DE SEGURIDAD: garantizar que NINGUNA parada pendiente se pierda
+pendientes.forEach(p=>{if(!reordenadas.find(r=>r.n===p.n))reordenadas.push(p);});
+
+// ── CALCULAR ETA POR PARADA ──
+const MARGEN_ENTREGA=120;
+let reloj=Date.now()+5*60*1000;
+reordenadas.forEach((p,i)=>{
+if(i>0){
+const leg=allLegs[i-1];
+const seg=leg?leg.duration.value:180;
+reloj+=(seg+MARGEN_ENTREGA)*1000;
+}
+p.eta=new Date(reloj).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+p._etaMs=reloj;
+});
+
+const entregadas=ruta.paradas.filter(p=>p.status!=='pending');
+ruta.paradas=[...entregadas,...reordenadas];
+renderLista();
+if(gmap1)renderMarkers1();
+const kmTotal=(allLegs.reduce((s,l)=>s+(l.distance?l.distance.value:0),0)/1000).toFixed(1);
+const minTotal=Math.round(allLegs.reduce((s,l)=>s+(l.duration?l.duration.value:0),0)/60)+reordenadas.length*2;
+toast(`✅ Ruta optimizada — ${reordenadas.length} paradas · ${kmTotal} km · ~${minTotal} min`,'ok');
+return;
+}catch(e){console.warn('Google falló, usando IA:',e);}
+
+// ── FALLBACK IA (solo para rutas cortas) ──
+if(pendientes.length>25){toast('No se pudo optimizar la ruta larga, inténtalo de nuevo','err');return;}
+toast('✨ Optimizando con IA...','');
 try{
 const lista=pendientes.map(p=>`${p.n}: ${p.addr}`).join('\n');
 const content=[{type:'text',text:`Eres un experto en rutas de reparto en Zaragoza, España.
 Tengo estas paradas pendientes con furgoneta:
 ${lista}
-
 Ordénalas para minimizar el recorrido total, teniendo en cuenta las calles de Zaragoza, sentidos únicos y zonas.
 Devuelve SOLO un array JSON con los números de parada en el orden óptimo: [3,1,5,2,4]`}];
 const resp=await fetch(WORKER_URL,{method:'POST',headers:workerHeaders(),
@@ -1015,19 +1151,16 @@ const txt=data.content?.find(c=>c.type==='text')?.text||'';
 let orden=null;
 try{orden=JSON.parse(txt.trim());}catch(e){}
 if(!orden){const m=txt.match(/\[[\d,\s]+\]/);if(m)try{orden=JSON.parse(m[0]);}catch(e){}}
-if(!orden||!Array.isArray(orden)){toast('No se pudo optimizar — intenta de nuevo','err');return;}
-
+if(!orden||!Array.isArray(orden)){toast('No se pudo optimizar','err');return;}
 const entregadas=ruta.paradas.filter(p=>p.status!=='pending');
 const reordenadas=orden.map(n=>pendientes.find(p=>Number(p.n)===Number(n))).filter(Boolean);
-
 pendientes.forEach(p=>{if(!reordenadas.find(r=>r.n===p.n))reordenadas.push(p);});
 ruta.paradas=[...entregadas,...reordenadas];
 renderLista();
 if(gmap1)renderMarkers1();
-toast(`✨ Ruta optimizada — ${reordenadas.length} paradas reordenadas`,'ok');
+toast(`✨ Ruta optimizada — ${reordenadas.length} paradas`,'ok');
 }catch(e){toast('Error al optimizar','err');}
 }
-
 function selStop(n){
 document.querySelectorAll('.si').forEach(x=>x.classList.remove('on'));
 const el=document.getElementById('li-'+n);
@@ -1050,13 +1183,13 @@ if(document.getElementById('s-gestor').classList.contains('on'))initMap2();
 };
 
 const MAP_STYLE=[
-{elementType:'geometry',stylers:[{color:'#f1f5f9'}]},
-{elementType:'labels.text.fill',stylers:[{color:'#64748b'}]},
-{elementType:'labels.text.stroke',stylers:[{color:'#ffffff'}]},
-{featureType:'road',elementType:'geometry',stylers:[{color:'#ffffff'}]},
-{featureType:'road.arterial',elementType:'geometry',stylers:[{color:'#ffffff'}]},
-{featureType:'road.highway',elementType:'geometry',stylers:[{color:'#e2e8f0'}]},
-{featureType:'water',elementType:'geometry',stylers:[{color:'#dbeafe'}]},
+{elementType:'geometry',stylers:[{color:'#0b0e15'}]},
+{elementType:'labels.text.fill',stylers:[{color:'#7ba7c7'}]},
+{elementType:'labels.text.stroke',stylers:[{color:'#0b0e15'}]},
+{featureType:'road',elementType:'geometry',stylers:[{color:'#1a2f4a'}]},
+{featureType:'road.arterial',elementType:'geometry',stylers:[{color:'#1e3a5f'}]},
+{featureType:'road.highway',elementType:'geometry',stylers:[{color:'#243d5c'}]},
+{featureType:'water',elementType:'geometry',stylers:[{color:'#0d2137'}]},
 {featureType:'poi',stylers:[{visibility:'off'}]},
 {featureType:'transit',stylers:[{visibility:'off'}]},
 ];
@@ -1087,10 +1220,12 @@ markers1.forEach(m=>m.setMap(null));
 markers1=[];
 const bounds=new google.maps.LatLngBounds();
 ruta.paradas.forEach((s,i)=>{
-const c=s.lat&&s.lng?{lat:s.lat,lng:s.lng}:coord(i);
+// No pintar paradas sin coordenadas reales (evita que se amontonen en un punto falso)
+if(!s.lat||!s.lng)return;
+const c={lat:s.lat,lng:s.lng};
 const isSel=selPin===s.n;
-const col=s.status==='delivered'?'#16a34a':s.status==='failed'?'#e11d48':'#2563eb';
-const tc='#fff';
+const col=s.status==='delivered'?'#10b981':s.status==='failed'?'#f43f5e':'#00d4ff';
+const tc=s.status==='failed'?'#fff':'#000';
 const svg=pinSVG(s.n,col,tc,isSel);
 const icon={url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg),scaledSize:new google.maps.Size(44,54),anchor:new google.maps.Point(22,54)};
 const m=new google.maps.Marker({position:c,map:gmap1,icon,title:`#${s.n} ${s.name}`,zIndex:isSel?999:s.n});
@@ -1098,7 +1233,7 @@ m.addListener('click',()=>selStop(s.n));
 markers1.push(m);
 bounds.extend(c);
 });
-if(!selPin)gmap1.fitBounds(bounds,{top:60,right:20,bottom:140,left:20});
+if(!selPin&&markers1.length)gmap1.fitBounds(bounds,{top:60,right:20,bottom:140,left:20});
 }
 
 function showMPop(s){
@@ -1114,95 +1249,6 @@ document.getElementById('mpacts').innerHTML=s.status==='pending'
 const pop=document.getElementById('mpop');
 pop.classList.add('show');
 clearTimeout(pop._t);pop._t=setTimeout(()=>pop.classList.remove('show'),5000);
-}
-
-// ===== ESCÁNER DE PAQUETES CON CÁMARA EN VIVO =====
-let _cargaStream=null, _cargaPaquetes=[], _cargaNum=0, _cargaProcesando=false;
-let _cargaPendientes=0;
-
-async function abrirCargaCamara(){
-_cargaPaquetes=[];
-const maxPaq=ruta.paradas.reduce((m,p)=>Math.max(m,Number(p.paquete)||Number(p.n)||0),0);
-_cargaNum=maxPaq;
-document.getElementById('carga-contador').textContent=maxPaq+' en ruta';
-document.getElementById('carga-ultimo').style.display='none';
-document.getElementById('carga-estado').textContent='Apunta a la etiqueta y pulsa Capturar';
-document.getElementById('carga-overlay').style.display='flex';
-try{
-_cargaStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1920},height:{ideal:1080}}});
-const v=document.getElementById('carga-video');
-v.srcObject=_cargaStream;await v.play();
-}catch(e){
-document.getElementById('carga-estado').textContent='Error de cámara: '+e.message;
-}
-}
-
-function capturarPaquete(){
-const v=document.getElementById('carga-video');
-if(!v||!v.videoWidth){toast('Cámara no lista','err');return;}
-const slot={num:null,name:'Particular',addr:null,codigo:null,_leyendo:true};
-_cargaPaquetes.push(slot);
-_cargaPendientes++;
-document.getElementById('carga-contador').textContent=_cargaPaquetes.length+(_cargaPaquetes.length===1?' capturado':' capturados');
-const ult=document.getElementById('carga-ultimo');
-ult.style.display='block';
-ult.innerHTML='📦 Leyendo etiqueta y buscando número escrito...';
-document.getElementById('carga-estado').textContent='Captura el siguiente cuando quieras';
-const vw=v.videoWidth,vh=v.videoHeight;
-const cropX=vw*0.05,cropY=vh*0.28,cropW=vw*0.9,cropH=vh*0.44;
-const maxW=1100;const scale=Math.min(1,maxW/cropW);
-const canvas=document.createElement('canvas');
-canvas.width=cropW*scale;canvas.height=cropH*scale;
-canvas.getContext('2d').drawImage(v,cropX,cropY,cropW,cropH,0,0,canvas.width,canvas.height);
-const b64=canvas.toDataURL('image/jpeg',0.82).split(',')[1];
-(async()=>{
-try{
-const ctrl=new AbortController();
-const timer=setTimeout(()=>ctrl.abort(),15000);
-const resp=await fetch(WORKER_URL,{method:'POST',signal:ctrl.signal,headers:workerHeaders(),
-body:JSON.stringify({model:'vision',max_tokens:200,messages:[{role:'user',content:[
-{type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},
-{type:'text',text:'Mira este paquete. 1) Lee la dirección de entrega de la etiqueta. 2) Busca un NÚMERO ESCRITO A MANO CON ROTULADOR sobre la caja (grande, manuscrito, NO impreso) que identifica el paquete. Ignora los números impresos de la etiqueta (código de barras, código postal, teléfono). Si NO hay ningún número manuscrito a rotulador, numero_manual debe ser null. Devuelve SOLO JSON: {"name":"nombre o Particular","addr":"calle número, CP ciudad","codigo":"seguimiento o null","numero_manual":número escrito a rotulador o null}'}
-]}]})});
-clearTimeout(timer);
-const data=await resp.json();
-const txt=data.content?.find(c=>c.type==='text')?.text||'';
-let parsed=null;
-try{parsed=JSON.parse(txt.replace(/```json?|```/g,'').trim());}catch(e){const m=txt.match(/\{[\s\S]*\}/);if(m)try{parsed=JSON.parse(m[0]);}catch(e2){}}
-if(parsed&&parsed.addr){
-const numManual=parsed.numero_manual!=null&&!isNaN(Number(parsed.numero_manual))?Number(parsed.numero_manual):null;
-if(numManual){slot.num=numManual;slot._marcado=true;}
-else{_cargaNum++;slot.num=_cargaNum;slot._marcado=false;}
-slot.name=parsed.name||'Particular';slot.addr=parsed.addr;slot.codigo=parsed.codigo||null;slot._leyendo=false;
-const ult2=document.getElementById('carga-ultimo');
-if(ult2){
-if(slot._marcado)ult2.innerHTML=`✓ Paquete #${slot.num} (número leído del rotulador) — ${esc(slot.addr)}`;
-else ult2.innerHTML=`📦 Paquete #${slot.num} — ESCRÍBELO en el paquete · ${esc(slot.addr)}`;
-}
-}else{slot._error=true;slot._leyendo=false;}
-}catch(e){slot._error=true;slot._leyendo=false;}
-_cargaPendientes--;
-const errs=_cargaPaquetes.filter(p=>p._error).length;
-if(errs>0)document.getElementById('carga-estado').textContent=`⚠️ ${errs} paquete(s) no se leyeron bien — revisa al terminar`;
-})();
-}
-
-async function cerrarCargaCamara(){
-if(_cargaPendientes>0){
-document.getElementById('carga-estado').textContent='Terminando de leer los últimos paquetes...';
-let intentos=0;
-while(_cargaPendientes>0&&intentos<60){await new Promise(r=>setTimeout(r,250));intentos++;}
-}
-if(_cargaStream){_cargaStream.getTracks().forEach(t=>t.stop());_cargaStream=null;}
-document.getElementById('carga-overlay').style.display='none';
-const v=document.getElementById('carga-video');if(v)v.srcObject=null;
-const validos=_cargaPaquetes.filter(p=>p.addr&&!p._error);
-const fallidos=_cargaPaquetes.length-validos.length;
-if(!validos.length){toast('No se leyó ningún paquete correctamente','err');return;}
-extractedStops=validos.map(p=>({n:p.num,name:p.name,addr:p.addr,bultos:1,codigo:p.codigo,paquete:p.num}));
-renderResults();
-setTimeout(()=>{const r=document.getElementById('rarea');if(r)r.scrollIntoView({behavior:'smooth',block:'start'});},200);
-toast(`✅ ${validos.length} paquetes leídos${fallidos?` · ${fallidos} fallaron, vuelve a escanearlos`:''} — carga en ruta`,fallidos?'':'ok');
 }
 
 function onFiles(files){
@@ -1232,17 +1278,17 @@ const imgs=await Promise.all(uploadFiles.map(f=>new Promise((res,rej)=>{
 const img=new Image();
 const url=URL.createObjectURL(f);
 img.onload=()=>{
-const MAX=1600;
+const MAX=1280;
 let w=img.width,h=img.height;
 if(w>MAX||h>MAX){if(w>h){h=Math.round(h*MAX/w);w=MAX;}else{w=Math.round(w*MAX/h);h=MAX;}}
 const canvas=document.createElement('canvas');
 canvas.width=w;canvas.height=h;
 canvas.getContext('2d').drawImage(img,0,0,w,h);
-const data=canvas.toDataURL('image/jpeg',0.92).split(',')[1];
+const data=canvas.toDataURL('image/jpeg',0.8).split(',')[1];
 URL.revokeObjectURL(url);
 res({data,media_type:'image/jpeg'});
 };
-img.onerror=rej;
+img.onerror=()=>{URL.revokeObjectURL(url);rej(new Error('No se pudo abrir una de las fotos (formato no válido)'));};
 img.src=url;
 })));
 
@@ -1298,37 +1344,50 @@ const content=[
 {type:'text',text:prompt}
 ];
 try{
-const resp=await fetch(WORKER_URL,{method:'POST',headers:workerHeaders(),
+const ctrl=new AbortController();
+const timer=setTimeout(()=>ctrl.abort(),25000);
+const resp=await fetch(WORKER_URL,{method:'POST',signal:ctrl.signal,headers:workerHeaders(),
 body:JSON.stringify({model:'vision',max_tokens:4000,messages:[{role:'user',content}]})});
-if(!resp.ok)return [];
+clearTimeout(timer);
+if(!resp.ok)return {error:`servidor respondió ${resp.status}`};
 const respText=await resp.text();
 let data;
-try{data=JSON.parse(respText);}catch(e){return [];}
+try{data=JSON.parse(respText);}catch(e){return {error:'respuesta no válida del servidor'};}
 const txt=data.content?.find(c=>c.type==='text')?.text||'';
 let parsed=null;
 try{parsed=JSON.parse(txt.trim());}catch(e){}
 if(!parsed){try{parsed=JSON.parse(txt.replace(/```json?|```/g,'').trim());}catch(e){}}
 if(!parsed){const m=txt.match(/\{[\s\S]*\}/);if(m)try{parsed=JSON.parse(m[0]);}catch(e){}}
 return parsed?.stops||[];
-}catch(e){return [];}
+}catch(e){
+if(e.name==='AbortError')return {error:'una foto tardó demasiado (red lenta)'};
+return {error:e.message};
+}
 }));
 
-let allStops=resultados.flat();
+let allStops=[];
+let errores=[];
+resultados.forEach(r=>{
+if(Array.isArray(r))allStops=allStops.concat(r);
+else if(r&&r.error)errores.push(r.error);
+});
 
 const seen=new Set();
 extractedStops=allStops.filter(s=>{
-const key=(s.addr||'')+'|'+(s.name||'');
+const key=s.addr+s.name;
 if(seen.has(key))return false;
 seen.add(key);return true;
 });
 
 if(!extractedStops.length){
-document.getElementById('rarea').innerHTML=`<div class="rbox"><div class="rtit" style="color:var(--orange)">⚠️ Sin resultados</div><div style="font-size:12px;color:var(--text2)">La IA no pudo extraer paradas. Intenta con fotos más nítidas de la pantalla de la PDA.</div></div>`;
+const motivo=errores.length?`<div style="font-size:12px;color:var(--text2)">Motivo: ${errores[0]}. Prueba con menos fotos a la vez o mejor conexión.</div>`:`<div style="font-size:12px;color:var(--text2)">La IA no pudo extraer paradas. Intenta con fotos más nítidas de la pantalla de la PDA.</div>`;
+document.getElementById('rarea').innerHTML=`<div class="rbox"><div class="rtit" style="color:var(--orange)">⚠️ Sin resultados</div>${motivo}</div>`;
 } else {
 renderResults();
+if(errores.length)toast(`✅ ${extractedStops.length} paradas · ⚠️ ${errores.length} foto(s) fallaron`,'');
 }
 }catch(err){
-document.getElementById('rarea').innerHTML=`<div class="rbox"><div class="rtit" style="color:var(--red)">❌ Error</div><div style="font-size:12px;color:var(--text2)">${esc(err.message)}</div></div>`;
+document.getElementById('rarea').innerHTML=`<div class="rbox"><div class="rtit" style="color:var(--red)">❌ Error</div><div style="font-size:12px;color:var(--text2)">${err.message}</div></div>`;
 }
 btn.disabled=false;btn.textContent='ANALIZAR CON IA';
 }
@@ -1532,6 +1591,58 @@ return result.map((s,i)=>({...s,n:i+1}));
 async function cargarRuta(){
 if(!extractedStops.length)return;
 const btn=document.querySelector('#rarea .lbtn2');
+if(btn){btn.disabled=true;btn.textContent='Cargando...';}
+const sacas=['A','B','C','D','E'];
+
+// El n interno debe ser ÚNICO (lo usan mapa, optimización, cierres).
+// El número de paquete (de la caja) va en 'paquete' y SÍ puede repetirse.
+const maxN=ruta.paradas.reduce((m,p)=>Math.max(m,Number(p.n)||0),0);
+const paradas=extractedStops.map((s,i)=>({
+n:maxN+i+1,name:s.name,addr:s.addr,
+saco:sacas[Math.floor(i/Math.max(1,extractedStops.length/5))%5],
+bultos:s.bultos||1,status:'pending',lat:null,lng:null,
+codigo:s.codigo||null,paquete:s.paquete||s.n||null
+}));
+
+// 1) AÑADIR YA a la lista (sin esperar al geocoding) — carga instantánea
+ruta.paradas.push(...paradas);
+renderLista();
+toast(`✓ ${paradas.length} paradas cargadas — localizando en segundo plano...`,'ok');
+
+// Limpiar la pantalla de escaneo enseguida
+extractedStops=[];uploadFiles=[];
+const _pg=document.getElementById('pgrid');if(_pg)_pg.innerHTML='';
+const _ra=document.getElementById('rarea');if(_ra)_ra.innerHTML='';
+if(btn){btn.disabled=false;btn.textContent='ANALIZAR CON IA';}
+
+// 2) GUARDAR en BD ya (sin coordenadas aún), para no perder nada
+await guardarParadasEnDB(paradas);
+
+// 3) GEOLOCALIZAR EN SEGUNDO PLANO — va actualizando mapa y BD según termina
+(async()=>{
+const batchSize=5;
+let hechas=0;
+for(let i=0;i<paradas.length;i+=batchSize){
+const chunk=paradas.slice(i,i+batchSize);
+await Promise.all(chunk.map(async p=>{
+try{
+const coords=await geocodeAddr(p.addr);
+p.lat=coords.lat;p.lng=coords.lng;p._aprox=coords._aprox||false;
+// Actualizar la parada en la BD con sus coordenadas
+if(ruta._rutaId)await sb.from('paradas').update({lat:p.lat,lng:p.lng}).eq('ruta_id',ruta._rutaId).eq('n',p.n);
+}catch(e){}
+hechas++;
+}));
+if(gmap1)renderMarkers1();
+renderLista();
+}
+toast(`📍 ${hechas} paradas localizadas en el mapa`,'ok');
+})();
+}
+
+async function cargarRutaVIEJA(){
+if(!extractedStops.length)return;
+const btn=document.querySelector('#rarea .lbtn2');
 if(btn){btn.disabled=true;btn.textContent='Localizando calles...';}
 const sacas=['A','B','C','D','E'];
 
@@ -1539,7 +1650,7 @@ const paradas=extractedStops.map((s,i)=>({
 n:s.n,name:s.name,addr:s.addr,
 saco:sacas[Math.floor(i/Math.max(1,extractedStops.length/5))%5],
 bultos:s.bultos||1,status:'pending',lat:null,lng:null,
-codigo:s.codigo||null
+codigo:s.codigo||null,paquete:s.paquete||null
 }));
 
 const batchSize=5;
@@ -1547,7 +1658,7 @@ for(let i=0;i<paradas.length;i+=batchSize){
 const chunk=paradas.slice(i,i+batchSize);
 await Promise.all(chunk.map(async p=>{
 const coords=await geocodeAddr(p.addr);
-p.lat=coords.lat;p.lng=coords.lng;
+p.lat=coords.lat;p.lng=coords.lng;p._aprox=coords._aprox||false;
 }));
 
 if(btn) btn.textContent=`Localizando ${Math.min(i+batchSize,paradas.length)}/${paradas.length}...`;
@@ -1568,9 +1679,9 @@ await guardarParadasEnDB(nuevas);
 
 toast(`✓ ${nuevas.length} paradas localizadas`,'ok');
 extractedStops=[];uploadFiles=[];
-document.getElementById('pgrid').innerHTML='';
-document.getElementById('rarea').innerHTML='';
-document.getElementById('abtn').disabled=true;
+const _pg=document.getElementById('pgrid');if(_pg)_pg.innerHTML='';
+const _ra=document.getElementById('rarea');if(_ra)_ra.innerHTML='';
+const _ab=document.getElementById('abtn');if(_ab)_ab.disabled=true;
 if(btn){btn.disabled=false;btn.textContent='ANALIZAR CON IA';}
 }
 
@@ -1600,7 +1711,7 @@ card.style.border=isSelected?'2px solid var(--accent)':'1px solid var(--border)'
 card.style.transition='all .2s';
 card.innerHTML=`
 <div class="dtop">
-<div class="tav" style="background:${r.color};color:#fff;width:26px;height:26px;font-size:12px">${esc((r.driver||'?')[0])}</div>
+<div class="tav" style="background:${r.color};color:#000;width:26px;height:26px;font-size:12px">${esc((r.driver||'?')[0])}</div>
 <div><div class="dname">${esc(r.driver)}</div><div style="font-size:10px;color:var(--text3)">${total} paradas</div></div>
 <div class="don" style="background:${isSelected?'rgba(37,99,235,.2)':'rgba(16,185,129,.15)'};color:${isSelected?'var(--accent)':'var(--green)'}">
 ${isSelected?'● Activo':'● Live'}
@@ -1643,13 +1754,13 @@ RUTAS.forEach(r=>{
 if(selectedDriver2&&r.driver!==selectedDriver2)return;
 r.paradas.forEach(s=>{
 if(!s.lat||!s.lng)return;
-const col=s.status==='delivered'?'#16a34a':s.status==='failed'?'#e11d48':r.color;
-const tc='#fff';
+const col=s.status==='delivered'?'#10b981':s.status==='failed'?'#f43f5e':r.color;
+const tc=s.status==='failed'?'#fff':'#000';
 const svg=pinSVG(s.n,col,tc,false);
 const icon={url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg),scaledSize:new google.maps.Size(32,40),anchor:new google.maps.Point(16,40)};
 const m=new google.maps.Marker({position:{lat:s.lat,lng:s.lng},map:gmap2,icon,title:`#${s.n} ${s.name} — ${r.driver}`,zIndex:s.n});
 m.addListener('click',()=>{
-const info=new google.maps.InfoWindow({content:`<div style="color:#0f172a;font-size:13px;"><b>#${s.n}</b> ${esc(s.name)}<br>${esc(s.addr)}<br><span style="color:${col}">${s.status==='delivered'?'✓ Entregado':s.status==='failed'?'✗ Fallido':'Pendiente'}</span></div>`});
+const info=new google.maps.InfoWindow({content:`<div style="color:#000;font-size:13px;"><b>#${s.n}</b> ${esc(s.name)}<br>${esc(s.addr)}<br><span style="color:${col}">${s.status==='delivered'?'✓ Entregado':s.status==='failed'?'✗ Fallido':'Pendiente'}</span></div>`});
 info.open(gmap2,m);
 });
 window._stopMarkers2.push(m);
@@ -1688,25 +1799,43 @@ if(gmap2){renderMap2Markers();dibujarRepartidoresEnMapa();}
 async function renderEquipo(){
 const list=document.getElementById('equipo-list');
 list.innerHTML='<div class="empty">Cargando...</div>';
-const team=(await fetchDrivers()).filter(d=>d.role==='driver'||d.role==='supervisor');
-if(!team.length){list.innerHTML='<div class="empty">No hay miembros en el equipo</div>';return;}
-list.innerHTML=team.map(d=>{
-const roleLbl=d.role==='supervisor'
-?'<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:6px;background:rgba(37,99,235,.12);color:var(--accent);letter-spacing:.5px">SUPERVISOR</span>'
-:'<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:6px;background:var(--bg2);color:var(--text2);letter-spacing:.5px">REPARTIDOR</span>';
+const drivers=await fetchDrivers();
+if(!drivers.length){list.innerHTML='<div class="empty">No hay trabajadores</div>';return;}
+list.innerHTML=drivers.map(d=>{
+let pruebaInfo='';
+if(d.prueba&&d.prueba_fin){
+const fin=new Date(d.prueba_fin).getTime();
+const caducada=Date.now()>fin;
+const finTxt=new Date(d.prueba_fin).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+pruebaInfo=`<div style="font-size:11px;font-weight:700;margin-top:3px;color:${caducada?'var(--red)':'var(--orange)'};">${caducada?'⏰ PRUEBA CADUCADA':'🎁 Prueba hasta '+esc(finTxt)}</div>`;
+}
+const modoTag=d.modo_simple?'<span style="font-size:10px;background:rgba(37,99,235,.12);color:var(--accent);padding:1px 6px;border-radius:5px;margin-left:4px;">simple</span>':'';
+const rolNombre=d.role==='manager'?'Gerente':d.role==='supervisor'?'Supervisor':'Repartidor';
+const rolColor=d.role==='manager'?'#8b5cf6':d.role==='supervisor'?'#2563eb':'#64748b';
+const rolTag=`<span style="font-size:10px;background:${rolColor}22;color:${rolColor};padding:1px 7px;border-radius:5px;font-weight:700;">${rolNombre}</span>`;
 return `
 <div style="background:var(--card);border:1px solid ${d.activo?'var(--border)':'var(--red)'};border-radius:12px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;">
 <div class="tav" style="width:36px;height:36px;font-size:15px;flex-shrink:0;background:${d.color||'var(--accent)'}">${esc(d.init||(d.name||'?')[0])}</div>
 <div style="flex:1;min-width:0">
-<div style="font-weight:700;font-size:14px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">${esc(d.name)} ${roleLbl} ${!d.activo?'<span style="color:var(--red);font-size:11px">DESACTIVADO</span>':''}</div>
+<div style="font-weight:700;font-size:14px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">${esc(d.name)} ${rolTag}${modoTag} ${!d.activo?'<span style="color:var(--red);font-size:11px">DESACTIVADO</span>':''}</div>
 <div style="font-size:12px;color:var(--text2)">Usuario: <b style="color:var(--accent)">${esc(d.username)}</b></div>
-<div style="font-size:12px;color:var(--text2)">Contraseña: <b>•••••• <span style="color:var(--text3);font-weight:400">(usa ✏️ para cambiarla)</span></b></div>
+<div style="font-size:12px;color:var(--text2)">Contraseña: <b>•••••• <span style="color:var(--text3);font-weight:400">(✏️ para cambiar)</span></b></div>
+${pruebaInfo}
 </div>
 <div style="display:flex;flex-direction:column;gap:6px">
 <button class="abt ab-nav" onclick="editDriver('${escJs(d.id)}','${escJs(d.username)}')" style="font-size:11px;padding:6px 8px">✏️</button>
 <button class="abt ${d.activo?'ab-ko':'ab-ok'}" onclick="toggleDriver('${escJs(d.id)}',${d.activo})" style="font-size:11px;padding:6px 8px">${d.activo?'🚫':'✓'}</button>
+${d.prueba?`<button class="abt ab-ok" onclick="activarCuenta('${escJs(d.id)}')" style="font-size:11px;padding:6px 8px" title="Activar como cuenta de pago">💳</button>`:''}
+<button class="abt" onclick="deleteDriver('${escJs(d.id)}','${escJs(d.name)}')" style="font-size:11px;padding:6px 8px;background:rgba(220,38,38,.15);color:var(--red);" title="Eliminar definitivamente">🗑️</button>
 </div>
 </div>`;}).join('');
+}
+
+async function activarCuenta(id){
+if(!confirm('¿Activar como cuenta de pago? Se quitará la caducidad de prueba y tendrá acceso completo sin límite.'))return;
+try{await api('/admin/driver-activate','POST',{id});}catch(e){toast('Error al activar','err');return;}
+renderEquipo();
+toast('💳 Cuenta activada sin límite','ok');
 }
 
 function showAddDriver(){
@@ -1714,14 +1843,29 @@ document.getElementById('add-driver-form').style.display='block';
 document.getElementById('new-name').focus();
 }
 
+async function crearClientePrueba(){
+const nombre=prompt('Nombre del cliente de prueba (ej: Autónomo García):');
+if(!nombre)return;
+const user=prompt('Usuario para acceder (sin espacios, ej: prueba1):');
+if(!user)return;
+const pass=prompt('Contraseña:');
+if(!pass)return;
+let _res;
+try{_res=await api('/admin/create-test','POST',{name:nombre.trim(),username:user.trim().toLowerCase(),password:pass.trim()});}
+catch(e){toast(e.message==='username exists'?'Error: ese usuario ya existe':'Error al crear','err');return;}
+renderEquipo();
+const finTxt=new Date(_res.prueba_fin).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+alert(`✅ Cliente de prueba creado\n\nUsuario: ${user.trim().toLowerCase()}\nContraseña: ${pass.trim()}\nModo: simple (solo ruta, sin cierres)\nCaduca: ${finTxt}\n\nPásale estos datos y la web victoribius-arch.github.io/nexuszgz`);
+toast(`🎁 Prueba creada — caduca en 24h`,'ok');
+}
+
 async function addDriver(){
 const name=document.getElementById('new-name').value.trim();
 const user=document.getElementById('new-user').value.trim().toLowerCase();
 const pass=document.getElementById('new-pass').value.trim();
 if(!name||!user||!pass){toast('Rellena todos los campos','err');return;}
-try{
-await api('/admin/drivers','POST',{name,username:user,password:pass});
-}catch(e){toast(e.message==='username exists'?'Error: ese usuario ya existe':'Error al crear repartidor','err');return;}
+try{await api('/admin/drivers','POST',{name,username:user,password:pass});}
+catch(e){toast(e.message==='username exists'?'Error: ese usuario ya existe':'Error al crear repartidor','err');return;}
 document.getElementById('add-driver-form').style.display='none';
 document.getElementById('new-name').value='';
 document.getElementById('new-user').value='';
@@ -1733,45 +1877,22 @@ toast(`✓ ${name} añadido al equipo`,'ok');
 async function editDriver(id, user){
 const newPass=prompt(`Nueva contraseña para ${user}:`);
 if(!newPass)return;
-try{await api('/admin/driver-password','POST',{id,newPassword:newPass.trim()});}
-catch(e){toast('Error al actualizar','err');return;}
+try{await api('/admin/driver-password','POST',{id,newPassword:newPass.trim()});}catch(e){toast('Error al actualizar','err');return;}
 renderEquipo();
 toast('✓ Contraseña actualizada','ok');
 }
 
 async function toggleDriver(id, activo){
-try{await api('/admin/driver-toggle','POST',{id,activo:!activo});}
-catch(e){toast('Error al actualizar','err');return;}
+try{await api('/admin/driver-toggle','POST',{id,activo:!activo});}catch(e){toast('Error al actualizar','err');return;}
 renderEquipo();
 toast(activo?'Repartidor desactivado':'Repartidor activado',activo?'err':'ok');
 }
 
-async function resetAllPasswords(){
-if(!confirm('Vas a generar contraseñas NUEVAS para TODOS los usuarios excepto el tuyo. Las antiguas dejarán de funcionar. ¿Continuar?'))return;
-let d;
-try{d=await api('/admin/reset-all-passwords','POST',{});}
-catch(e){toast('Error al resetear','err');return;}
-const reset=d.reset||[];
-if(!reset.length){toast('No había otras cuentas que resetear','');return;}
-mostrarPasswordsReset(reset);
+async function deleteDriver(id, nombre){
+if(!confirm(`¿Eliminar a ${nombre} definitivamente?\n\nSe borrará su cuenta. Sus rutas y cierres anteriores se conservan en el historial.\n\nEsta acción no se puede deshacer.`))return;
+try{await api('/admin/driver-delete','POST',{id});}catch(e){toast('Error al eliminar','err');return;}
 renderEquipo();
-}
-
-function mostrarPasswordsReset(reset){
-const txt=reset.map(x=>`${x.username}: ${x.password}`).join('\n');
-const overlay=document.createElement('div');
-overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
-overlay.innerHTML=`<div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;max-width:420px;width:100%;max-height:85vh;overflow:auto;">
-<div style="font-size:16px;font-weight:800;color:var(--accent);margin-bottom:6px;">🔑 Nuevas contraseñas (${reset.length})</div>
-<div style="font-size:12px;color:var(--text2);margin-bottom:12px;">Guárdalas y repártelas ahora. <b>No se volverán a mostrar.</b></div>
-<pre style="background:var(--bg2);border-radius:10px;padding:12px;font-size:13px;white-space:pre-wrap;word-break:break-all;margin:0 0 12px;">${esc(txt)}</pre>
-<div style="display:flex;gap:8px;">
-<button class="lbtn2" style="flex:1" id="reset-copy">Copiar</button>
-<button class="lbtn" style="flex:1;margin-top:0" id="reset-close">Hecho</button>
-</div></div>`;
-document.body.appendChild(overlay);
-overlay.querySelector('#reset-copy').onclick=()=>{if(navigator.clipboard)navigator.clipboard.writeText(txt);toast('Copiado','ok');};
-overlay.querySelector('#reset-close').onclick=()=>overlay.remove();
+toast(`🗑️ ${nombre} eliminado`,'ok');
 }
 
 let cierresBusq='', cierresDriverFiltro='all', cierreFotoFile=null;
@@ -1790,7 +1911,7 @@ async function renderFiltroDrivers(){
 const drivers=(await fetchDrivers()).filter(d=>d.role==='driver'&&d.activo);
 const frow=document.getElementById('frow-cierres');
 frow.innerHTML=`<div class="ftb on" onclick="setCierreDriver('all',this)">Todos</div>`+
-(drivers||[]).map(d=>`<div class="ftb" onclick="setCierreDriver('${escJs(d.name)}',this)">${esc(d.name)}</div>`).join('');
+drivers.map(d=>`<div class="ftb" onclick="setCierreDriver('${escJs(d.name)}',this)">${esc(d.name)}</div>`).join('');
 }
 
 function setCierreDriver(driver,el){
@@ -1806,12 +1927,20 @@ async function cargarCierres(){
 const list=document.getElementById('cierres-list');
 list.innerHTML='<div class="empty">Cargando...</div>';
 let query=sb.from('cierres').select('*').order('created_at',{ascending:false}).limit(100);
+// Cliente de prueba (modo simple): SOLO sus cierres, aislado por su nombre
+if(me.modo_simple){
+query=query.eq('driver',me.name);
+}else{
+query=query.eq('empresa_id',me.empresa_id);
 if(me.role==='driver') query=query.eq('driver',me.name);
 else if(me.role==='supervisor'){
-if(me.name==='Jon'||me.name==='jhon') query=query.eq('ruta_tipo','principal');
-else if(me.name==='Andrea'||me.name==='Jesica Andrea') query=query.eq('ruta_tipo','andarin');
-else if(me.name==='Camilo') query=query.eq('ruta_tipo','50008');
+const _sn=(me.name||'').toLowerCase();
+if(_sn.includes('jon')||_sn.includes('jhon')) query=query.eq('ruta_tipo','principal');
+else if(_sn.includes('andrea')) query=query.eq('ruta_tipo','andarin');
+else if(_sn.includes('sebas')) query=query.eq('ruta_tipo','50008');
+// Camilo (encargado) ve todos los cierres, sin filtro
 } else if(me.role==='manager'&&cierresDriverFiltro!=='all') query=query.eq('driver',cierresDriverFiltro);
+}
 const{data,error}=await query;
 if(error){list.innerHTML='<div class="empty">Error cargando</div>';return;}
 let cierres=data||[];
@@ -1821,28 +1950,44 @@ String(c.parada_n).includes(cierresBusq)||
 (c.nombre_cliente||'').toLowerCase().includes(cierresBusq)||
 (c.dni_cliente||'').toLowerCase().includes(cierresBusq)
 );
-if(!cierres.length){list.innerHTML='<div class="empty">No hay cierres hoy</div>';return;}
+if(!cierres.length){list.innerHTML='<div class="empty">No hay cierres</div>';return;}
 
-list.innerHTML=cierres.map(c=>{
-const fecha=new Date(c.created_at).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+// Agrupar por día
+const hoy=new Date();hoy.setHours(0,0,0,0);
+const ayer=new Date(hoy);ayer.setDate(ayer.getDate()-1);
+const dias={};
+cierres.forEach(c=>{
+const f=new Date(c.created_at);const fd=new Date(f);fd.setHours(0,0,0,0);
+const key=fd.getTime();
+if(!dias[key])dias[key]={fecha:fd,items:[]};
+dias[key].items.push(c);
+});
+
+const nombreDia=(fd)=>{
+if(fd.getTime()===hoy.getTime())return 'HOY';
+if(fd.getTime()===ayer.getTime())return 'AYER';
+const dias_sem=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+const meses=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+return `${dias_sem[fd.getDay()]} ${fd.getDate()} ${meses[fd.getMonth()]}`;
+};
+
+const tarjeta=(c)=>{
+const hora=new Date(c.created_at).toLocaleString('es-ES',{hour:'2-digit',minute:'2-digit'});
 return `<div style="margin:8px;background:var(--card);border-radius:16px;overflow:hidden;border:1px solid var(--border);">
-<!-- Cabecera -->
 <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;">
 <div style="width:36px;height:36px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;flex-shrink:0;">${esc((c.driver||'?')[0])}</div>
 <div style="flex:1;min-width:0;">
 <div style="font-weight:700;font-size:14px;">${esc(c.driver)}</div>
-<div style="display:flex;gap:6px;align-items:center;margin-top:2px;">
-<span style="font-size:11px;color:var(--text3);">${fecha}</span>
+<div style="display:flex;gap:6px;align-items:center;margin-top:2px;flex-wrap:wrap;">
+<span style="font-size:11px;color:var(--text3);">${hora}</span>
 ${c.ruta_tipo?`<span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;background:rgba(37,99,235,.15);color:var(--accent);">${c.ruta_tipo==='principal'?'🚚 Principal':c.ruta_tipo==='andarin'?'🚶 Andarin':'📦 50008'}</span>`:''}
 ${c.preferente?`<span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;background:rgba(245,158,11,.2);color:#f59e0b;">⚡ Preferente</span>`:''}
 </div>
 </div>
 <div style="font-family:monospace;font-size:20px;font-weight:900;color:var(--accent);">#${c.parada_n||'—'}</div>
 </div>
-<!-- Foto -->
 ${c.foto_url?`<img src="${esc(c.foto_url)}" onclick="verFoto('${escJs(c.foto_url)}')" style="width:100%;max-height:280px;object-fit:cover;display:block;cursor:pointer;">`
 :'<div style="height:80px;background:var(--bg2);display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:13px;">Sin foto</div>'}
-<!-- Info -->
 <div style="padding:12px 14px;">
 <div style="font-size:12px;color:var(--text2);margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">📍 ${esc(c.addr||'—')}</div>
 ${c.nombre_cliente?`<div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px;">👤 ${esc(c.nombre_cliente)}</div>`:''}
@@ -1850,6 +1995,20 @@ ${c.dni_cliente?`<div style="font-size:15px;font-weight:700;color:var(--accent);
 ${!c.nombre_cliente&&!c.dni_cliente?`<div style="font-size:13px;color:var(--text3);font-style:italic;">Sin nombre ni DNI</div>`:''}
 </div>
 </div>`;
+};
+
+// Ordenar días de más reciente a más antiguo y renderizar con cabecera plegable
+const keys=Object.keys(dias).sort((a,b)=>b-a);
+list.innerHTML=keys.map((k,idx)=>{
+const g=dias[k];
+const abierto=idx===0; // solo HOY abierto por defecto
+return `<details ${abierto?'open':''} style="margin:0;">
+<summary style="position:sticky;top:0;z-index:5;background:var(--bg2);padding:10px 16px;cursor:pointer;font-size:12px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+<span>📅 ${nombreDia(g.fecha)}</span>
+<span style="color:var(--text3);font-weight:600;">${g.items.length} ${g.items.length===1?'cierre':'cierres'}</span>
+</summary>
+<div>${g.items.map(tarjeta).join('')}</div>
+</details>`;
 }).join('');
 }
 
@@ -1859,10 +2018,80 @@ return Math.max(0,Math.ceil((new Date(fecha)-Date.now())/(1000*60*60*24)));
 
 function verFoto(url){
 const overlay=document.createElement('div');
-overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:pointer;';
-overlay.innerHTML=`<img src="${esc(url)}" style="max-width:95%;max-height:95%;border-radius:8px;object-fit:contain;">`;
-overlay.onclick=()=>document.body.removeChild(overlay);
+overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:9999;overflow:hidden;touch-action:none;';
+overlay.innerHTML=`
+<img src="${esc(url)}" id="vf-img" style="position:absolute;left:0;top:0;width:100%;height:100%;object-fit:contain;transform-origin:0 0;will-change:transform;">
+<button id="vf-close" style="position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:14px;z-index:2;width:42px;height:42px;border-radius:50%;border:2px solid #fff;background:rgba(0,0,0,.5);color:#fff;font-size:20px;font-weight:700;cursor:pointer;">✕</button>
+<div style="position:absolute;bottom:calc(16px + env(safe-area-inset-bottom,0px));left:0;right:0;text-align:center;color:rgba(255,255,255,.6);font-size:12px;z-index:2;pointer-events:none;">Pellizca para hacer zoom · Doble toque para ampliar</div>`;
 document.body.appendChild(overlay);
+const img=overlay.querySelector('#vf-img');
+let scale=1,tx=0,ty=0;
+let startDist=0,startScale=1,startTx=0,startTy=0,startMidX=0,startMidY=0;
+let panX=0,panY=0,panning=false;
+let lastTap=0;
+function apply(){
+// Limitar para que no se pierda la imagen
+const minS=1,maxS=6;
+scale=Math.max(minS,Math.min(maxS,scale));
+if(scale===1){tx=0;ty=0;}
+img.style.transform=`translate(${tx}px,${ty}px) scale(${scale})`;
+}
+function dist(t){return Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);}
+function mid(t){return{x:(t[0].clientX+t[1].clientX)/2,y:(t[0].clientY+t[1].clientY)/2};}
+overlay.addEventListener('touchstart',e=>{
+if(e.touches.length===2){
+e.preventDefault();
+startDist=dist(e.touches);startScale=scale;
+const m=mid(e.touches);startMidX=m.x;startMidY=m.y;startTx=tx;startTy=ty;
+}else if(e.touches.length===1){
+// doble toque
+const now=Date.now();
+if(now-lastTap<300){
+e.preventDefault();
+if(scale>1){scale=1;tx=0;ty=0;}
+else{scale=2.5;const r=overlay.getBoundingClientRect();tx=-(e.touches[0].clientX-r.left)*(scale-1);ty=-(e.touches[0].clientY-r.top)*(scale-1);}
+apply();
+}
+lastTap=now;
+if(scale>1){panning=true;panX=e.touches[0].clientX-tx;panY=e.touches[0].clientY-ty;}
+}
+},{passive:false});
+overlay.addEventListener('touchmove',e=>{
+if(e.touches.length===2){
+e.preventDefault();
+const d=dist(e.touches);
+const newScale=Math.max(1,Math.min(6,startScale*d/startDist));
+const m=mid(e.touches);
+// Zoom centrado en el punto medio de los dedos
+tx=m.x-(startMidX-startTx)*(newScale/startScale);
+ty=m.y-(startMidY-startTy)*(newScale/startScale);
+scale=newScale;
+apply();
+}else if(e.touches.length===1&&panning&&scale>1){
+e.preventDefault();
+tx=e.touches[0].clientX-panX;
+ty=e.touches[0].clientY-panY;
+apply();
+}
+},{passive:false});
+overlay.addEventListener('touchend',e=>{
+if(e.touches.length===0)panning=false;
+apply();
+});
+// Zoom con rueda en ordenador
+overlay.addEventListener('wheel',e=>{
+e.preventDefault();
+const prev=scale;
+scale=Math.max(1,Math.min(6,scale*(e.deltaY<0?1.15:0.87)));
+tx=e.clientX-(e.clientX-tx)*(scale/prev);
+ty=e.clientY-(e.clientY-ty)*(scale/prev);
+apply();
+},{passive:false});
+overlay.querySelector('#vf-close').onclick=()=>document.body.removeChild(overlay);
+overlay.addEventListener('click',e=>{
+// Cerrar tocando el fondo solo sin zoom
+if(e.target===overlay&&scale===1)document.body.removeChild(overlay);
+});
 }
 
 let _cierreIntN=0;
@@ -1884,6 +2113,9 @@ if(e) e.stopPropagation();
 const parada=ruta.paradas.find(p=>Number(p.n)===Number(n));
 if(!parada)return;
 
+// Modo simple: abre el cierre con foto/nombre/DNI opcionales (privado, solo lo ve él)
+// Ya no marca directo — usa el panel normal de abajo
+
 document.getElementById('cp-n').value=n;
 document.getElementById('cp-titulo').textContent='✓ Confirmar entrega — Parada #'+n;
 document.getElementById('cp-addr').textContent=parada.addr;
@@ -1897,8 +2129,16 @@ window._cpPreferente=false;
 const pb=document.getElementById('cp-preferente-btn');
 if(pb){pb.style.borderColor='var(--border)';pb.style.color='var(--text2)';pb.style.background='transparent';pb.textContent='⚡ Marcar como preferente (13h/14h)';}
 
+// Modo simple: ocultar selector de ruta, su cierre se guarda con su propio nombre
+const rutaSelDiv=document.getElementById('cp-ruta-sel');
+if(me.modo_simple){
+if(rutaSelDiv)rutaSelDiv.style.display='none';
+window._cpRuta='prueba_'+(me.username||me.name);
+}else{
+if(rutaSelDiv)rutaSelDiv.style.display='block';
 window._cpRuta='principal';
 cpSelectRuta('principal',document.getElementById('cp-r1'));
+}
 document.getElementById('cierre-panel').style.display='block';
 }
 
@@ -1971,7 +2211,8 @@ const{error:insErr}=await sb.from('cierres').insert({
 driver:me.name,parada_n:n,addr:parada?parada.addr:'',
 foto_url:fotoUrl,nombre_cliente:nombre||null,dni_cliente:dni||null,
 ruta_tipo:window._cpRuta||'principal',
-preferente:window._cpPreferente||false
+preferente:window._cpPreferente||false,
+empresa_id:me.empresa_id||null
 });
 if(t){
 if(insErr){t.textContent='Error: '+insErr.message;t.className='toast err show';}
@@ -2011,7 +2252,8 @@ if(!upErr){fotoUrl=sb.storage.from('cierres').getPublicUrl(fn).data.publicUrl;}
 }
 await sb.from('cierres').insert({
 driver:me.name,parada_n:n,addr:parada?parada.addr:'',
-foto_url:fotoUrl,nombre_cliente:nombre||null,dni_cliente:dni||null
+foto_url:fotoUrl,nombre_cliente:nombre||null,dni_cliente:dni||null,
+empresa_id:me.empresa_id||null
 });
 
 if(document.getElementById('s-cierres').classList.contains('on'))cargarCierres();
@@ -2054,7 +2296,7 @@ const parada=ruta.paradas.find(p=>Number(p.n)===Number(n));
 const labels={ausente:'🚫 Ausente',cambio_domicilio:'🏠 Cambio domicilio',rehusado:'❌ Rehusado'};
 cerrarIncidencia();
 if(parada){parada.status='failed';renderLista();if(gmap1)renderMarkers1();actualizarEstadoDB(parada,'failed');toast((labels[tipo]||tipo)+' — Parada #'+n,'err');}
-try{await sb.from('cierres').insert({driver:me.name,parada_n:n,addr:parada?parada.addr:'',nombre_cliente:(labels[tipo]||tipo)+(nota?' — '+nota:''),dni_cliente:null,foto_url:null});}catch(e){console.error(e);}
+try{await sb.from('cierres').insert({driver:me.name,parada_n:n,addr:parada?parada.addr:'',nombre_cliente:(labels[tipo]||tipo)+(nota?' — '+nota:''),dni_cliente:null,foto_url:null,empresa_id:me.empresa_id||null});}catch(e){console.error(e);}
 }
 
 let geoInterval=null;
@@ -2064,7 +2306,7 @@ async function enviarUbicacion(){
 if(!me||(me.role!=='driver'&&me.role!=='supervisor'))return;
 navigator.geolocation.getCurrentPosition(async function(pos){
 await sb.from('ubicaciones').upsert({driver:me.name,lat:pos.coords.latitude,lng:pos.coords.longitude,updated_at:new Date().toISOString()},{onConflict:'driver'});
-},function(err){console.log('Geo error:',err);},{enableHighAccuracy:true,timeout:10000});
+},function(err){console.log('Geo error:',err);},{enableHighAccuracy:true,timeout:20000,maximumAge:30000});
 }
 async function cargarUbicacionesRepartidores(){
 const{data}=await sb.from('ubicaciones').select('*');
@@ -2075,9 +2317,9 @@ if(!gmap2)return;
 if(window._driverMarkers){window._driverMarkers.forEach(m=>m.setMap(null));}
 window._driverMarkers=[];
 Object.entries(driverLocations).forEach(([driver,loc])=>{
-const r=RUTAS.find(x=>x.driver===driver);const color=r?r.color:'#2563eb';
+const r=RUTAS.find(x=>x.driver===driver);const color=r?r.color:'#00d4ff';
 const mins=Math.round((Date.now()-new Date(loc.updated_at).getTime())/60000);
-const svg='<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><circle cx="24" cy="24" r="22" fill="'+color+'" stroke="#fff" stroke-width="3"/><text x="24" y="29" text-anchor="middle" fill="#fff" font-size="16" font-weight="800" font-family="sans-serif">'+driver[0]+'</text></svg>';
+const svg='<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><circle cx="24" cy="24" r="22" fill="'+color+'" stroke="#fff" stroke-width="3"/><text x="24" y="29" text-anchor="middle" fill="#000" font-size="16" font-weight="800" font-family="sans-serif">'+driver[0]+'</text></svg>';
 const icon={url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg),scaledSize:new google.maps.Size(48,48),anchor:new google.maps.Point(24,24)};
 const m=new google.maps.Marker({position:{lat:loc.lat,lng:loc.lng},map:gmap2,icon,title:driver+' — hace '+mins+' min',zIndex:1000});
 window._driverMarkers.push(m);
@@ -2126,7 +2368,7 @@ const list=document.getElementById('hist-list');
 if(!fecha){list.innerHTML='<div class="empty">Selecciona una fecha</div>';return;}
 list.innerHTML='<div class="empty">Cargando...</div>';
 
-let query=sb.from('rutas').select('*').eq('fecha',fecha).order('created_at',{ascending:true});
+let query=sb.from('rutas').select('*').eq('fecha',fecha).eq('empresa_id',me.empresa_id).order('created_at',{ascending:true});
 if(driver!=='all') query=query.eq('driver',driver);
 const{data:rutas}=await query;
 
@@ -2199,6 +2441,113 @@ setInterval(checkAutoReset,5*60*1000);
 let _scannerStream=null;
 let _scannerInterval=null;
 
+// ── CÁMARA DE CARGA: numerar paquetes ──
+let _cargaStream=null, _cargaPaquetes=[], _cargaNum=0, _cargaProcesando=false;
+
+async function abrirCargaCamara(){
+_cargaPaquetes=[];
+// Continuar la numeración desde el último paquete que ya hay en la ruta
+// (así el segundo lote sigue 3,4,5... y no vuelve a empezar en 1)
+const maxPaq=ruta.paradas.reduce((m,p)=>Math.max(m,Number(p.paquete)||Number(p.n)||0),0);
+_cargaNum=maxPaq;
+document.getElementById('carga-contador').textContent=maxPaq+' en ruta';
+document.getElementById('carga-ultimo').style.display='none';
+document.getElementById('carga-estado').textContent='Apunta a la etiqueta y pulsa Capturar';
+const overlay=document.getElementById('carga-overlay');
+overlay.style.display='flex';
+try{
+_cargaStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1920},height:{ideal:1080}}});
+const v=document.getElementById('carga-video');
+v.srcObject=_cargaStream;await v.play();
+}catch(e){
+document.getElementById('carga-estado').textContent='Error de cámara: '+e.message;
+}
+}
+
+let _cargaPendientes=0;
+
+function capturarPaquete(){
+const v=document.getElementById('carga-video');
+if(!v||!v.videoWidth){toast('Cámara no lista','err');return;}
+
+// Crear slot — el número se decide cuando responda la IA (rotulador o asignado)
+const slot={num:null,name:'Particular',addr:null,codigo:null,_leyendo:true};
+_cargaPaquetes.push(slot);
+_cargaPendientes++;
+document.getElementById('carga-contador').textContent=_cargaPaquetes.length+(_cargaPaquetes.length===1?' capturado':' capturados');
+const ult=document.getElementById('carga-ultimo');
+ult.style.display='block';
+ult.innerHTML=`📦 Leyendo etiqueta y buscando número escrito...`;
+document.getElementById('carga-estado').textContent='Captura el siguiente cuando quieras';
+
+// Recortar al recuadro central (zona de la etiqueta) y comprimir
+const vw=v.videoWidth,vh=v.videoHeight;
+const cropX=vw*0.05,cropY=vh*0.28,cropW=vw*0.9,cropH=vh*0.44;
+const maxW=1100;
+const scale=Math.min(1,maxW/cropW);
+const canvas=document.createElement('canvas');
+canvas.width=cropW*scale;canvas.height=cropH*scale;
+canvas.getContext('2d').drawImage(v,cropX,cropY,cropW,cropH,0,0,canvas.width,canvas.height);
+const b64=canvas.toDataURL('image/jpeg',0.82).split(',')[1];
+
+// Leer en segundo plano (no bloquea)
+(async()=>{
+try{
+const ctrl=new AbortController();
+const timer=setTimeout(()=>ctrl.abort(),15000);
+const resp=await fetch(WORKER_URL,{method:'POST',signal:ctrl.signal,headers:workerHeaders(),
+body:JSON.stringify({model:'vision',max_tokens:200,messages:[{role:'user',content:[
+{type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},
+{type:'text',text:'Mira este paquete. 1) Lee la dirección de entrega de la etiqueta. 2) Busca un NÚMERO ESCRITO A MANO CON ROTULADOR sobre la caja (grande, manuscrito, NO impreso) que identifica el paquete. Ignora los números impresos de la etiqueta (código de barras, código postal, teléfono). Si NO hay ningún número manuscrito a rotulador, numero_manual debe ser null. Devuelve SOLO JSON: {"name":"nombre o Particular","addr":"calle número, CP ciudad","codigo":"seguimiento o null","numero_manual":número escrito a rotulador o null}'}
+]}]})});
+clearTimeout(timer);
+const data=await resp.json();
+const txt=data.content?.find(c=>c.type==='text')?.text||'';
+let parsed=null;
+try{parsed=JSON.parse(txt.replace(/```json?|```/g,'').trim());}catch(e){const m=txt.match(/\{[\s\S]*\}/);if(m)try{parsed=JSON.parse(m[0]);}catch(e2){}}
+if(parsed&&parsed.addr){
+// Número: el del rotulador si la IA lo vio, si no el siguiente libre
+const numManual=parsed.numero_manual!=null&&!isNaN(Number(parsed.numero_manual))?Number(parsed.numero_manual):null;
+if(numManual){slot.num=numManual;slot._marcado=true;}
+else{_cargaNum++;slot.num=_cargaNum;slot._marcado=false;}
+slot.name=parsed.name||'Particular';slot.addr=parsed.addr;slot.codigo=parsed.codigo||null;slot._leyendo=false;
+const ult2=document.getElementById('carga-ultimo');
+if(ult2){
+if(slot._marcado)ult2.innerHTML=`✓ Paquete #${slot.num} (número leído del rotulador) — ${esc(slot.addr)}`;
+else ult2.innerHTML=`📦 Paquete #${slot.num} — ESCRÍBELO en el paquete · ${esc(slot.addr)}`;
+}
+}else{
+slot._error=true;slot._leyendo=false;
+}
+}catch(e){slot._error=true;slot._leyendo=false;}
+_cargaPendientes--;
+// Actualizar contador de errores si los hay
+const errs=_cargaPaquetes.filter(p=>p._error).length;
+if(errs>0)document.getElementById('carga-estado').textContent=`⚠️ ${errs} paquete(s) no se leyeron bien — revisa al terminar`;
+})();
+}
+
+async function cerrarCargaCamara(){
+// Esperar a que terminen las lecturas en curso
+if(_cargaPendientes>0){
+document.getElementById('carga-estado').textContent='Terminando de leer los últimos paquetes...';
+let intentos=0;
+while(_cargaPendientes>0&&intentos<60){await new Promise(r=>setTimeout(r,250));intentos++;}
+}
+if(_cargaStream){_cargaStream.getTracks().forEach(t=>t.stop());_cargaStream=null;}
+document.getElementById('carga-overlay').style.display='none';
+const v=document.getElementById('carga-video');if(v)v.srcObject=null;
+const validos=_cargaPaquetes.filter(p=>p.addr&&!p._error);
+const fallidos=_cargaPaquetes.length-validos.length;
+if(!validos.length){toast('No se leyó ningún paquete correctamente','err');return;}
+// Volcar a extractedStops conservando el número de paquete escrito en la caja
+extractedStops=validos.map(p=>({n:p.num,name:p.name,addr:p.addr,bultos:1,codigo:p.codigo,paquete:p.num}));
+renderResults();
+// Asegurar que el área de resultados y el botón cargar son visibles
+setTimeout(()=>{const r=document.getElementById('rarea');if(r)r.scrollIntoView({behavior:'smooth',block:'start'});},200);
+toast(`✅ ${validos.length} paquetes leídos${fallidos?` · ${fallidos} fallaron, vuelve a escanearlos`:''} — carga en ruta`,fallidos?'':'ok');
+}
+
 async function abrirEscaner(){
 const overlay=document.getElementById('scanner-overlay');
 overlay.style.display='flex';
@@ -2269,9 +2618,62 @@ if(video)video.srcObject=null;
 document.getElementById('scanner-overlay').style.display='none';
 }
 
+function distMetros(lat1,lng1,lat2,lng2){
+const R=6371000,rad=Math.PI/180;
+const dLat=(lat2-lat1)*rad,dLng=(lng2-lng1)*rad;
+const a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*rad)*Math.cos(lat2*rad)*Math.sin(dLng/2)*Math.sin(dLng/2);
+return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+function resaltarParada(parada){
+document.querySelectorAll('.si').forEach(x=>{x.style.background='';x.style.border='';});
+const el=document.getElementById('li-'+parada.n);
+if(el){
+el.style.background='rgba(16,185,129,.2)';
+el.style.border='2px solid var(--green)';
+el.scrollIntoView({behavior:'smooth',block:'center'});
+setTimeout(()=>{el.style.background='';el.style.border='';},6000);
+}
+const listaTab=document.querySelector('.bni[onclick*="s-lista"]');
+if(listaTab&&!document.getElementById('s-lista').classList.contains('on'))switchTab('s-lista',listaTab);
+// Verificación GPS: ¿estás en el punto de esta parada?
+if(parada._aprox){
+// La dirección no se pudo localizar con precisión — no podemos verificar el GPS
+toast(`📍 #${parada.n} — esta dirección no se localizó con precisión, no puedo comprobar tu posición`,'');
+}else if(parada.lat&&parada.lng&&navigator.geolocation){
+toast(`✅ Parada #${parada.n} — comprobando posición...`,'ok');
+navigator.geolocation.getCurrentPosition(function(pos){
+const d=distMetros(pos.coords.latitude,pos.coords.longitude,parada.lat,parada.lng);
+const dTxt=d>=1000?(d/1000).toFixed(1)+' km':Math.round(d)+' m';
+if(d<40){
+toast(`✅ #${parada.n} CORRECTO — estás en el punto (${Math.round(d)} m)`,'ok');
+}else if(d<120){
+toast(`⚠️ #${parada.n} cerca — la parada está a ${dTxt}. Comprueba el portal`,'');
+}else{
+toast(`❌ #${parada.n} NO estás aquí — la parada está a ${dTxt} · te la marco en el mapa`,'err');
+// Estás lejos: localizar la parada en el mapa para que sepas dónde está
+selPin=parada.n;
+loadGMaps();
+const irAlMapa=()=>{
+if(gmReady&&gmap1){
+gmap1.panTo({lat:parada.lat,lng:parada.lng});
+gmap1.setZoom(16);
+renderMarkers1();
+const mapaTab=document.querySelector('.bni[onclick*="s-mapa"]');
+if(mapaTab)switchTab('s-mapa',mapaTab);
+}else{setTimeout(irAlMapa,400);}
+};
+setTimeout(irAlMapa,300);
+}
+},function(){toast(`✅ Parada #${parada.n} — ${parada.addr}`,'ok');},{enableHighAccuracy:true,timeout:8000,maximumAge:0});
+} else {
+toast(`✅ Parada #${parada.n} — ${parada.addr}`,'ok');
+}
+}
+
 function buscarPorCodigo(codigo){
 const limpio=codigo.replace(/\s/g,'');
-// 1) Coincidencia exacta
+// 1) Coincidencia exacta del código de seguimiento
 let parada=ruta.paradas.find(p=>p.codigo&&p.codigo.replace(/\s/g,'')===limpio);
 // 2) Coincidencia parcial — uno contiene al otro (prefijos de transportista)
 if(!parada)parada=ruta.paradas.find(p=>p.codigo&&(p.codigo.replace(/\s/g,'').includes(limpio)||limpio.includes(p.codigo.replace(/\s/g,''))));
@@ -2281,19 +2683,99 @@ const cola=limpio.slice(-8);
 parada=ruta.paradas.find(p=>p.codigo&&p.codigo.replace(/\s/g,'').endsWith(cola));
 }
 if(parada){
-document.querySelectorAll('.si').forEach(x=>{x.style.background='';x.style.border='';});
-const el=document.getElementById('li-'+parada.n);
-if(el){
-el.style.background='rgba(16,185,129,.2)';
-el.style.border='2px solid var(--green)';
-el.scrollIntoView({behavior:'smooth',block:'center'});
-setTimeout(()=>{el.style.background='';el.style.border='';},5000);
-}
-toast(`✅ Parada #${parada.n} — ${parada.addr}`,'ok');
-const listaTab=document.querySelector('.bni[onclick*="s-lista"]');
-if(listaTab&&!document.getElementById('s-lista').classList.contains('on'))switchTab('s-lista',listaTab);
+resaltarParada(parada);
 } else {
-toast(`Código ${limpio.slice(-10)} no está en tu ruta`,'err');
+toast(`Código ${limpio.slice(-10)} no está en tu ruta — prueba "Leer dirección (IA)"`,'err');
+}
+}
+
+// Buscar parada por el NÚMERO escrito en el paquete (1, 2, 3...)
+function buscarPorNumeroPaquete(num){
+const n=Number(num);
+if(!n)return false;
+const parada=ruta.paradas.find(p=>Number(p.paquete)===n||Number(p.n)===n);
+if(parada){resaltarParada(parada);return true;}
+return false;
+}
+
+// Leer la dirección de la etiqueta con IA (para paquetes sin código en la ruta)
+async function leerDireccionIA(){
+const video=document.getElementById('scanner-video');
+if(!video||!video.videoWidth){toast('Cámara no lista todavía','err');return;}
+const resultEl=document.getElementById('scanner-result');
+resultEl.textContent='🔍 Leyendo etiqueta con IA...';
+// Capturar el frame PRIMERO, mientras el vídeo sigue vivo
+// Usar la imagen completa (sin recortar) para no dejar fuera la dirección
+const vw=video.videoWidth,vh=video.videoHeight;
+const maxW=1280;
+const scale=Math.min(1,maxW/vw);
+const canvas=document.createElement('canvas');
+canvas.width=Math.round(vw*scale);canvas.height=Math.round(vh*scale);
+canvas.getContext('2d').drawImage(video,0,0,vw,vh,0,0,canvas.width,canvas.height);
+const b64=canvas.toDataURL('image/jpeg',0.82).split(',')[1];
+// Ahora sí, parar el lector de código (ya tenemos la foto)
+if(_scannerInterval){clearInterval(_scannerInterval);_scannerInterval=null;}
+if(window._codeReader){try{window._codeReader.reset();}catch(e){}}
+try{
+// Límite de 12s para que no te tenga esperando si la red va lenta
+const ctrl=new AbortController();
+const timer=setTimeout(()=>ctrl.abort(),15000);
+const resp=await fetch(WORKER_URL,{method:'POST',signal:ctrl.signal,headers:workerHeaders(),
+body:JSON.stringify({model:'vision',max_tokens:200,messages:[{role:'user',content:[
+{type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},
+{type:'text',text:'Mira esta imagen de un paquete o etiqueta de envío. Busca y extrae la dirección de entrega (calle y número, y CP si se ve). Si ves cualquier texto que parezca una dirección de calle, devuélvelo aunque esté incompleto. Devuelve SOLO JSON: {"addr":"calle y número o null","codigo":"número de seguimiento o null"}'}
+]}]})});
+clearTimeout(timer);
+const data=await resp.json();
+const txt=data.content?.find(c=>c.type==='text')?.text||'';
+let parsed=null;
+try{parsed=JSON.parse(txt.replace(/```json?|```/g,'').trim());}catch(e){const m=txt.match(/\{[\s\S]*\}/);if(m)try{parsed=JSON.parse(m[0]);}catch(e2){}}
+// Si leyó un código, probar primero por código
+if(parsed&&parsed.codigo){
+const limpio=String(parsed.codigo).replace(/\s/g,'');
+const porCodigo=ruta.paradas.find(p=>p.codigo&&(p.codigo.replace(/\s/g,'').includes(limpio)||limpio.includes(p.codigo.replace(/\s/g,''))));
+if(porCodigo){cerrarEscaner();resaltarParada(porCodigo);return;}
+}
+if(!parsed||!parsed.addr){resultEl.textContent='No se pudo leer la dirección — acerca la etiqueta y repite';return;}
+cerrarEscaner();
+buscarPorDireccion(parsed.addr);
+}catch(e){
+if(e.name==='AbortError')resultEl.textContent='La lectura tardó demasiado — comprueba tu conexión y repite';
+else resultEl.textContent='Error leyendo la etiqueta — inténtalo de nuevo';
+}
+}
+
+function normTxt(s){
+return String(s).toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Z0-9 ]/g,' ').replace(/\b(C|CL|CALLE|AV|AVDA|AVENIDA|PS|PO|PASEO|PZA|PLAZA|CAMINO|DE|DEL|LA|EL|LOS|LAS)\b/g,'').replace(/\s+/g,' ').trim();
+}
+
+function buscarPorDireccion(addr){
+const objetivo=normTxt(addr);
+const numM=String(addr).match(/\d+/);
+const numObj=numM?numM[0]:null;
+let mejor=null,mejorScore=0;
+ruta.paradas.forEach(p=>{
+const pn=normTxt(p.addr);
+const palObj=objetivo.split(' ').filter(w=>w.length>2);
+const palPar=pn.split(' ').filter(w=>w.length>2);
+if(!palObj.length||!palPar.length)return;
+// Coincidencia de palabras en ambos sentidos (más flexible)
+const comunes=palObj.filter(w=>palPar.some(x=>x.includes(w)||w.includes(x))).length;
+let score=comunes/Math.max(palObj.length,palPar.length);
+// El número de portal es lo más identificativo: mucho peso
+const numPar=(p.addr.match(/\d+/)||[])[0];
+if(numObj&&numPar&&numObj===numPar)score+=0.5;
+else if(numObj&&numPar&&numObj!==numPar)score-=0.2; // número distinto penaliza
+if(score>mejorScore){mejorScore=score;mejor=p;}
+});
+if(mejor&&mejorScore>=0.35){
+resaltarParada(mejor);
+}else if(mejor){
+// Aunque no llegue al umbral, ofrecer la más parecida
+resaltarParada(mejor);
+toast(`Parada más parecida a "${addr}" — verifica que es correcta`,'');
+}else{
+toast(`"${addr}" no coincide con ninguna parada de tu ruta`,'err');
 }
 }
 
