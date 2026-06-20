@@ -270,6 +270,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
   <div class="scr" id="s-mapa">
     <div class="mscr">
       <div id="gmap"></div>
+      <button onclick="activarMiUbicacion(this)" title="Mi ubicación" style="position:absolute;bottom:24px;left:12px;z-index:6;width:46px;height:46px;border:none;border-radius:50%;background:#fff;color:#2563eb;font-size:22px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;">📍</button>
       <div class="mstats" id="mstats"></div>
       <div class="mpop" id="mpop">
         <div class="mprow">
@@ -1248,6 +1249,49 @@ styles:MAP_STYLE,
 disableDefaultUI:false,zoomControl:true,mapTypeControl:false,streetViewControl:false,fullscreenControl:false,
 });
 renderMarkers1();
+}
+
+// ===== Mi ubicación + orientación en el mapa del repartidor =====
+let _miPos=null,_miHeading=null,_miMarker=null,_geoWatch=null,_brujulaOn=false;
+function miUbiSVG(heading){
+const cono=(heading!=null)?`<g transform="rotate(${Math.round(heading)} 30 30)"><path d="M30 3 L18 28 L42 28 Z" fill="#2563eb" opacity="0.45"/></g>`:'';
+return `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60">${cono}<circle cx="30" cy="30" r="16" fill="#2563eb" opacity="0.15"/><circle cx="30" cy="30" r="8" fill="#2563eb" stroke="#fff" stroke-width="3"/></svg>`;
+}
+function _pintarMiUbicacion(){
+if(!_miPos||!gmap1||typeof google==='undefined')return;
+const icon={url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(miUbiSVG(_miHeading)),scaledSize:new google.maps.Size(60,60),anchor:new google.maps.Point(30,30)};
+if(!_miMarker)_miMarker=new google.maps.Marker({position:_miPos,map:gmap1,icon,zIndex:99999,title:'Tu ubicación'});
+else{_miMarker.setPosition(_miPos);_miMarker.setIcon(icon);}
+}
+function _escucharBrujula(){
+if(_brujulaOn)return;_brujulaOn=true;
+const h=e=>{
+let hd=null;
+if(e.webkitCompassHeading!=null)hd=e.webkitCompassHeading;        // iPhone (grados desde el Norte, horario)
+else if(e.absolute&&e.alpha!=null)hd=360-e.alpha;                 // Android (orientación absoluta)
+if(hd!=null&&!isNaN(hd)){_miHeading=(hd+360)%360;_pintarMiUbicacion();}
+};
+window.addEventListener('deviceorientationabsolute',h,true);
+window.addEventListener('deviceorientation',h,true);
+}
+async function activarMiUbicacion(btn){
+if(!navigator.geolocation){toast('Tu dispositivo no da ubicación','err');return;}
+// Permiso de brújula (iPhone necesita pedirlo con un toque del usuario)
+try{
+if(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function'){
+const p=await DeviceOrientationEvent.requestPermission();
+if(p==='granted')_escucharBrujula();
+}else{_escucharBrujula();}
+}catch(_){}
+if(_geoWatch==null){
+_geoWatch=navigator.geolocation.watchPosition(pos=>{
+_miPos={lat:pos.coords.latitude,lng:pos.coords.longitude};
+if(pos.coords.heading!=null&&!isNaN(pos.coords.heading))_miHeading=pos.coords.heading; // rumbo GPS (al moverse)
+_pintarMiUbicacion();
+if(gmap1&&!_miMarker)gmap1.panTo(_miPos);
+},_=>{toast('No pude obtener tu ubicación (revisa el permiso de localización)','err');},{enableHighAccuracy:true,maximumAge:2000,timeout:12000});
+toast('📍 Mostrando tu ubicación','ok');
+}else if(_miPos&&gmap1){gmap1.panTo(_miPos);gmap1.setZoom(16);}
 }
 
 function pinSVG(n, col, tc, selected){
@@ -2889,4 +2933,4 @@ clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);
 </script>
 </body>
 </html>
-<!-- build: 2026-06-20-galeria -->
+<!-- build: 2026-06-20-miubi -->
