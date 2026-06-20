@@ -678,7 +678,7 @@ const hoy=new Date().toISOString().split('T')[0];
 let rutaId=ruta._rutaId;
 if(!rutaId){
 
-const{data:existente}=await sb.from('rutas').select('id').eq('driver',me.name).eq('fecha',hoy).limit(1);
+const{data:existente}=await sb.from('rutas').select('id').eq('driver',me.name).eq('fecha',hoy).order('created_at',{ascending:false}).limit(1);
 if(existente&&existente.length){
 rutaId=existente[0].id;
 ruta._rutaId=rutaId;
@@ -1010,6 +1010,24 @@ if(p._id){sb.from('paradas').update({paquete:v}).eq('id',p._id).then(()=>{});}
 toast(`✓ Paquete → ${v}`,'ok');
 }
 
+// Corregir la dirección (calle / número / portal) de una parada desde la lista
+async function editarDireccion(n,e){
+if(e)e.stopPropagation();
+const p=ruta.paradas.find(x=>Number(x.n)===Number(n));
+if(!p)return;
+const nueva=prompt('Dirección (calle, número, piso/portal):',p.addr||'');
+if(nueva==null)return;
+const v=String(nueva).trim();
+if(!v){toast('Dirección vacía','err');return;}
+p.addr=v;
+renderLista();
+toast('📍 Localizando nueva dirección…','');
+try{const c=await geocodeAddr(v);p.lat=c.lat;p.lng=c.lng;p._aprox=c._aprox||false;}catch(_){p.lat=null;p.lng=null;}
+renderLista();if(gmap1)renderMarkers1();
+if(p._id){sb.from('paradas').update({addr:v,lat:p.lat||null,lng:p.lng||null}).eq('id',p._id).then(()=>{});}
+toast('✓ Dirección actualizada','ok');
+}
+
 function crearElementoParada(s){
 const cls=s.status==='delivered'?'del':s.status==='failed'?'fail':'pend';
 const tag=s.status==='delivered'?'<span class="tag tok">✓ OK</span>':s.status==='failed'?'<span class="tag tko">✗ Fallido</span>':'<span class="tag tpe">Pendiente</span>';
@@ -1058,7 +1076,7 @@ geoTag='<span class="tag" style="background:rgba(220,38,38,.15);color:var(--red)
 geoTag='<span class="tag" style="background:rgba(148,163,184,.15);color:var(--text3);font-weight:700;">📍 Localizando…</span>';
 }
 el.innerHTML=`<div class="sibar" style="${s.lat&&s.lng&&!s._aprox?'background:var(--green);':s._aprox?'background:var(--red);':''}"></div><div class="sinum"><div class="nc">${s.n}</div></div>
-<div class="sibody"><div class="siname">${esc(s.name)}${s._sinNum?`<span onclick="editarPaquete(${s.n},event)" style="margin-left:6px;background:var(--red);color:#fff;font-size:11px;font-weight:800;padding:2px 8px;border-radius:8px;cursor:pointer;">⚠️ Poner nº</span>`:s.paquete?`<span onclick="editarPaquete(${s.n},event)" style="margin-left:6px;background:var(--orange);color:#000;font-size:11px;font-weight:800;padding:2px 8px;border-radius:8px;cursor:pointer;">📦 Paq. ${esc(s.paquete)} ✏️</span>`:''}</div><div class="siaddr">${esc(s.addr)}</div>
+<div class="sibody"><div class="siname">${esc(s.name)}${s._sinNum?`<span onclick="editarPaquete(${s.n},event)" style="margin-left:6px;background:var(--red);color:#fff;font-size:11px;font-weight:800;padding:2px 8px;border-radius:8px;cursor:pointer;">⚠️ Poner nº</span>`:s.paquete?`<span onclick="editarPaquete(${s.n},event)" style="margin-left:6px;background:var(--orange);color:#000;font-size:11px;font-weight:800;padding:2px 8px;border-radius:8px;cursor:pointer;">📦 Paq. ${esc(s.paquete)} ✏️</span>`:''}</div><div class="siaddr" onclick="editarDireccion(${s.n},event)" style="cursor:pointer;">${esc(s.addr)} <span style="opacity:.45;font-size:11px;">✏️</span></div>
 <div class="sitags"><span class="tag ts">Saca ${esc(s.saco)}</span><span class="tag tb2">${esc(s.bultos)}b</span>${geoTag}${etaTag}${tag}${s.codigo?`<span class="tag" style="background:rgba(251,146,60,.1);color:var(--orange);font-family:monospace;font-size:9px;">${esc(String(s.codigo).slice(-8))}</span>`:''}</div></div>${acts}`;
 el.addEventListener('click',()=>{if(_modoBorrar)toggleSeleccion(s.n);else selStop(s.n);});
 return el;
@@ -1617,12 +1635,29 @@ const sacas=['A','B','C','D','E'];
 // El n interno debe ser ÚNICO (lo usan mapa, optimización, cierres).
 // El número de paquete (de la caja) va en 'paquete' y SÍ puede repetirse.
 const maxN=ruta.paradas.reduce((m,p)=>Math.max(m,Number(p.n)||0),0);
-const paradas=extractedStops.map((s,i)=>({
+// ANTIDUPLICADOS: la cámara a veces lee el mismo paquete dos veces. No volver a
+// añadir una parada que ya está en la ruta: misma dirección + mismo número de
+// paquete (o sin número, que es la re-lectura fantasma). Dos paquetes con número
+// DISTINTO a la misma dirección SÍ se mantienen (son envíos reales distintos).
+const _norm=a=>(a||'').toLowerCase().replace(/[\s,.\-ºª]/g,'').replace(/-?es$/,'');
+const _esDup=(addr,paq,lista)=>lista.some(p=>{
+if(_norm(p.addr)!==_norm(addr))return false;
+if(paq==null)return true;
+return String(p.paquete)===String(paq);
+});
+const _aceptadas=[];let _dups=0;
+for(const s of extractedStops){
+const paq=s._sinNum?null:(s.paquete||s.n||null);
+if(_esDup(s.addr,paq,ruta.paradas)||_esDup(s.addr,paq,_aceptadas)){_dups++;continue;}
+_aceptadas.push({name:s.name,addr:s.addr,bultos:s.bultos,codigo:s.codigo,paquete:paq,_sinNum:!!s._sinNum});
+}
+const paradas=_aceptadas.map((s,i)=>({
 n:maxN+i+1,name:s.name,addr:s.addr,
-saco:sacas[Math.floor(i/Math.max(1,extractedStops.length/5))%5],
+saco:sacas[Math.floor(i/Math.max(1,_aceptadas.length/5))%5],
 bultos:s.bultos||1,status:'pending',lat:null,lng:null,
-codigo:s.codigo||null,paquete:s._sinNum?null:(s.paquete||s.n||null),_sinNum:!!s._sinNum
+codigo:s.codigo||null,paquete:s.paquete,_sinNum:s._sinNum
 }));
+if(_dups)toast(`🧹 ${_dups} duplicad${_dups>1?'os':'o'} omitid${_dups>1?'os':'o'}`,'');
 
 // 1) AÑADIR YA a la lista (sin esperar al geocoding) — carga instantánea
 ruta.paradas.push(...paradas);
@@ -2833,4 +2868,4 @@ clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);
 </script>
 </body>
 </html>
-<!-- build: 2026-06-20-autosave -->
+<!-- build: 2026-06-20-dedup -->
