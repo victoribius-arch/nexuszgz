@@ -636,7 +636,7 @@ const SUPA_KEY='sb_publishable_GkcjUe8tuAgS5qbCoc9d2w_awfErozm';
 const sb=supabase.createClient(SUPA_URL,SUPA_KEY);
 
 async function cargarParadasDesdeDB(){
-if(!me||(me.role!=='driver'&&me.role!=='supervisor'))return;
+if(!me)return;
 if(blockDBReload)return;
 const hoy=new Date().toISOString().split('T')[0];
 
@@ -767,7 +767,8 @@ if(me.role==='manager'){
 const drivers=(await fetchDrivers()).filter(d=>d.activo);
 RUTAS.length=0;
 drivers.forEach(d=>{RUTAS.push({driver:d.name,did:d.did||0,color:d.color||'#2563eb',paradas:[]});});
-ruta=RUTAS[0]||{driver:'',did:0,color:'#2563eb',paradas:[]};
+// La ruta ACTIVA del manager es la SUYA propia (se guarda y recarga entre dispositivos)
+ruta={driver:me.name,did:me.did||0,color:me.color||'#2563eb',paradas:[]};
 } else {
 ruta=RUTAS.find(r=>r.driver===me.name)||{driver:me.name,did:me.did||0,color:me.color||'#2563eb',paradas:[]};
 if(!RUTAS.find(r=>r.driver===me.name))RUTAS.push(ruta);
@@ -780,7 +781,7 @@ document.getElementById('tinfo').innerHTML=me.role==='manager'
 :`<b>${esc(me.name)}</b> — ${ruta.paradas.length} paradas`;
 buildNav();buildFiltros();renderLista();
 checkAutoReset();
-if(me.role==='manager'){renderGestor();suscribirGestor();setTimeout(()=>cargarTodasParadasGestor(),500);}
+if(me.role==='manager'){renderGestor();suscribirGestor();setTimeout(()=>cargarTodasParadasGestor(),500);setTimeout(()=>cargarParadasDesdeDB(),600);}
 if(me.role==='driver'||me.role==='supervisor'){setTimeout(()=>cargarParadasDesdeDB(),500);iniciarGeolocalizacion();}
 }
 
