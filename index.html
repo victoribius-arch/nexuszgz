@@ -684,7 +684,8 @@ rutaId=existente[0].id;
 ruta._rutaId=rutaId;
 } else {
 
-const{data:nuevaRuta}=await sb.from('rutas').insert({driver:me.name,fecha:hoy,empresa,empresa_id:me.empresa_id||null}).select().single();
+const{data:nuevaRuta,error:rErr}=await sb.from('rutas').insert({driver:me.name,fecha:hoy,empresa,empresa_id:me.empresa_id||null}).select().single();
+if(rErr)throw new Error(rErr.message||'No se pudo crear la ruta');
 if(nuevaRuta){rutaId=nuevaRuta.id;ruta._rutaId=rutaId;}
 }
 }
@@ -696,7 +697,9 @@ const clavesExistentes=new Set((existentes||[]).map(x=>Number(x.n)+'|'+(x.addr||
 const nuevas=paradas.filter(p=>!clavesExistentes.has(Number(p.n)+'|'+(p.addr||'').trim().toLowerCase()));
 if(!nuevas.length)return;
 const rows=nuevas.map(p=>({ruta_id:rutaId,n:p.n,name:p.name,addr:p.addr,saco:p.saco,bultos:p.bultos,status:p.status,lat:p.lat||null,lng:p.lng||null,codigo_seguimiento:p.codigo||null,paquete:p.paquete||null}));
-await sb.from('paradas').insert(rows);
+const{error:insErr}=await sb.from('paradas').insert(rows);
+if(insErr)throw new Error(insErr.message||'No se pudieron guardar las paradas');
+return rows.length;
 }
 
 async function actualizarEstadoDB(parada,status){
@@ -1636,8 +1639,17 @@ const _pg=document.getElementById('pgrid');if(_pg)_pg.innerHTML='';
 const _ra=document.getElementById('rarea');if(_ra)_ra.innerHTML='';
 if(btn){btn.disabled=false;btn.textContent='ANALIZAR CON IA';}
 
-// 2) GUARDAR en BD ya (sin coordenadas aún), para no perder nada
+// 2) GUARDAR en BD ya (sin coordenadas aún), para no perder nada — VERIFICADO
+try{
 await guardarParadasEnDB(paradas);
+if(ruta._rutaId){
+const{count}=await sb.from('paradas').select('id',{count:'exact',head:true}).eq('ruta_id',ruta._rutaId);
+toast(`☁️ Guardado en la nube: ${count!=null?count:'?'} paradas`,'ok');
+}
+}catch(e){
+toast('⚠️ NO se guardó en la nube — reintenta','err');
+alert('⚠️ ATENCIÓN: las paradas NO se guardaron en la nube.\n\nMotivo: '+(e.message||e)+'\n\nLas paradas siguen en la lista de este móvil. Vuelve a pulsar "CARGAR EN RUTA ACTIVA" cuando tengas conexión.');
+}
 
 // 3) GEOLOCALIZAR EN SEGUNDO PLANO — va actualizando mapa y BD según termina
 (async()=>{
@@ -2575,10 +2587,10 @@ const fallidos=_cargaPaquetes.length-validos.length;
 if(!validos.length){toast('No se leyó ningún paquete correctamente','err');return;}
 // Volcar a extractedStops conservando el número de paquete escrito en la caja
 extractedStops=validos.map(p=>({n:p.num,name:p.name,addr:p.addr,bultos:1,codigo:p.codigo,paquete:p._sinNum?null:p.num,_sinNum:!!p._sinNum}));
-renderResults();
-// Asegurar que el área de resultados y el botón cargar son visibles
-setTimeout(()=>{const r=document.getElementById('rarea');if(r)r.scrollIntoView({behavior:'smooth',block:'start'});},200);
-toast(`✅ ${validos.length} paquetes leídos${fallidos?` · ${fallidos} fallaron, vuelve a escanearlos`:''} — carga en ruta`,fallidos?'':'ok');
+toast(`✅ ${validos.length} paquetes leídos${fallidos?` · ${fallidos} fallaron, vuelve a escanearlos`:''} — guardando en la ruta…`,fallidos?'':'ok');
+// AUTO-CARGAR: antes había que pulsar OTRO botón "CARGAR EN RUTA ACTIVA" y muchos
+// repartidores no lo hacían → no se guardaba nada. Ahora se carga y guarda solo.
+await cargarRuta();
 }
 
 async function abrirEscaner(){
@@ -2821,4 +2833,4 @@ clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);
 </script>
 </body>
 </html>
-<!-- build: 1781038773 -->
+<!-- build: 2026-06-20-autosave -->
