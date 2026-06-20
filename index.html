@@ -851,6 +851,7 @@ bnav.innerHTML='';
 tabs.forEach((t,i)=>{
 const d=document.createElement('div');
 d.className='bni'+(i===0?' on':'');
+d.id='tab-'+t.id;
 d.innerHTML=`<div class="bni-ic">${ICONS[t.id]||''}</div><div class="bni-lb">${t.lb}</div>`;
 d.onclick=()=>switchTab(t.id,d);
 bnav.appendChild(d);
@@ -1623,7 +1624,11 @@ codigo:s.codigo||null,paquete:s._sinNum?null:(s.paquete||s.n||null),_sinNum:!!s.
 // 1) AÑADIR YA a la lista (sin esperar al geocoding) — carga instantánea
 ruta.paradas.push(...paradas);
 renderLista();
-toast(`✓ ${paradas.length} paradas cargadas — localizando en segundo plano...`,'ok');
+// Llevar al repartidor a la pestaña "Ruta" para que VEA las paradas cargadas
+// (antes se quedaba en la pantalla de escaneo vacía y parecía que se borraba todo)
+const _lt=document.getElementById('tab-s-lista');
+if(_lt&&!document.getElementById('s-lista').classList.contains('on'))switchTab('s-lista',_lt);
+toast(`✓ ${paradas.length} paradas cargadas — mira la pestaña Lista`,'ok');
 
 // Limpiar la pantalla de escaneo enseguida
 extractedStops=[];uploadFiles=[];
@@ -2662,7 +2667,7 @@ el.style.border='2px solid var(--green)';
 el.scrollIntoView({behavior:'smooth',block:'center'});
 setTimeout(()=>{el.style.background='';el.style.border='';},6000);
 }
-const listaTab=document.querySelector('.bni[onclick*="s-lista"]');
+const listaTab=document.getElementById('tab-s-lista');
 if(listaTab&&!document.getElementById('s-lista').classList.contains('on'))switchTab('s-lista',listaTab);
 // Verificación GPS: ¿estás en el punto de esta parada?
 if(parada._aprox){
