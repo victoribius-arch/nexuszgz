@@ -314,6 +314,14 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
       </button>
       <div style="text-align:center;font-size:11px;color:var(--text3);margin-bottom:14px;">Lee cada etiqueta y numera los paquetes uno a uno</div>
 
+      <div style="text-align:center;font-size:12px;color:var(--text3);margin-bottom:10px;">— o —</div>
+      <input type="file" id="pfiles" accept="image/*" multiple style="display:none" onchange="onFiles(this.files)">
+      <button onclick="document.getElementById('pfiles').click()" style="width:100%;padding:16px;border:2px solid var(--accent);border-radius:14px;background:transparent;color:var(--accent);font-size:15px;font-weight:800;cursor:pointer;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px;">
+        🖼️ Cargar fotos de la galería
+      </button>
+      <div id="pgrid" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;"></div>
+      <button id="abtn" onclick="analyze()" disabled style="width:100%;padding:14px;border:none;border-radius:12px;background:var(--green);color:#fff;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:14px;">🔍 Analizar fotos con IA</button>
+
       <div id="rarea"></div>
 
       <!-- Añadir parada manual -->
@@ -2881,4 +2889,4 @@ clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);
 </script>
 </body>
 </html>
-<!-- build: 2026-06-20-mapapaq -->
+<!-- build: 2026-06-20-galeria -->
