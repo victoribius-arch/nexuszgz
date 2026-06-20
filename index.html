@@ -1249,7 +1249,7 @@ ${ring}
 <ellipse cx="22" cy="50" rx="8" ry="3" fill="rgba(0,0,0,0.4)"/>
 <circle cx="22" cy="20" r="18" fill="${col}" stroke="${selected?'#fff':'rgba(0,0,0,0.3)'}" stroke-width="${selected?'2.5':'1.5'}"/>
 <path d="M14,32 Q22,54 22,54 Q22,54 30,32" fill="${col}"/>
-<text x="22" y="24" text-anchor="middle" fill="${tc}" font-size="${n>9?'12':'14'}" font-weight="700" font-family="monospace">${n}</text>
+<text x="22" y="24" text-anchor="middle" fill="${tc}" font-size="${String(n).length>=3?'10':String(n).length>=2?'12':'14'}" font-weight="700" font-family="monospace">${n}</text>
 </svg>`;
 }
 
@@ -1265,9 +1265,9 @@ const c={lat:s.lat,lng:s.lng};
 const isSel=selPin===s.n;
 const col=s.status==='delivered'?'#10b981':s.status==='failed'?'#f43f5e':'#00d4ff';
 const tc=s.status==='failed'?'#fff':'#000';
-const svg=pinSVG(s.n,col,tc,isSel);
+const svg=pinSVG(s.paquete!=null?s.paquete:s.n,col,tc,isSel);
 const icon={url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg),scaledSize:new google.maps.Size(44,54),anchor:new google.maps.Point(22,54)};
-const m=new google.maps.Marker({position:c,map:gmap1,icon,title:`#${s.n} ${s.name}`,zIndex:isSel?999:s.n});
+const m=new google.maps.Marker({position:c,map:gmap1,icon,title:`${s.paquete!=null?'📦 '+s.paquete:'#'+s.n} · ${s.name}`,zIndex:isSel?999:s.n});
 m.addListener('click',()=>selStop(s.n));
 markers1.push(m);
 bounds.extend(c);
@@ -1825,11 +1825,11 @@ r.paradas.forEach(s=>{
 if(!s.lat||!s.lng)return;
 const col=s.status==='delivered'?'#10b981':s.status==='failed'?'#f43f5e':r.color;
 const tc=s.status==='failed'?'#fff':'#000';
-const svg=pinSVG(s.n,col,tc,false);
+const svg=pinSVG(s.paquete!=null?s.paquete:s.n,col,tc,false);
 const icon={url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg),scaledSize:new google.maps.Size(32,40),anchor:new google.maps.Point(16,40)};
-const m=new google.maps.Marker({position:{lat:s.lat,lng:s.lng},map:gmap2,icon,title:`#${s.n} ${s.name} — ${r.driver}`,zIndex:s.n});
+const m=new google.maps.Marker({position:{lat:s.lat,lng:s.lng},map:gmap2,icon,title:`${s.paquete!=null?'📦 '+s.paquete:'#'+s.n} · ${s.name} — ${r.driver}`,zIndex:s.n});
 m.addListener('click',()=>{
-const info=new google.maps.InfoWindow({content:`<div style="color:#000;font-size:13px;"><b>#${s.n}</b> ${esc(s.name)}<br>${esc(s.addr)}<br><span style="color:${col}">${s.status==='delivered'?'✓ Entregado':s.status==='failed'?'✗ Fallido':'Pendiente'}</span></div>`});
+const info=new google.maps.InfoWindow({content:`<div style="color:#000;font-size:13px;"><b>${s.paquete!=null?'📦 '+esc(String(s.paquete)):'#'+s.n}</b> ${esc(s.name)}<br>${esc(s.addr)}<br><span style="color:${col}">${s.status==='delivered'?'✓ Entregado':s.status==='failed'?'✗ Fallido':'Pendiente'}</span></div>`});
 info.open(gmap2,m);
 });
 window._stopMarkers2.push(m);
@@ -2881,4 +2881,4 @@ clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);
 </script>
 </body>
 </html>
-<!-- build: 2026-06-20-mapa -->
+<!-- build: 2026-06-20-mapapaq -->
