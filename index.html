@@ -93,8 +93,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 .si.del .nc{border-color:var(--green);color:var(--green);background:rgba(16,185,129,.1);}
 .si.fail .nc{border-color:var(--red);color:var(--red);background:rgba(244,63,94,.1);}
 .sibody{flex:1;padding:14px 10px 14px 0;min-width:0;}
-.siname{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.siaddr{font-size:12px;color:var(--text2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.siname{font-weight:600;font-size:14px;display:flex;align-items:center;}
+.siaddr{font-size:12px;color:var(--text2);margin-top:2px;display:flex;align-items:center;}
+.sinm,.siad{flex:0 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .sitags{display:flex;gap:4px;margin-top:7px;flex-wrap:wrap;}
 .tag{font-size:10px;font-weight:600;padding:3px 7px;border-radius:5px;}
 .ts{background:rgba(79,70,229,.12);color:var(--accent);}
@@ -1080,7 +1081,7 @@ geoTag='<span class="tag" style="background:rgba(220,38,38,.15);color:var(--red)
 geoTag='<span class="tag" style="background:rgba(148,163,184,.15);color:var(--text3);font-weight:700;">📍 Localizando…</span>';
 }
 el.innerHTML=`<div class="sibar" style="${s.lat&&s.lng&&!s._aprox?'background:var(--green);':s._aprox?'background:var(--red);':''}"></div><div class="sinum"><div class="nc">${s.n}</div></div>
-<div class="sibody"><div class="siname">${esc(s.name)}${s._sinNum?`<span onclick="editarPaquete(${s.n},event)" style="margin-left:6px;background:var(--red);color:#fff;font-size:11px;font-weight:800;padding:2px 8px;border-radius:8px;cursor:pointer;">⚠️ Poner nº</span>`:s.paquete?`<span onclick="editarPaquete(${s.n},event)" style="margin-left:6px;background:var(--orange);color:#000;font-size:11px;font-weight:800;padding:2px 8px;border-radius:8px;cursor:pointer;">📦 Paq. ${esc(s.paquete)} ✏️</span>`:''}</div><div class="siaddr" onclick="editarDireccion(${s.n},event)" style="cursor:pointer;">${esc(s.addr)} <span style="opacity:.45;font-size:11px;">✏️</span></div>
+<div class="sibody"><div class="siname"><span class="sinm">${esc(s.name)}</span>${s._sinNum?`<span onclick="editarPaquete(${s.n},event)" style="flex-shrink:0;margin-left:6px;background:var(--red);color:#fff;font-size:11px;font-weight:800;padding:2px 8px;border-radius:8px;cursor:pointer;">⚠️ Poner nº</span>`:s.paquete?`<span onclick="editarPaquete(${s.n},event)" style="flex-shrink:0;margin-left:6px;background:var(--orange);color:#000;font-size:11px;font-weight:800;padding:2px 8px;border-radius:8px;cursor:pointer;">📦 Paq. ${esc(s.paquete)} ✏️</span>`:''}</div><div class="siaddr" onclick="editarDireccion(${s.n},event)" style="cursor:pointer;"><span class="siad">${esc(s.addr)}</span> <span style="flex-shrink:0;color:var(--accent);font-size:13px;margin-left:3px;">✏️</span></div>
 <div class="sitags"><span class="tag ts">Saca ${esc(s.saco)}</span><span class="tag tb2">${esc(s.bultos)}b</span>${geoTag}${etaTag}${tag}${s.codigo?`<span class="tag" style="background:rgba(251,146,60,.1);color:var(--orange);font-family:monospace;font-size:9px;">${esc(String(s.codigo).slice(-8))}</span>`:''}</div></div>${acts}`;
 el.addEventListener('click',()=>{if(_modoBorrar)toggleSeleccion(s.n);else selStop(s.n);});
 return el;
@@ -2894,4 +2895,4 @@ clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);
 </script>
 </body>
 </html>
-<!-- build: 2026-06-21-generico2 -->
+<!-- build: 2026-06-22-fixes -->
