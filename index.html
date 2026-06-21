@@ -2435,6 +2435,13 @@ await sb.from('ubicaciones').upsert({driver:me.name,lat:pos.coords.latitude,lng:
 },function(err){console.log('Geo error:',err);},{enableHighAccuracy:true,timeout:20000,maximumAge:30000});
 }
 async function cargarUbicacionesRepartidores(){
+// RESET DIARIO 00:00: la primera carga del manager tras cambiar de día borra TODAS
+// las ubicaciones. Los que sigan trabajando se vuelven a añadir solos al instante.
+const hoy=new Date().toISOString().split('T')[0];
+if(localStorage.getItem('nexus_ubi_reset')!==hoy){
+localStorage.setItem('nexus_ubi_reset',hoy);
+try{await sb.from('ubicaciones').delete().neq('driver','__none__');}catch(_){}
+}
 const{data}=await sb.from('ubicaciones').select('*');
 if(data){driverLocations={};data.forEach(u=>driverLocations[u.driver]={lat:u.lat,lng:u.lng,updated_at:u.updated_at});}
 }
@@ -2457,6 +2464,7 @@ window._driverMarkers=[];
 Object.entries(driverLocations).forEach(([driver,loc])=>{
 const r=RUTAS.find(x=>x.driver===driver);const color=r?r.color:'#00d4ff';
 const mins=Math.round((Date.now()-new Date(loc.updated_at).getTime())/60000);
+if(mins>15)return; // >15 min sin actualizar = no está trabajando → no mostrar en el mapa
 const svg='<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><circle cx="24" cy="24" r="22" fill="'+color+'" stroke="#fff" stroke-width="3"/><text x="24" y="29" text-anchor="middle" fill="#000" font-size="16" font-weight="800" font-family="sans-serif">'+driver[0]+'</text></svg>';
 const icon={url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg),scaledSize:new google.maps.Size(48,48),anchor:new google.maps.Point(24,24)};
 const m=new google.maps.Marker({position:{lat:loc.lat,lng:loc.lng},map:gmap2,icon,title:driver+' — hace '+mins+' min',zIndex:1000});
@@ -2938,4 +2946,4 @@ clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);
 </script>
 </body>
 </html>
-<!-- build: 2026-06-21-iconos -->
+<!-- build: 2026-06-21-ubi -->
