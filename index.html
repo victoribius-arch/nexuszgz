@@ -294,24 +294,19 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
   <div class="scr" id="s-pda">
     <div class="pdascr">
       <div class="pdatit"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:7px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Cargar Ruta PDA</div>
-      <div class="pdasub">Selecciona la empresa y sube las fotos</div>
+      <div class="pdasub">Sube fotos de las etiquetas o escanea con la cámara</div>
 
-      <!-- Company selector -->
+      <!-- Modo de ruta -->
       <div style="display:flex;gap:8px;margin-bottom:16px;">
-        <div class="emp-tab on" id="emp-ctt" onclick="setEmpresa('ctt',this)">
-          <div style="margin-bottom:4px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
-          <div style="font-size:13px;font-weight:700">CTT</div>
-          <div style="font-size:10px;color:var(--text2)">Orden fijo</div>
+        <div class="emp-tab on" id="emp-optim" onclick="setEmpresa('optim',this)">
+          <div style="margin-bottom:4px"><svg width="24" height="24" viewBox="0 0 24 24" fill="#4f46e5" stroke="none"><path d="M12 2.5l1.7 5.3 5.3 1.7-5.3 1.7L12 16.5l-1.7-5.3L5 9.5l5.3-1.7z"/></svg></div>
+          <div style="font-size:13px;font-weight:700">Optimizar ruta</div>
+          <div style="font-size:10px;color:var(--text2)">Camino más corto</div>
         </div>
-        <div class="emp-tab" id="emp-seur" onclick="setEmpresa('seur',this)">
-          <div style="margin-bottom:4px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div>
-          <div style="font-size:13px;font-weight:700">Seur</div>
-          <div style="font-size:10px;color:var(--text2)">Optimizada</div>
-        </div>
-        <div class="emp-tab" id="emp-ontime" onclick="setEmpresa('ontime',this)">
-          <div style="margin-bottom:4px"><svg width="24" height="24" viewBox="0 0 24 24" fill="#4f46e5" stroke="none"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
-          <div style="font-size:13px;font-weight:700">Ontime</div>
-          <div style="font-size:10px;color:var(--text2)">Optimizada</div>
+        <div class="emp-tab" id="emp-fijo" onclick="setEmpresa('fijo',this)">
+          <div style="margin-bottom:4px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div>
+          <div style="font-size:13px;font-weight:700">Mantener orden</div>
+          <div style="font-size:10px;color:var(--text2)">Tal cual escaneas</div>
         </div>
       </div>
 
@@ -443,7 +438,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
     <div style="font-size:13px;font-weight:700;color:var(--text2);margin-bottom:12px;">¿Cómo registras esta entrega?</div>
     <div style="display:flex;flex-direction:column;gap:10px;">
       <button style="padding:18px;border-radius:14px;border:2px solid var(--accent);background:rgba(79,70,229,.12);color:var(--accent);font-size:16px;font-weight:700;cursor:pointer;text-align:left;" onclick="cierre_paso2(true)">
-        📷 Con foto de etiqueta CTT<br><span style="font-size:12px;font-weight:400;opacity:.7">Sube la foto + nombre y DNI</span>
+        📷 Con foto de la etiqueta<br><span style="font-size:12px;font-weight:400;opacity:.7">Sube la foto + nombre y DNI</span>
       </button>
       <button style="padding:18px;border-radius:14px;border:2px solid var(--green);background:rgba(16,185,129,.12);color:var(--green);font-size:16px;font-weight:700;cursor:pointer;text-align:left;" onclick="cierre_paso2(false)">
         ✓ Sin foto — solo nombre y DNI<br><span style="font-size:12px;font-weight:400;opacity:.7">El cliente firma o confirma en persona</span>
@@ -461,7 +456,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
     <div style="font-size:13px;color:var(--text2);margin-bottom:16px;" id="cierre-info2"></div>
 
     <div id="cierre-foto-section" style="margin-bottom:4px;">
-      <label class="llbl">📷 Foto de la etiqueta CTT</label>
+      <label class="llbl">📷 Foto de la etiqueta</label>
       <div style="background:var(--card);border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;cursor:pointer;margin-bottom:8px;" onclick="document.getElementById('cierre-foto-input').click()">
         <input type="file" id="cierre-foto-input" accept="image/*" capture="environment" style="display:none" onchange="previewCierre(this)">
         <div id="cierre-preview-img" style="display:none;"><img id="cierre-img" style="max-width:100%;border-radius:8px;max-height:150px;object-fit:contain;"></div>
@@ -631,19 +626,13 @@ steward: {pass:'nexus5',role:'driver', name:'Steward', init:'T',did:4},
 let me=null, ruta=null, filtro='all', busq='', selPin=null;
 let gmap1=null, gmap2=null, markers1=[], markers2=[];
 let gmLoaded=false, gmReady=false;
-let uploadFiles=[], extractedStops=[], empresa='ctt';
+let uploadFiles=[], extractedStops=[], empresa='optim';
 let blockDBReload=false;
 
 function setEmpresa(emp, el){
 empresa=emp;
 document.querySelectorAll('.emp-tab').forEach(x=>x.classList.remove('on'));
 el.classList.add('on');
-const subs={
-ctt:'Capturas de pantalla de tu PDA CTT Express',
-seur:'Capturas de pantalla de tu PDA Seur — ruta optimizada automáticamente',
-ontime:'Capturas de pantalla de tu PDA Ontime — ruta optimizada automáticamente'
-};
-document.getElementById('uzsub').textContent=subs[emp];
 }
 
 const SUPA_URL='https://wbvlycqdqjhdtsimleyo.supabase.co';
@@ -1388,50 +1377,9 @@ img.onerror=()=>{URL.revokeObjectURL(url);rej(new Error('No se pudo abrir una de
 img.src=url;
 })));
 
-const prompts={
-ctt:`Eres un experto en OCR y logística. Analiza esta imagen de etiqueta de paquete CTT Express.
+// El prompt de lectura IA es ahora genérico (cualquier mensajería) — ver analyze().
 
-EXTRAE:
-- Número de parada: el número que aparece antes del "+" si es PDA, o el número de orden si es etiqueta
-- Nombre del destinatario
-- Dirección completa con CP y ciudad
-- Número de bultos
-- Código de seguimiento: el número de barras o código alfanumérico largo (ej: ES123456789ES, CTT123456789)
-
-NUNCA inventes datos — solo extrae lo que ves claramente.
-
-Devuelve SOLO JSON:
-{"stops":[{"n":64,"name":"Particular o empresa","addr":"Dirección completa, Zaragoza","bultos":1,"codigo":"ES123456789ES"}]}`,
-
-seur:`Eres un experto en OCR y logística. Analiza esta imagen de etiqueta de paquete Seur.
-
-EXTRAE:
-- Nombre del destinatario
-- Dirección completa con CP y ciudad
-- Número de bultos
-- Código de seguimiento: el número largo bajo el código de barras (ej: 00123456789012345678)
-- CP de destino para agrupar por zona
-
-NUNCA inventes datos — solo extrae lo que ves claramente.
-
-Devuelve SOLO JSON:
-{"stops":[{"n":1,"name":"Nombre destinatario","addr":"Dirección completa, CP Ciudad","bultos":1,"codigo":"00123456789012345678"}]}`,
-
-ontime:`Eres un experto en OCR y logística. Analiza esta imagen de etiqueta Ontime.
-
-EXTRAE:
-- Nombre del destinatario
-- Dirección completa con CP y ciudad
-- Número de bultos
-- Código de seguimiento si aparece
-
-NUNCA inventes datos — solo extrae lo que ves claramente.
-
-Devuelve SOLO JSON:
-{"stops":[{"n":1,"name":"Nombre destinatario","addr":"Dirección completa, CP Ciudad","bultos":1,"codigo":null}]}`
-};
-
-const prompt=prompts[empresa]||prompts.ctt;
+const prompt='Eres un experto en OCR y logística. Analiza esta imagen de una etiqueta de paquete de cualquier empresa de mensajería. EXTRAE: nombre del destinatario, dirección completa con CP y ciudad, número de bultos, y el código de seguimiento (el número largo del código de barras). NUNCA inventes datos — solo extrae lo que ves claramente. Devuelve SOLO JSON: {"stops":[{"n":1,"name":"Nombre o empresa","addr":"Dirección completa, CP Ciudad","bultos":1,"codigo":"código o null"}]}';
 
 document.getElementById('abtn').textContent=`ANALIZANDO ${imgs.length} fotos...`;
 const resultados=await Promise.all(imgs.map(async(img,i)=>{
@@ -1791,7 +1739,7 @@ if(btn) btn.textContent=`Localizando ${Math.min(i+batchSize,paradas.length)}/${p
 }
 
 let nuevas=paradas;
-if(empresa==='seur'||empresa==='ontime'){
+if(empresa==='optim'){
 nuevas=await optimizeRoute(paradas);
 const s=window._routeStats;
 if(s) toast(`✓ Ruta optimizada — ahorro ${s.ahorro}% (${s.original}km → ${s.optimized}km)`,'ok');
@@ -2535,7 +2483,7 @@ html+=`<div style="margin:8px;background:var(--card);border-radius:14px;padding:
 <div style="width:36px;height:36px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;">${esc((r.driver||'?')[0])}</div>
 <div style="flex:1;">
 <div style="font-weight:700;font-size:15px;">${esc(r.driver)}</div>
-<div style="font-size:11px;color:var(--text3);">${fecha} · ${esc(r.empresa||'CTT')}</div>
+<div style="font-size:11px;color:var(--text3);">${fecha}</div>
 </div>
 <div style="font-size:22px;font-weight:900;color:${pct===100?'var(--green)':pct>50?'var(--orange)':'var(--text2)'};">${pct}%</div>
 </div>
@@ -2946,4 +2894,4 @@ clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);
 </script>
 </body>
 </html>
-<!-- build: 2026-06-21-ubi -->
+<!-- build: 2026-06-21-generico2 -->
