@@ -6,9 +6,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>NEXUS</title>
-<meta name="theme-color" content="#4f46e5">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><circle cx='32' cy='32' r='32' fill='%234f46e5'/><path d='M21 45 V19 L43 45 V19' fill='none' stroke='white' stroke-width='5.5' stroke-linecap='round' stroke-linejoin='round'/><circle cx='43' cy='19' r='5.5' fill='%23a5b4fc'/></svg>">
+<title>NEXUS · Servicios de Transporte</title>
+<meta name="theme-color" content="#1b2a3a">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%231b2a3a'/><polygon points='25,53 41,23 45,25 45,12 33,18 36,20 19,49' fill='white'/></svg>">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,7 +17,7 @@
 <style>
 :root{
   --bg:#f5f7fa; --bg2:#ffffff; --card:#ffffff; --border:#e2e8f0;
-  --accent:#4f46e5; --accent2:#4338ca; --green:#16a34a; --red:#dc2626;
+  --accent:#1b2a3a; --accent2:#0f1d2b; --green:#16a34a; --red:#dc2626;
   --orange:#f59e0b; --text:#1e293b; --text2:#64748b; --text3:#94a3b8;
   --safe-top:env(safe-area-inset-top,0px); --safe-bot:env(safe-area-inset-bottom,0px);
 }
@@ -26,7 +26,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 
 /* LOGIN */
 #login{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:24px;z-index:100;}
-#login::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 40% 40%,rgba(79,70,229,.08),transparent 55%),radial-gradient(ellipse at 70% 70%,rgba(67,56,202,.06),transparent 50%);pointer-events:none;}
+#login::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 40% 40%,rgba(27,42,58,.08),transparent 55%),radial-gradient(ellipse at 70% 70%,rgba(15,29,43,.06),transparent 50%);pointer-events:none;}
 .lcard{width:100%;max-width:360px;position:relative;z-index:1;}
 .llogo{font-size:40px;font-weight:900;letter-spacing:6px;background:var(--accent);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center;margin-bottom:2px;}
 .lsub{text-align:center;font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--text2);margin-bottom:6px;}
@@ -34,7 +34,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 .llbl{font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);margin-bottom:6px;display:block;}
 .linp{width:100%;background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;color:var(--text);font-size:16px;outline:none;-webkit-appearance:none;margin-bottom:14px;transition:border-color .2s;}
 .linp:focus{border-color:var(--accent);}
-.lbtn{width:100%;padding:16px;border:none;border-radius:12px;background:var(--accent);color:#fff;font-size:18px;font-weight:800;letter-spacing:2px;cursor:pointer;margin-top:4px;box-shadow:0 4px 20px rgba(79,70,229,.3);}
+.lbtn{width:100%;padding:16px;border:none;border-radius:12px;background:var(--accent);color:#fff;font-size:18px;font-weight:800;letter-spacing:2px;cursor:pointer;margin-top:4px;box-shadow:0 4px 20px rgba(27,42,58,.3);}
 .lhint{margin-top:18px;text-align:center;font-size:12px;color:var(--text3);line-height:2;}
 .lhint b{color:var(--accent);}
 
@@ -98,7 +98,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 .sinm,.siad{flex:0 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .sitags{display:flex;gap:4px;margin-top:7px;flex-wrap:wrap;}
 .tag{font-size:10px;font-weight:600;padding:3px 7px;border-radius:5px;}
-.ts{background:rgba(79,70,229,.12);color:var(--accent);}
+.ts{background:rgba(27,42,58,.12);color:var(--accent);}
 .tb2{background:rgba(255,255,255,.07);color:var(--text2);}
 .tok{background:rgba(16,185,129,.15);color:#34d399;}
 .tko{background:rgba(244,63,94,.15);color:#fb7185;}
@@ -107,7 +107,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 .abt{padding:8px 10px;border-radius:8px;font-size:11px;font-weight:700;border:none;cursor:pointer;min-width:52px;text-align:center;}
 .ab-ok{background:rgba(16,185,129,.2);color:var(--green);}
 .ab-ko{background:rgba(244,63,94,.15);color:var(--red);}
-.ab-nav{background:rgba(79,70,229,.12);color:var(--accent);}
+.ab-nav{background:rgba(27,42,58,.12);color:var(--accent);}
 .si.del .sibody,.si.del .sinum{opacity:.45;}
 .empty{padding:40px;text-align:center;color:var(--text3);font-size:13px;}
 
@@ -143,7 +143,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 .pthumb{position:relative;border-radius:10px;overflow:hidden;aspect-ratio:4/3;background:var(--card);}
 .pthumb img{width:100%;height:100%;object-fit:cover;}
 .pdel{position:absolute;top:5px;right:5px;width:24px;height:24px;border-radius:50%;background:rgba(244,63,94,.9);border:none;color:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
-.abtn{width:100%;padding:16px;border:none;border-radius:12px;background:var(--accent);color:#fff;font-size:18px;font-weight:800;letter-spacing:2px;cursor:pointer;margin-bottom:16px;box-shadow:0 4px 20px rgba(79,70,229,.3);}
+.abtn{width:100%;padding:16px;border:none;border-radius:12px;background:var(--accent);color:#fff;font-size:18px;font-weight:800;letter-spacing:2px;cursor:pointer;margin-bottom:16px;box-shadow:0 4px 20px rgba(27,42,58,.3);}
 .abtn:disabled{opacity:.4;cursor:not-allowed;}
 .rbox{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:16px;}
 .rtit{font-size:14px;font-weight:700;color:var(--accent);margin-bottom:12px;letter-spacing:.5px;}
@@ -153,7 +153,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 .srinfo{flex:1;min-width:0;}
 .srname{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .sraddr{font-size:11px;color:var(--text2);margin-top:1px;}
-.srsaco{font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:rgba(79,70,229,.12);color:var(--accent);flex-shrink:0;}
+.srsaco{font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:rgba(27,42,58,.12);color:var(--accent);flex-shrink:0;}
 .lbtn2{width:100%;padding:14px;border:1px solid var(--accent);border-radius:12px;background:transparent;color:var(--accent);font-size:16px;font-weight:700;letter-spacing:1px;cursor:pointer;}
 
 /* GESTOR */
@@ -180,7 +180,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 
 /* Company tabs */
 .emp-tab{flex:1;background:var(--card);border:2px solid var(--border);border-radius:12px;padding:12px 8px;text-align:center;cursor:pointer;transition:all .2s;}
-.emp-tab.on{border-color:var(--accent);background:rgba(79,70,229,.1);}
+.emp-tab.on{border-color:var(--accent);background:rgba(27,42,58,.1);}
 .emp-tab:active{opacity:.8;}
 
 /* TOAST */
@@ -194,9 +194,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 
 <div id="login">
   <div class="lcard">
-    <svg width="74" height="74" viewBox="0 0 64 64" style="display:block;margin:0 auto 12px;"><circle cx="32" cy="32" r="30" fill="#4f46e5"/><path d="M21 45 V19 L43 45 V19" fill="none" stroke="#fff" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="43" cy="19" r="5.5" fill="#a5b4fc" stroke="#fff" stroke-width="2"/></svg>
-    <div class="llogo">NEXUS</div>
-    <div class="lsub">Gestión de Rutas <span id="app-version" style="font-size:10px;opacity:.5">v1524</span></div>
+    <svg viewBox="0 0 1000 420" style="display:block;width:280px;max-width:80%;height:auto;margin:0 auto 6px;" font-family="Arial,Helvetica,sans-serif"><text x="180" y="300" font-size="210" font-weight="900" fill="#1b2a3a" letter-spacing="-6">NE</text><g fill="#1b2a3a"><polygon points="470,108 508,108 580,300 542,300"/><polygon points="487,310 591,128 612,140 610,55 536,96 557,108 453,290"/></g><text x="582" y="300" font-size="210" font-weight="900" fill="#1b2a3a" letter-spacing="-6">US</text><text x="500" y="372" font-size="46" font-weight="700" fill="#1b2a3a" letter-spacing="8" text-anchor="middle">SERVICIOS DE TRANSPORTE</text></svg>
+    <div class="lsub"><span id="app-version" style="font-size:10px;opacity:.5">v1524</span></div>
     <div class="lline"></div>
     <label class="llbl">Usuario</label>
     <input class="linp" id="ui" type="text" placeholder="tu usuario" autocapitalize="none" autocorrect="off">
@@ -208,8 +207,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 
 <div id="app">
   <div class="topbar">
-    <svg width="26" height="26" viewBox="0 0 64 64" style="flex-shrink:0;"><circle cx="32" cy="32" r="30" fill="#4f46e5"/><path d="M21 45 V19 L43 45 V19" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="43" cy="19" r="6" fill="#a5b4fc"/></svg>
-    <div class="tlogo">NEXUS</div>
+    <svg viewBox="150 40 700 290" style="height:24px;width:auto;flex-shrink:0;" font-family="Arial,Helvetica,sans-serif"><text x="180" y="300" font-size="210" font-weight="900" fill="#1b2a3a" letter-spacing="-6">NE</text><g fill="#1b2a3a"><polygon points="470,108 508,108 580,300 542,300"/><polygon points="487,310 591,128 612,140 610,55 536,96 557,108 453,290"/></g><text x="582" y="300" font-size="210" font-weight="900" fill="#1b2a3a" letter-spacing="-6">US</text></svg>
     <div class="tinfo" id="tinfo"></div>
     <div class="tav" id="tav" onclick="cerrarSesion()" title="Cerrar sesión" style="cursor:pointer;"></div>
   </div>
@@ -222,7 +220,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
       <div class="frow" id="frow"></div>
       <div style="display:flex;gap:6px;margin-top:6px;">
         <button id="btn-zona" onclick="toggleZonas()" style="flex:1;padding:8px;border:1.5px solid var(--border);border-radius:8px;background:transparent;color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:3px"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>Por zona</button>
-        <button onclick="navRutaCompleta(event)" style="flex:1;padding:8px;border:1.5px solid var(--accent);border-radius:8px;background:rgba(79,70,229,.1);color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:3px"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>Ruta completa</button>
+        <button onclick="navRutaCompleta(event)" style="flex:1;padding:8px;border:1.5px solid var(--accent);border-radius:8px;background:rgba(27,42,58,.1);color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:3px"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>Ruta completa</button>
         <button onclick="optimizarConIA()" style="flex:1;padding:8px;border:1.5px solid var(--green);border-radius:8px;background:rgba(16,185,129,.1);color:var(--green);font-size:12px;font-weight:700;cursor:pointer;"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="vertical-align:-2px;margin-right:3px"><path d="M12 2.5l1.7 5.3 5.3 1.7-5.3 1.7L12 16.5l-1.7-5.3L5 9.5l5.3-1.7z"/></svg>Optimizar</button>
         <button onclick="abrirEscaner()" style="flex:1;padding:8px;border:1.5px solid var(--orange);border-radius:8px;background:rgba(251,146,60,.1);color:var(--orange);font-size:12px;font-weight:700;cursor:pointer;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:3px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Escanear</button>
         <button onclick="borrarRuta()" style="padding:8px 10px;border:1.5px solid var(--red);border-radius:8px;background:rgba(244,63,94,.1);color:var(--red);font-size:12px;font-weight:700;cursor:pointer;" title="Borrar ruta"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
@@ -244,7 +242,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
         <div id="cp-ruta-sel">
         <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">¿A qué ruta pertenece?</div>
         <div style="display:flex;gap:6px;margin-bottom:12px;">
-          <button id="cp-r1" onclick="cpSelectRuta('principal',this)" style="flex:1;padding:10px 4px;border-radius:10px;border:2px solid var(--accent);background:rgba(79,70,229,.15);color:var(--accent);font-size:11px;font-weight:700;cursor:pointer;">🚚 Principal<br><span style="font-weight:400;opacity:.8">Jon</span></button>
+          <button id="cp-r1" onclick="cpSelectRuta('principal',this)" style="flex:1;padding:10px 4px;border-radius:10px;border:2px solid var(--accent);background:rgba(27,42,58,.15);color:var(--accent);font-size:11px;font-weight:700;cursor:pointer;">🚚 Principal<br><span style="font-weight:400;opacity:.8">Jon</span></button>
           <button id="cp-r2" onclick="cpSelectRuta('andarin',this)" style="flex:1;padding:10px 4px;border-radius:10px;border:1.5px solid var(--border);background:transparent;color:var(--text2);font-size:11px;font-weight:700;cursor:pointer;">🚶 Andarin<br><span style="font-weight:400;opacity:.8">Andrea</span></button>
           <button id="cp-r3" onclick="cpSelectRuta('50008',this)" style="flex:1;padding:10px 4px;border-radius:10px;border:1.5px solid var(--border);background:transparent;color:var(--text2);font-size:11px;font-weight:700;cursor:pointer;">📦 50008<br><span style="font-weight:400;opacity:.8">Sebas</span></button>
         </div>
@@ -276,7 +274,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
   <div class="scr" id="s-mapa">
     <div class="mscr">
       <div id="gmap"></div>
-      <button onclick="activarMiUbicacion(this)" title="Mi ubicación" style="position:absolute;bottom:24px;left:12px;z-index:6;width:46px;height:46px;border:none;border-radius:50%;background:#fff;color:#4f46e5;font-size:22px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></button>
+      <button onclick="activarMiUbicacion(this)" title="Mi ubicación" style="position:absolute;bottom:24px;left:12px;z-index:6;width:46px;height:46px;border:none;border-radius:50%;background:#fff;color:#1b2a3a;font-size:22px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></button>
       <div class="mstats" id="mstats"></div>
       <div class="mpop" id="mpop">
         <div class="mprow">
@@ -300,12 +298,12 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
       <!-- Modo de ruta -->
       <div style="display:flex;gap:8px;margin-bottom:16px;">
         <div class="emp-tab on" id="emp-optim" onclick="setEmpresa('optim',this)">
-          <div style="margin-bottom:4px"><svg width="24" height="24" viewBox="0 0 24 24" fill="#4f46e5" stroke="none"><path d="M12 2.5l1.7 5.3 5.3 1.7-5.3 1.7L12 16.5l-1.7-5.3L5 9.5l5.3-1.7z"/></svg></div>
+          <div style="margin-bottom:4px"><svg width="24" height="24" viewBox="0 0 24 24" fill="#1b2a3a" stroke="none"><path d="M12 2.5l1.7 5.3 5.3 1.7-5.3 1.7L12 16.5l-1.7-5.3L5 9.5l5.3-1.7z"/></svg></div>
           <div style="font-size:13px;font-weight:700">Optimizar ruta</div>
           <div style="font-size:10px;color:var(--text2)">Camino más corto</div>
         </div>
         <div class="emp-tab" id="emp-fijo" onclick="setEmpresa('fijo',this)">
-          <div style="margin-bottom:4px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div>
+          <div style="margin-bottom:4px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1b2a3a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div>
           <div style="font-size:13px;font-weight:700">Mantener orden</div>
           <div style="font-size:10px;color:var(--text2)">Tal cual escaneas</div>
         </div>
@@ -393,7 +391,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
       <div class="pdasub">Gestiona los accesos de tus repartidores</div>
       <div id="equipo-list"></div>
       <button class="abtn" style="margin-top:16px" onclick="showAddDriver()">+ AÑADIR REPARTIDOR</button>
-      <button onclick="crearClientePrueba()" style="width:100%;padding:14px;border:1.5px solid var(--accent);border-radius:12px;background:rgba(79,70,229,.08);color:var(--accent);font-size:14px;font-weight:700;cursor:pointer;margin-top:10px;">🎁 Crear cliente de prueba (1 día)</button>
+      <button onclick="crearClientePrueba()" style="width:100%;padding:14px;border:1.5px solid var(--accent);border-radius:12px;background:rgba(27,42,58,.08);color:var(--accent);font-size:14px;font-weight:700;cursor:pointer;margin-top:10px;">🎁 Crear cliente de prueba (1 día)</button>
       <div id="add-driver-form" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-top:12px;">
         <div style="font-size:14px;font-weight:700;margin-bottom:12px;color:var(--accent)">Nuevo repartidor</div>
         <label class="llbl">Nombre</label>
@@ -438,7 +436,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
     <div style="font-size:13px;color:var(--text2);margin-bottom:20px;" id="cierre-addr1"></div>
     <div style="font-size:13px;font-weight:700;color:var(--text2);margin-bottom:12px;">¿Cómo registras esta entrega?</div>
     <div style="display:flex;flex-direction:column;gap:10px;">
-      <button style="padding:18px;border-radius:14px;border:2px solid var(--accent);background:rgba(79,70,229,.12);color:var(--accent);font-size:16px;font-weight:700;cursor:pointer;text-align:left;" onclick="cierre_paso2(true)">
+      <button style="padding:18px;border-radius:14px;border:2px solid var(--accent);background:rgba(27,42,58,.12);color:var(--accent);font-size:16px;font-weight:700;cursor:pointer;text-align:left;" onclick="cierre_paso2(true)">
         📷 Con foto de la etiqueta<br><span style="font-size:12px;font-weight:400;opacity:.7">Sube la foto + nombre y DNI</span>
       </button>
       <button style="padding:18px;border-radius:14px;border:2px solid var(--green);background:rgba(16,185,129,.12);color:var(--green);font-size:16px;font-weight:700;cursor:pointer;text-align:left;" onclick="cierre_paso2(false)">
@@ -774,11 +772,11 @@ throw new Error('trial-expired');
 if(me.role==='manager'){
 const drivers=(await fetchDrivers()).filter(d=>d.activo);
 RUTAS.length=0;
-drivers.forEach(d=>{RUTAS.push({driver:d.name,did:d.did||0,color:d.color||'#4f46e5',paradas:[]});});
+drivers.forEach(d=>{RUTAS.push({driver:d.name,did:d.did||0,color:d.color||'#1b2a3a',paradas:[]});});
 // La ruta ACTIVA del manager es la SUYA propia (se guarda y recarga entre dispositivos)
-ruta={driver:me.name,did:me.did||0,color:me.color||'#4f46e5',paradas:[]};
+ruta={driver:me.name,did:me.did||0,color:me.color||'#1b2a3a',paradas:[]};
 } else {
-ruta=RUTAS.find(r=>r.driver===me.name)||{driver:me.name,did:me.did||0,color:me.color||'#4f46e5',paradas:[]};
+ruta=RUTAS.find(r=>r.driver===me.name)||{driver:me.name,did:me.did||0,color:me.color||'#1b2a3a',paradas:[]};
 if(!RUTAS.find(r=>r.driver===me.name))RUTAS.push(ruta);
 }
 document.getElementById('login').style.display='none';
@@ -975,7 +973,7 @@ _zonaMode=!_zonaMode;
 const btn=document.getElementById('btn-zona');
 if(btn){
 btn.style.borderColor=_zonaMode?'var(--accent)':'var(--border)';
-btn.style.background=_zonaMode?'rgba(79,70,229,.1)':'transparent';
+btn.style.background=_zonaMode?'rgba(27,42,58,.1)':'transparent';
 btn.style.color=_zonaMode?'var(--accent)':'var(--text2)';
 btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:3px"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>'+(_zonaMode?'Agrupado por zona':'Agrupar por zona');
 }
@@ -993,7 +991,7 @@ zonas[calle].push(s);
 lista.innerHTML='';
 Object.entries(zonas).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([zona,paradas])=>{
 const header=document.createElement('div');
-header.style.cssText='padding:6px 16px;background:rgba(79,70,229,.06);border-bottom:1px solid var(--border);font-size:11px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;';
+header.style.cssText='padding:6px 16px;background:rgba(27,42,58,.06);border-bottom:1px solid var(--border);font-size:11px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;';
 header.textContent='📍 '+zona+' ('+paradas.length+')';
 lista.appendChild(header);
 paradas.forEach(s=>lista.appendChild(crearElementoParada(s)));
@@ -1011,7 +1009,8 @@ const v=String(nuevo).trim();
 if(!v){toast('Número vacío','err');return;}
 p.paquete=v;p._sinNum=false;
 renderLista();
-if(p._id){sb.from('paradas').update({paquete:v}).eq('id',p._id).then(()=>{});}
+if(p._id)sb.from('paradas').update({paquete:v}).eq('id',p._id).then(()=>{});
+else if(ruta._rutaId)sb.from('paradas').update({paquete:v}).eq('ruta_id',ruta._rutaId).eq('n',p.n).then(()=>{});
 toast(`✓ Paquete → ${v}`,'ok');
 }
 
@@ -1029,7 +1028,8 @@ renderLista();
 toast('📍 Localizando nueva dirección…','');
 try{const c=await geocodeAddr(v);p.lat=c.lat;p.lng=c.lng;p._aprox=c._aprox||false;}catch(_){p.lat=null;p.lng=null;}
 renderLista();if(gmap1)renderMarkers1();
-if(p._id){sb.from('paradas').update({addr:v,lat:p.lat||null,lng:p.lng||null}).eq('id',p._id).then(()=>{});}
+if(p._id)sb.from('paradas').update({addr:v,lat:p.lat||null,lng:p.lng||null}).eq('id',p._id).then(()=>{});
+else if(ruta._rutaId)sb.from('paradas').update({addr:v,lat:p.lat||null,lng:p.lng||null}).eq('ruta_id',ruta._rutaId).eq('n',p.n).then(()=>{});
 toast('✓ Dirección actualizada','ok');
 }
 
@@ -1057,7 +1057,7 @@ if(_modoBorrar&&sel)el.style.background='rgba(244,63,94,.08)';
 // Etiqueta de hora estimada de llegada
 let etaTag='';
 if(s.eta&&s.status==='pending'){
-let color='var(--accent)',bg='rgba(79,70,229,.12)',icon='🕐';
+let color='var(--accent)',bg='rgba(27,42,58,.12)',icon='🕐';
 // Aviso para preferentes: si la ETA supera su franja
 if(s.eta){
 const h=parseInt(s.eta.split(':')[0]);
@@ -1249,8 +1249,8 @@ renderMarkers1();
 // ===== Mi ubicación + orientación en el mapa del repartidor =====
 let _miPos=null,_miHeading=null,_miMarker=null,_geoWatch=null,_brujulaOn=false;
 function miUbiSVG(heading){
-const cono=(heading!=null)?`<g transform="rotate(${Math.round(heading)} 30 30)"><path d="M30 3 L18 28 L42 28 Z" fill="#4f46e5" opacity="0.45"/></g>`:'';
-return `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60">${cono}<circle cx="30" cy="30" r="16" fill="#4f46e5" opacity="0.15"/><circle cx="30" cy="30" r="8" fill="#4f46e5" stroke="#fff" stroke-width="3"/></svg>`;
+const cono=(heading!=null)?`<g transform="rotate(${Math.round(heading)} 30 30)"><path d="M30 3 L18 28 L42 28 Z" fill="#1b2a3a" opacity="0.45"/></g>`:'';
+return `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60">${cono}<circle cx="30" cy="30" r="16" fill="#1b2a3a" opacity="0.15"/><circle cx="30" cy="30" r="8" fill="#1b2a3a" stroke="#fff" stroke-width="3"/></svg>`;
 }
 function _pintarMiUbicacion(){
 if(!_miPos||!gmap1||typeof google==='undefined')return;
@@ -1564,15 +1564,18 @@ return{calle,cp};
 }
 
 async function geocodeAddr(addr){
-const{calle,cp}=limpiarDireccionGeo(addr);
-const calleKey=(calle+'|'+cp).toUpperCase();
+// Geocodificar la dirección COMPLETA (la misma cadena que usa 'Navegar') para que el pin coincida
+let full=String(addr).replace(/\s+/g,' ').trim();
+if(!/zaragoza/i.test(full))full+=', Zaragoza';
+if(!/espa[ñn]a/i.test(full))full+=', España';
+const calleKey=full.toUpperCase();
 try{
 const cache=JSON.parse(localStorage.getItem('geo_cache_v2')||'{}');
 if(cache[calleKey]){return cache[calleKey];}
 }catch(e){}
 
 try{
-const q=encodeURIComponent(calle+(cp?', '+cp:'')+', Zaragoza, España');
+const q=encodeURIComponent(full);
 const comp=encodeURIComponent('locality:Zaragoza|country:ES');
 const r=await fetch(`${WORKER_URL}/geocode?address=${q}&components=${comp}`,{headers:APP_TOKEN?{'X-App-Token':APP_TOKEN}:{}});
 const d=await r.json();
@@ -1788,7 +1791,7 @@ card.innerHTML=`
 <div class="dtop">
 <div class="tav" style="background:${r.color};color:#000;width:26px;height:26px;font-size:12px">${esc((r.driver||'?')[0])}</div>
 <div><div class="dname">${esc(r.driver)}</div><div style="font-size:10px;color:var(--text3)">${total} paradas</div></div>
-<div class="don" style="background:${isSelected?'rgba(79,70,229,.2)':'rgba(16,185,129,.15)'};color:${isSelected?'var(--accent)':'var(--green)'}">
+<div class="don" style="background:${isSelected?'rgba(27,42,58,.2)':'rgba(16,185,129,.15)'};color:${isSelected?'var(--accent)':'var(--green)'}">
 ${isSelected?'● Activo':'● Live'}
 </div>
 </div>
@@ -1884,9 +1887,9 @@ const caducada=Date.now()>fin;
 const finTxt=new Date(d.prueba_fin).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
 pruebaInfo=`<div style="font-size:11px;font-weight:700;margin-top:3px;color:${caducada?'var(--red)':'var(--orange)'};">${caducada?'⏰ PRUEBA CADUCADA':'🎁 Prueba hasta '+esc(finTxt)}</div>`;
 }
-const modoTag=d.modo_simple?'<span style="font-size:10px;background:rgba(79,70,229,.12);color:var(--accent);padding:1px 6px;border-radius:5px;margin-left:4px;">simple</span>':'';
+const modoTag=d.modo_simple?'<span style="font-size:10px;background:rgba(27,42,58,.12);color:var(--accent);padding:1px 6px;border-radius:5px;margin-left:4px;">simple</span>':'';
 const rolNombre=d.role==='manager'?'Gerente':d.role==='supervisor'?'Supervisor':'Repartidor';
-const rolColor=d.role==='manager'?'#8b5cf6':d.role==='supervisor'?'#4f46e5':'#64748b';
+const rolColor=d.role==='manager'?'#8b5cf6':d.role==='supervisor'?'#1b2a3a':'#64748b';
 const rolTag=`<span style="font-size:10px;background:${rolColor}22;color:${rolColor};padding:1px 7px;border-radius:5px;font-weight:700;">${rolNombre}</span>`;
 return `
 <div style="background:var(--card);border:1px solid ${d.activo?'var(--border)':'var(--red)'};border-radius:12px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;">
@@ -2055,7 +2058,7 @@ return `<div style="margin:8px;background:var(--card);border-radius:16px;overflo
 <div style="font-weight:700;font-size:14px;">${esc(c.driver)}</div>
 <div style="display:flex;gap:6px;align-items:center;margin-top:2px;flex-wrap:wrap;">
 <span style="font-size:11px;color:var(--text3);">${hora}</span>
-${c.ruta_tipo?`<span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;background:rgba(79,70,229,.15);color:var(--accent);">${c.ruta_tipo==='principal'?'🚚 Principal':c.ruta_tipo==='andarin'?'🚶 Andarin':'📦 50008'}</span>`:''}
+${c.ruta_tipo?`<span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;background:rgba(27,42,58,.15);color:var(--accent);">${c.ruta_tipo==='principal'?'🚚 Principal':c.ruta_tipo==='andarin'?'🚶 Andarin':'📦 50008'}</span>`:''}
 ${c.preferente?`<span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;background:rgba(245,158,11,.2);color:#f59e0b;">⚡ Preferente</span>`:''}
 </div>
 </div>
@@ -2179,7 +2182,7 @@ const b=document.getElementById(id);
 if(b){b.style.border='1.5px solid var(--border)';b.style.background='transparent';b.style.color='var(--text2)';}
 });
 btn.style.border='2px solid var(--accent)';
-btn.style.background='rgba(79,70,229,.15)';
+btn.style.background='rgba(27,42,58,.15)';
 btn.style.color='var(--accent)';
 }
 
@@ -2895,4 +2898,4 @@ clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);
 </script>
 </body>
 </html>
-<!-- build: 2026-06-22-fixes -->
+<!-- build: 2026-06-22-marca2 -->
