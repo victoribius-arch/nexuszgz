@@ -1167,6 +1167,8 @@ else if(ruta._rutaId)sb.from('paradas').update({addr:v,lat:p.lat||null,lng:p.lng
 toast('✓ Dirección actualizada','ok');
 }
 
+// Clave de PORTAL (calle + número, sin piso/puerta) para agrupar bultos del mismo portal
+function portalKey(addr){const c=(typeof limpiarDireccionGeo==='function'?limpiarDireccionGeo(addr).calle:String(addr||'').split(',')[0]);return (c||'').toLowerCase().replace(/[\s.,º-]/g,'');}
 function crearElementoParada(s){
 const cls=s.status==='delivered'?'del':s.status==='failed'?'fail':'pend';
 const tag=s.status==='delivered'?'<span class="tag tok">✓ OK</span>':s.status==='failed'?'<span class="tag tko">✗ Fallido</span>':'<span class="tag tpe">Pendiente</span>';
@@ -1214,9 +1216,12 @@ geoTag='<span class="tag" style="background:rgba(220,38,38,.15);color:var(--red)
 }else if(s.lat===null&&s.lng===null){
 geoTag='<span class="tag" style="background:rgba(148,163,184,.15);color:var(--text3);font-weight:700;">📍 Localizando…</span>';
 }
+// Bultos del MISMO PORTAL (direcciones repetidas): cuántos paquetes van a esa puerta
+let portalTag='';
+try{const pk=portalKey(s.addr);const grp=ruta.paradas.filter(x=>portalKey(x.addr)===pk);if(grp.length>1){const idx=grp.findIndex(x=>Number(x.n)===Number(s.n))+1;portalTag=`<span class="tag" style="background:var(--accent);color:#fff;font-weight:800;">🏠 ${idx}/${grp.length} mismo portal</span>`;}}catch(_){}
 el.innerHTML=`<div class="sibar" style="${s.lat&&s.lng&&!s._aprox?'background:var(--green);':s._aprox?'background:var(--red);':''}"></div><div class="sinum"><div class="nc">${s.n}</div></div>
 <div class="sibody"><div class="siname"><span class="sinm">${esc(s.name)}</span>${s._sinNum?`<span onclick="editarPaquete(${s.n},event)" style="flex-shrink:0;margin-left:6px;background:var(--red);color:#fff;font-size:11px;font-weight:800;padding:2px 8px;border-radius:8px;cursor:pointer;">⚠️ Poner nº</span>`:s.paquete?`<span onclick="editarPaquete(${s.n},event)" style="flex-shrink:0;margin-left:6px;background:var(--orange);color:#000;font-size:11px;font-weight:800;padding:2px 8px;border-radius:8px;cursor:pointer;">📦 Paq. ${esc(s.paquete)} ✏️</span>`:''}</div><div class="siaddr" onclick="editarDireccion(${s.n},event)" style="cursor:pointer;"><span class="siad">${esc(s.addr)}</span> <span style="flex-shrink:0;color:var(--accent);font-size:13px;margin-left:3px;">✏️</span></div>
-<div class="sitags"><span class="tag ts">Saca ${esc(s.saco)}</span><span class="tag tb2">${esc(s.bultos)}b</span>${geoTag}${etaTag}${tag}${s.codigo?`<span class="tag" style="background:rgba(251,146,60,.1);color:var(--orange);font-family:monospace;font-size:9px;">${esc(String(s.codigo).slice(-8))}</span>`:''}</div></div>${acts}`;
+<div class="sitags"><span class="tag ts">Saca ${esc(s.saco)}</span><span class="tag tb2">${esc(s.bultos)}b</span>${portalTag}${geoTag}${etaTag}${tag}${s.codigo?`<span class="tag" style="background:rgba(251,146,60,.1);color:var(--orange);font-family:monospace;font-size:9px;">${esc(String(s.codigo).slice(-8))}</span>`:''}</div></div>${acts}`;
 el.addEventListener('click',()=>{if(_modoBorrar)toggleSeleccion(s.n);else selStop(s.n);});
 return el;
 }
@@ -1359,16 +1364,12 @@ initMap1();
 if(document.getElementById('s-gestor').classList.contains('on'))initMap2();
 };
 
+// Mapa CLARO (mejor visibilidad con sol): mapa por defecto de Google, solo ocultamos
+// puntos de interés y transporte para que no estorben.
 const MAP_STYLE=[
-{elementType:'geometry',stylers:[{color:'#0b0e15'}]},
-{elementType:'labels.text.fill',stylers:[{color:'#7ba7c7'}]},
-{elementType:'labels.text.stroke',stylers:[{color:'#0b0e15'}]},
-{featureType:'road',elementType:'geometry',stylers:[{color:'#1a2f4a'}]},
-{featureType:'road.arterial',elementType:'geometry',stylers:[{color:'#1e3a5f'}]},
-{featureType:'road.highway',elementType:'geometry',stylers:[{color:'#243d5c'}]},
-{featureType:'water',elementType:'geometry',stylers:[{color:'#0d2137'}]},
 {featureType:'poi',stylers:[{visibility:'off'}]},
 {featureType:'transit',stylers:[{visibility:'off'}]},
+{featureType:'road',elementType:'labels.icon',stylers:[{visibility:'off'}]},
 ];
 
 function initMap1(){
@@ -3032,4 +3033,4 @@ clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);
 </script>
 </body>
 </html>
-<!-- build: 2026-06-22-oficial -->
+<!-- build: 2026-06-22-portal -->
