@@ -722,7 +722,17 @@ const COORDS_ZGZ = [
 ];
 
 function sr(s){let x=Math.sin(s+1)*99999;return x-Math.floor(x);}
-function coord(i){return COORDS_ZGZ[i%COORDS_ZGZ.length];}
+// Posición de reserva para paradas SIN localizar: se dispersan alrededor de la
+// zona real de la ruta (centro de las paradas ya localizadas) o del repartidor,
+// no de una ciudad fija. Así funciona en cualquier ciudad o pueblo.
+function coord(i){
+let alat=null,alng=null,c=0;
+try{((typeof ruta!=='undefined'&&ruta&&ruta.paradas)||[]).forEach(p=>{if(p.lat&&p.lng&&!p._aprox){alat=(alat||0)+p.lat;alng=(alng||0)+p.lng;c++;}});}catch(_){}
+if(c){alat/=c;alng/=c;}
+else if(typeof _miPos!=='undefined'&&_miPos&&_miPos.lat){alat=_miPos.lat;alng=_miPos.lng;}
+else{alat=40.4168;alng=-3.7038;}
+return{lat:alat+(sr(i)-0.5)*0.006,lng:alng+(sr(i+99)-0.5)*0.008};
+}
 
 function genParadas(n, did){
 const sacas=['A','B','C','D','E'];
@@ -1088,7 +1098,7 @@ toast(st==='delivered'?`✓ Parada ${n} entregada`:`✗ Parada ${n} fallida`,st=
 }
 function navTo(addr,e){
 e.stopPropagation();
-const dest=encodeURIComponent(addr+', Zaragoza, España');
+const dest=encodeURIComponent(addr+', España');
 
 const url=`https://www.google.com/maps/dir/?api=1&destination=${dest}&travelmode=driving`;
 window.open(url,'_blank');
@@ -1099,8 +1109,8 @@ if(e)e.stopPropagation();
 
 const pendientes=ruta.paradas.filter(p=>p.status==='pending').slice(0,10);
 if(!pendientes.length){toast('No hay paradas pendientes','err');return;}
-const waypoints=pendientes.slice(0,-1).map(p=>encodeURIComponent(p.addr+', Zaragoza')).join('|');
-const dest=encodeURIComponent(pendientes[pendientes.length-1].addr+', Zaragoza, España');
+const waypoints=pendientes.slice(0,-1).map(p=>encodeURIComponent(p.addr+', España')).join('|');
+const dest=encodeURIComponent(pendientes[pendientes.length-1].addr+', España');
 let url=`https://www.google.com/maps/dir/?api=1&destination=${dest}&travelmode=driving`;
 if(waypoints)url+=`&waypoints=${waypoints}`;
 window.open(url,'_blank');
@@ -1242,9 +1252,9 @@ toast('🗺️ Calculando ruta óptima...','');
 // Optimiza un bloque (máx 25 puntos) con Google Directions. Devuelve {orden, legs} o null
 async function optimizarBloque(grupo){
 if(grupo.length<2)return{orden:grupo,legs:[]};
-const origin=grupo[0].addr+', Zaragoza, España';
-const destination=grupo[grupo.length-1].addr+', Zaragoza, España';
-const waypoints=grupo.slice(1,-1).map(p=>encodeURIComponent(p.addr+', Zaragoza, España')).join('|');
+const origin=grupo[0].addr+', España';
+const destination=grupo[grupo.length-1].addr+', España';
+const waypoints=grupo.slice(1,-1).map(p=>encodeURIComponent(p.addr+', España')).join('|');
 const resp=await fetch(`${WORKER_URL}/directions?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&waypoints=${waypoints}`,{headers:APP_TOKEN?{'X-App-Token':APP_TOKEN}:{}});
 const data=await resp.json();
 if(data.status!=='OK')console.warn('Google Directions status:',data.status,data.error_message||'');
@@ -1279,7 +1289,7 @@ reordenadas=r.orden;allLegs=r.legs;
 toast('🗺️ Optimizando ruta larga por zonas...','');
 const grupos={};
 pendientes.forEach(p=>{
-const cp=(p.addr.match(/\b50\d{3}\b/)||['50000'])[0];
+const cp=(p.addr.match(/\b\d{5}\b/)||['00000'])[0];
 if(!grupos[cp])grupos[cp]=[];
 grupos[cp].push(p);
 });
@@ -1328,10 +1338,10 @@ if(pendientes.length>25){toast('No se pudo optimizar la ruta larga, inténtalo d
 toast('✨ Optimizando con IA...','');
 try{
 const lista=pendientes.map(p=>`${p.n}: ${p.addr}`).join('\n');
-const content=[{type:'text',text:`Eres un experto en rutas de reparto en Zaragoza, España.
+const content=[{type:'text',text:`Eres un experto en rutas de reparto de última milla en España.
 Tengo estas paradas pendientes con furgoneta:
 ${lista}
-Ordénalas para minimizar el recorrido total, teniendo en cuenta las calles de Zaragoza, sentidos únicos y zonas.
+Ordénalas para minimizar el recorrido total, teniendo en cuenta el callejero real de la zona, sentidos únicos y barrios.
 Devuelve SOLO un array JSON con los números de parada en el orden óptimo: [3,1,5,2,4]`}];
 const resp=await fetch(WORKER_URL,{method:'POST',headers:workerHeaders(),
 body:JSON.stringify({model:'route',max_tokens:500,messages:[{role:'user',content}]})});
@@ -1381,7 +1391,7 @@ const MAP_STYLE=[
 
 function initMap1(){
 gmap1=new google.maps.Map(document.getElementById('gmap'),{
-center:{lat:41.6488,lng:-0.8761},zoom:13,
+center:{lat:40.4168,lng:-3.7038},zoom:6,
 styles:MAP_STYLE,
 disableDefaultUI:false,zoomControl:true,mapTypeControl:false,streetViewControl:false,fullscreenControl:false,
 });
@@ -1700,15 +1710,14 @@ function limpiarDireccionGeo(addr){
 let calle=addr.split(',')[0].trim();
 const m=calle.match(/^(.*?\d+)\b/);
 if(m)calle=m[1];
-// CP de Zaragoza si aparece en la dirección completa
-const cp=(addr.match(/\b50\d{3}\b/)||[])[0]||'';
+// Código postal (5 dígitos) si aparece en la dirección completa
+const cp=(addr.match(/\b\d{5}\b/)||[])[0]||'';
 return{calle,cp};
 }
 
 async function geocodeAddr(addr){
 // Geocodificar la dirección COMPLETA (la misma cadena que usa 'Navegar') para que el pin coincida
 let full=String(addr).replace(/\s+/g,' ').trim();
-if(!/zaragoza/i.test(full))full+=', Zaragoza';
 if(!/espa[ñn]a/i.test(full))full+=', España';
 const calleKey=full.toUpperCase();
 try{
@@ -1718,7 +1727,7 @@ if(cache[calleKey]){return cache[calleKey];}
 
 try{
 const q=encodeURIComponent(full);
-const comp=encodeURIComponent('locality:Zaragoza|country:ES');
+const comp=encodeURIComponent('country:ES');
 const r=await fetch(`${WORKER_URL}/geocode?address=${q}&components=${comp}`,{headers:APP_TOKEN?{'X-App-Token':APP_TOKEN}:{}});
 const d=await r.json();
 if(d.results&&d.results[0]){
@@ -1739,8 +1748,17 @@ localStorage.setItem('geo_cache_v2',JSON.stringify(cache));
 return coords;
 }
 }catch(e){console.error('Geocode error:',e);}
-// Sin resultado: centro de Zaragoza marcado como aproximado (nunca aleatorio)
-return{lat:41.6488,lng:-0.8788,_aprox:true};
+// Sin resultado exacto: centrar por código postal (población correcta en cualquier ciudad o pueblo)
+try{
+const cp=(full.match(/\b\d{5}\b/)||[])[0];
+if(cp){
+const r2=await fetch(`${WORKER_URL}/geocode?address=${encodeURIComponent(cp+', España')}&components=${encodeURIComponent('country:ES')}`,{headers:APP_TOKEN?{'X-App-Token':APP_TOKEN}:{}});
+const d2=await r2.json();
+if(d2.results&&d2.results[0]){const l=d2.results[0].geometry.location;return{lat:l.lat,lng:l.lng,_aprox:true};}
+}
+}catch(e){}
+// Sin CP ni resultado: no inventamos ubicación
+return{lat:null,lng:null,_aprox:true};
 }
 
 async function optimizeRoute(stops){
@@ -1956,7 +1974,7 @@ let selectedDriver2=null;
 
 function initMap2(){
 gmap2=new google.maps.Map(document.getElementById('gmap2'),{
-center:{lat:41.6488,lng:-0.8761},zoom:12,styles:MAP_STYLE,
+center:{lat:40.4168,lng:-3.7038},zoom:6,styles:MAP_STYLE,
 disableDefaultUI:false,zoomControl:true,mapTypeControl:false,streetViewControl:false,fullscreenControl:false,
 });
 renderMap2Markers();
@@ -3040,4 +3058,4 @@ clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);
 </script>
 </body>
 </html>
-<!-- build: 2026-06-22-portal3 -->
+<!-- build: 2026-06-22-multiciudad -->
