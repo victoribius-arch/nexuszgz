@@ -1051,7 +1051,11 @@ return true;
 if(!stops.length){lista.innerHTML='<div class="empty">Sin resultados</div>';return;}
 if(_zonaMode){renderListaConZonas(stops,lista);return;}
 lista.innerHTML='';
-stops.forEach(s=>lista.appendChild(crearElementoParada(s)));
+// Agrupar las del MISMO PORTAL juntas (orden de 1ª aparición; pisos ascendentes dentro), SIN fusionar
+const _g={};stops.forEach(s=>{const k=portalKey(s.addr);(_g[k]=_g[k]||[]).push(s);});
+const _seen=new Set();const _orden=[];
+stops.forEach(s=>{const k=portalKey(s.addr);if(_seen.has(k))return;_seen.add(k);_orden.push(..._g[k].slice().sort((a,b)=>pisoNum(a.addr)-pisoNum(b.addr)));});
+_orden.forEach(s=>lista.appendChild(crearElementoParada(s)));
 }
 
 function renderStats(){
@@ -1169,6 +1173,8 @@ toast('✓ Dirección actualizada','ok');
 
 // Clave de PORTAL (calle + número, sin piso/puerta) para agrupar bultos del mismo portal
 function portalKey(addr){const c=(typeof limpiarDireccionGeo==='function'?limpiarDireccionGeo(addr).calle:String(addr||'').split(',')[0]);return (c||'').toLowerCase().replace(/[\s.,º-]/g,'');}
+// Número de piso (para ordenar dentro del portal: bajo, 1º, 2º, 3º…)
+function pisoNum(addr){const a=String(addr||'');if(/bajo|bajos|\bbj\b|local|entresuelo/i.test(a))return 0;const c=(typeof limpiarDireccionGeo==='function'?limpiarDireccionGeo(a).calle:a.split(',')[0]);const rest=a.replace(c,'');const m=rest.match(/\d+/);return m?parseInt(m[0]):50;}
 function crearElementoParada(s){
 const cls=s.status==='delivered'?'del':s.status==='failed'?'fail':'pend';
 const tag=s.status==='delivered'?'<span class="tag tok">✓ OK</span>':s.status==='failed'?'<span class="tag tko">✗ Fallido</span>':'<span class="tag tpe">Pendiente</span>';
@@ -1218,7 +1224,7 @@ geoTag='<span class="tag" style="background:rgba(148,163,184,.15);color:var(--te
 }
 // Bultos del MISMO PORTAL (direcciones repetidas): cuántos paquetes van a esa puerta
 let portalTag='';
-try{const pk=portalKey(s.addr);const grp=ruta.paradas.filter(x=>portalKey(x.addr)===pk);if(grp.length>1){const idx=grp.findIndex(x=>Number(x.n)===Number(s.n))+1;portalTag=`<span class="tag" style="background:var(--accent);color:#fff;font-weight:800;">🏠 ${idx}/${grp.length} mismo portal</span>`;}}catch(_){}
+try{const pk=portalKey(s.addr);const grp=ruta.paradas.filter(x=>portalKey(x.addr)===pk).sort((a,b)=>pisoNum(a.addr)-pisoNum(b.addr));if(grp.length>1){const idx=grp.findIndex(x=>Number(x.n)===Number(s.n))+1;portalTag=`<span class="tag" style="background:var(--accent);color:#fff;font-weight:800;">🏠 ${idx}/${grp.length} mismo portal</span>`;}}catch(_){}
 el.innerHTML=`<div class="sibar" style="${s.lat&&s.lng&&!s._aprox?'background:var(--green);':s._aprox?'background:var(--red);':''}"></div><div class="sinum"><div class="nc">${s.n}</div></div>
 <div class="sibody"><div class="siname"><span class="sinm">${esc(s.name)}</span>${s._sinNum?`<span onclick="editarPaquete(${s.n},event)" style="flex-shrink:0;margin-left:6px;background:var(--red);color:#fff;font-size:11px;font-weight:800;padding:2px 8px;border-radius:8px;cursor:pointer;">⚠️ Poner nº</span>`:s.paquete?`<span onclick="editarPaquete(${s.n},event)" style="flex-shrink:0;margin-left:6px;background:var(--orange);color:#000;font-size:11px;font-weight:800;padding:2px 8px;border-radius:8px;cursor:pointer;">📦 Paq. ${esc(s.paquete)} ✏️</span>`:''}</div><div class="siaddr" onclick="editarDireccion(${s.n},event)" style="cursor:pointer;"><span class="siad">${esc(s.addr)}</span> <span style="flex-shrink:0;color:var(--accent);font-size:13px;margin-left:3px;">✏️</span></div>
 <div class="sitags"><span class="tag ts">Saca ${esc(s.saco)}</span><span class="tag tb2">${esc(s.bultos)}b</span>${portalTag}${geoTag}${etaTag}${tag}${s.codigo?`<span class="tag" style="background:rgba(251,146,60,.1);color:var(--orange);font-family:monospace;font-size:9px;">${esc(String(s.codigo).slice(-8))}</span>`:''}</div></div>${acts}`;
@@ -3033,4 +3039,4 @@ clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);
 </script>
 </body>
 </html>
-<!-- build: 2026-06-22-portal -->
+<!-- build: 2026-06-22-portal2 -->
