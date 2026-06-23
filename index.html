@@ -1724,6 +1724,38 @@ return{calle,cp};
 // código postal (evita que se geocodifique a otra ciudad). Para vender a una empresa
 // de otra ciudad, cambiar SOLO esta línea (ej. 'Madrid', 'Valencia', ''=sin ancla).
 const CIUDAD_DEF='Zaragoza';
+// Normaliza el formato de la dirección para que Google acierte el portal exacto:
+// "Av América N2"->"Av América 2", "goya21"->"goya 21", y se queda con calle+número
+// (quita piso/puerta/escalera, que despistan al geocodificador). '' si no hay calle+número.
+function limpiarDirParaGeo(addr){
+const cp=(String(addr).match(/\b\d{5}\b/)||[])[0]||'';
+let s=String(addr).split(',')[0];
+s=s.replace(/\bN[º°ªo\.]?\s*(\d)/gi,'$1');            // N2 / Nº4 / N 6 -> 2 / 4 / 6
+s=s.replace(/([A-Za-zÁÉÍÓÚáéíóúÑñ])(\d)/g,'$1 $2');    // goya21 -> goya 21
+const m=s.match(/^(.*?\d+)/);                          // calle + primer número
+if(m)s=m[1];
+s=s.replace(/\s+/g,' ').trim();
+if(!s||!/\d/.test(s))return '';
+let out=s;
+if(cp)out+=', '+cp;
+if(CIUDAD_DEF&&!new RegExp(CIUDAD_DEF.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'i').test(out))out+=', '+CIUDAD_DEF;
+out+=', España';
+return out;
+}
+
+// Geocodifica una cadena y devuelve {lat,lng,preciso} o null. Preciso = portal exacto/interpolado.
+async function _geoOnce(query){
+try{
+const r=await fetch(`${WORKER_URL}/geocode?address=${encodeURIComponent(query)}&components=${encodeURIComponent('country:ES')}`,{headers:APP_TOKEN?{'X-App-Token':APP_TOKEN}:{}});
+const d=await r.json();
+if(d.results&&d.results[0]){
+const g=d.results[0].geometry;const lt=g.location_type;
+return{lat:g.location.lat,lng:g.location.lng,preciso:(lt==='ROOFTOP'||lt==='RANGE_INTERPOLATED')};
+}
+}catch(e){console.error('Geocode error:',e);}
+return null;
+}
+
 async function geocodeAddr(addr){
 // Geocodificar la dirección COMPLETA (la misma cadena que usa 'Navegar') para que el pin coincida
 let full=String(addr).replace(/\s+/g,' ').trim();
@@ -1731,44 +1763,19 @@ let full=String(addr).replace(/\s+/g,' ').trim();
 if(!/\b\d{5}\b/.test(full)&&CIUDAD_DEF&&!new RegExp(CIUDAD_DEF.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'i').test(full))full+=', '+CIUDAD_DEF;
 if(!/espa[ñn]a/i.test(full))full+=', España';
 const calleKey=full.toUpperCase();
-try{
-const cache=JSON.parse(localStorage.getItem('geo_cache_v3')||'{}');
-if(cache[calleKey]){return cache[calleKey];}
-}catch(e){}
-
-try{
-const q=encodeURIComponent(full);
-const comp=encodeURIComponent('country:ES');
-const r=await fetch(`${WORKER_URL}/geocode?address=${q}&components=${comp}`,{headers:APP_TOKEN?{'X-App-Token':APP_TOKEN}:{}});
-const d=await r.json();
-if(d.results&&d.results[0]){
-const res=d.results[0];
-const loc=res.geometry.location;
-const coords={lat:loc.lat,lng:loc.lng};
-// Solo guardar en caché resultados precisos (portal exacto o interpolado)
-const lt=res.geometry.location_type;
-if(lt==='ROOFTOP'||lt==='RANGE_INTERPOLATED'){
-try{
-const cache=JSON.parse(localStorage.getItem('geo_cache_v3')||'{}');
-cache[calleKey]=coords;
-const keys=Object.keys(cache);
-if(keys.length>500)delete cache[keys[0]];
-localStorage.setItem('geo_cache_v3',JSON.stringify(cache));
-}catch(e){}
+try{const cache=JSON.parse(localStorage.getItem('geo_cache_v3')||'{}');if(cache[calleKey])return cache[calleKey];}catch(e){}
+const guardar=(c)=>{try{const cache=JSON.parse(localStorage.getItem('geo_cache_v3')||'{}');cache[calleKey]={lat:c.lat,lng:c.lng};const keys=Object.keys(cache);if(keys.length>500)delete cache[keys[0]];localStorage.setItem('geo_cache_v3',JSON.stringify(cache));}catch(e){}};
+// Intento 1: dirección completa
+const g=await _geoOnce(full);
+if(g&&g.preciso){const c={lat:g.lat,lng:g.lng};guardar(c);return c;}
+// Intento 2: si NO fue preciso, limpiar el formato (Nº→número, separar calle/número, quitar piso) y reintentar.
+// Esto recupera "Av América N2", "goya21", "C/ X Nº4 3ºC"… que si no caen al centro del CP (varias calles desviado).
+const limpia=limpiarDirParaGeo(addr);
+if(limpia&&limpia.toUpperCase()!==full.toUpperCase()){
+const g2=await _geoOnce(limpia);
+if(g2&&g2.preciso){const c={lat:g2.lat,lng:g2.lng};guardar(c);return c;}
 }
-return coords;
-}
-}catch(e){console.error('Geocode error:',e);}
-// Sin resultado exacto: centrar por código postal (población correcta en cualquier ciudad o pueblo)
-try{
-const cp=(full.match(/\b\d{5}\b/)||[])[0];
-if(cp){
-const r2=await fetch(`${WORKER_URL}/geocode?address=${encodeURIComponent(cp+', España')}&components=${encodeURIComponent('country:ES')}`,{headers:APP_TOKEN?{'X-App-Token':APP_TOKEN}:{}});
-const d2=await r2.json();
-if(d2.results&&d2.results[0]){const l=d2.results[0].geometry.location;return{lat:l.lat,lng:l.lng,_aprox:true};}
-}
-}catch(e){}
-// Sin CP ni resultado: no inventamos ubicación
+// Nada preciso: no inventamos un punto (el centro del CP engaña) → gris "ubicación aproximada (revisar dirección)"
 return{lat:null,lng:null,_aprox:true};
 }
 
@@ -3079,4 +3086,4 @@ clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);
 </script>
 </body>
 </html>
-<!-- build: 2026-06-23-geofix -->
+<!-- build: 2026-06-23-precision2 -->
