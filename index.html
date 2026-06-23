@@ -1457,21 +1457,26 @@ if(!gmap1)return;
 markers1.forEach(m=>m.setMap(null));
 markers1=[];
 const bounds=new google.maps.LatLngBounds();
+let hayReales=false;
 ruta.paradas.forEach((s,i)=>{
-// No pintar paradas sin coordenadas reales (evita que se amontonen en un punto falso)
-if(!s.lat||!s.lng)return;
-const c={lat:s.lat,lng:s.lng};
+// SIEMPRE se pinta un globo por parada (nunca debe faltar en el mapa).
+// Si no tiene coordenadas exactas, se sitúa cerca de la zona de la ruta y se
+// muestra ATENUADA (gris) para avisar de que la ubicación es aproximada.
+const tieneCoord=s.lat&&s.lng;
+const aprox=!tieneCoord||s._aprox;
+const c=tieneCoord?{lat:s.lat,lng:s.lng}:coord(i);
 const isSel=selPin===s.n;
-const col=s.status==='delivered'?'#10b981':s.status==='failed'?'#f43f5e':'#00d4ff';
+const col=s.status==='delivered'?'#10b981':s.status==='failed'?'#f43f5e':(aprox?'#94a3b8':'#00d4ff');
 const tc=s.status==='failed'?'#fff':'#000';
 const svg=pinSVG(s.paquete!=null?s.paquete:s.n,col,tc,isSel);
 const icon={url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg),scaledSize:new google.maps.Size(44,54),anchor:new google.maps.Point(22,54)};
-const m=new google.maps.Marker({position:c,map:gmap1,icon,title:`${s.paquete!=null?'📦 '+s.paquete:'#'+s.n} · ${s.name}`,zIndex:isSel?999:s.n});
+const m=new google.maps.Marker({position:c,map:gmap1,icon,opacity:aprox?0.6:1,title:`${s.paquete!=null?'📦 '+s.paquete:'#'+s.n} · ${s.name}${aprox?' · 📍 ubicación aproximada (revisar dirección)':''}`,zIndex:isSel?999:s.n});
 m.addListener('click',()=>selStop(s.n));
 markers1.push(m);
-bounds.extend(c);
+if(tieneCoord){bounds.extend(c);hayReales=true;}
 });
-if(!selPin&&markers1.length)gmap1.fitBounds(bounds,{top:60,right:20,bottom:140,left:20});
+// Encuadrar solo por las paradas con coordenadas reales (las aproximadas no descuadran el mapa)
+if(!selPin&&hayReales)gmap1.fitBounds(bounds,{top:60,right:20,bottom:140,left:20});
 }
 
 function showMPop(s){
@@ -1715,9 +1720,15 @@ const cp=(addr.match(/\b\d{5}\b/)||[])[0]||'';
 return{calle,cp};
 }
 
+// Ciudad base de la empresa: SOLO red de seguridad cuando una dirección no trae
+// código postal (evita que se geocodifique a otra ciudad). Para vender a una empresa
+// de otra ciudad, cambiar SOLO esta línea (ej. 'Madrid', 'Valencia', ''=sin ancla).
+const CIUDAD_DEF='Zaragoza';
 async function geocodeAddr(addr){
 // Geocodificar la dirección COMPLETA (la misma cadena que usa 'Navegar') para que el pin coincida
 let full=String(addr).replace(/\s+/g,' ').trim();
+// Si no trae código postal, anclar a la ciudad base para que no salte a otra ciudad
+if(!/\b\d{5}\b/.test(full)&&CIUDAD_DEF&&!new RegExp(CIUDAD_DEF.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'i').test(full))full+=', '+CIUDAD_DEF;
 if(!/espa[ñn]a/i.test(full))full+=', España';
 const calleKey=full.toUpperCase();
 try{
@@ -1990,22 +2001,29 @@ let hasMarkers=false;
 
 RUTAS.forEach(r=>{
 if(selectedDriver2&&r.driver!==selectedDriver2)return;
+// Ancla para paradas sin coordenadas: centro de las paradas localizadas de ESTA ruta
+let _al=0,_ag=0,_ac=0;r.paradas.forEach(p=>{if(p.lat&&p.lng){_al+=p.lat;_ag+=p.lng;_ac++;}});
 r.paradas.forEach(s=>{
-if(!s.lat||!s.lng)return;
-const col=s.status==='delivered'?'#10b981':s.status==='failed'?'#f43f5e':r.color;
+const tieneCoord=s.lat&&s.lng;
+const aprox=!tieneCoord||s._aprox;
+let c;
+if(tieneCoord){c={lat:s.lat,lng:s.lng};}
+else if(_ac){c={lat:_al/_ac+(sr(s.n)-0.5)*0.006,lng:_ag/_ac+(sr(s.n+99)-0.5)*0.008};}
+else return; // ruta sin ninguna parada localizada: nada a lo que anclar
+const col=s.status==='delivered'?'#10b981':s.status==='failed'?'#f43f5e':(aprox?'#94a3b8':r.color);
 const tc=s.status==='failed'?'#fff':'#000';
 const svg=pinSVG(s.paquete!=null?s.paquete:s.n,col,tc,false);
 const icon={url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg),scaledSize:new google.maps.Size(32,40),anchor:new google.maps.Point(16,40)};
-const m=new google.maps.Marker({position:{lat:s.lat,lng:s.lng},map:gmap2,icon,title:`${s.paquete!=null?'📦 '+s.paquete:'#'+s.n} · ${s.name} — ${r.driver}`,zIndex:s.n});
+const m=new google.maps.Marker({position:c,map:gmap2,icon,opacity:aprox?0.6:1,title:`${s.paquete!=null?'📦 '+s.paquete:'#'+s.n} · ${s.name} — ${r.driver}${aprox?' · 📍 aproximada':''}`,zIndex:s.n});
 m.addListener('click',()=>{
-const info=new google.maps.InfoWindow({content:`<div style="color:#000;font-size:13px;"><b>${s.paquete!=null?'📦 '+esc(String(s.paquete)):'#'+s.n}</b> ${esc(s.name)}<br>${esc(s.addr)}<br><span style="color:${col}">${s.status==='delivered'?'✓ Entregado':s.status==='failed'?'✗ Fallido':'Pendiente'}</span></div>`});
+const info=new google.maps.InfoWindow({content:`<div style="color:#000;font-size:13px;"><b>${s.paquete!=null?'📦 '+esc(String(s.paquete)):'#'+s.n}</b> ${esc(s.name)}<br>${esc(s.addr)}${aprox?'<br><span style="color:#94a3b8">📍 ubicación aproximada</span>':''}<br><span style="color:${col}">${s.status==='delivered'?'✓ Entregado':s.status==='failed'?'✗ Fallido':'Pendiente'}</span></div>`});
 info.open(gmap2,m);
 });
 window._stopMarkers2.push(m);
-bounds.extend({lat:s.lat,lng:s.lng});
-hasMarkers=true;
+if(tieneCoord){bounds.extend(c);hasMarkers=true;}
 });
 });
+window._map2Framed=hasMarkers;
 if(hasMarkers)gmap2.fitBounds(bounds,{top:40,right:20,bottom:40,left:20});
 }
 
@@ -2573,6 +2591,7 @@ function dibujarRepartidoresEnMapa(){
 if(!gmap2)return;
 if(window._driverMarkers){window._driverMarkers.forEach(m=>m.setMap(null));}
 window._driverMarkers=[];
+const dbounds=new google.maps.LatLngBounds();let nd=0;
 Object.entries(driverLocations).forEach(([driver,loc])=>{
 const r=RUTAS.find(x=>x.driver===driver);const color=r?r.color:'#00d4ff';
 const mins=Math.round((Date.now()-new Date(loc.updated_at).getTime())/60000);
@@ -2580,8 +2599,10 @@ if(mins>15)return; // >15 min sin actualizar = no está trabajando → no mostra
 const svg='<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><circle cx="24" cy="24" r="22" fill="'+color+'" stroke="#fff" stroke-width="3"/><text x="24" y="29" text-anchor="middle" fill="#000" font-size="16" font-weight="800" font-family="sans-serif">'+driver[0]+'</text></svg>';
 const icon={url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg),scaledSize:new google.maps.Size(48,48),anchor:new google.maps.Point(24,24)};
 const m=new google.maps.Marker({position:{lat:loc.lat,lng:loc.lng},map:gmap2,icon,title:driver+' — hace '+mins+' min',zIndex:1000});
-window._driverMarkers.push(m);
+window._driverMarkers.push(m);dbounds.extend({lat:loc.lat,lng:loc.lng});nd++;
 });
+// Si el mapa no se encuadró por paradas (p.ej. sin coords reales), centrar en los repartidores
+if(nd&&!window._map2Framed){if(nd===1){gmap2.setCenter(dbounds.getCenter());gmap2.setZoom(14);}else{gmap2.fitBounds(dbounds,{top:40,right:20,bottom:40,left:20});}}
 }
 
 function comprimirImagen(file,maxW,quality){
@@ -3058,4 +3079,4 @@ clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);
 </script>
 </body>
 </html>
-<!-- build: 2026-06-22-multiciudad -->
+<!-- build: 2026-06-23-mapfix -->
