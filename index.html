@@ -1732,7 +1732,7 @@ if(!/\b\d{5}\b/.test(full)&&CIUDAD_DEF&&!new RegExp(CIUDAD_DEF.replace(/[.*+?^${
 if(!/espa[ñn]a/i.test(full))full+=', España';
 const calleKey=full.toUpperCase();
 try{
-const cache=JSON.parse(localStorage.getItem('geo_cache_v2')||'{}');
+const cache=JSON.parse(localStorage.getItem('geo_cache_v3')||'{}');
 if(cache[calleKey]){return cache[calleKey];}
 }catch(e){}
 
@@ -1749,11 +1749,11 @@ const coords={lat:loc.lat,lng:loc.lng};
 const lt=res.geometry.location_type;
 if(lt==='ROOFTOP'||lt==='RANGE_INTERPOLATED'){
 try{
-const cache=JSON.parse(localStorage.getItem('geo_cache_v2')||'{}');
+const cache=JSON.parse(localStorage.getItem('geo_cache_v3')||'{}');
 cache[calleKey]=coords;
 const keys=Object.keys(cache);
 if(keys.length>500)delete cache[keys[0]];
-localStorage.setItem('geo_cache_v2',JSON.stringify(cache));
+localStorage.setItem('geo_cache_v3',JSON.stringify(cache));
 }catch(e){}
 }
 return coords;
@@ -3079,4 +3079,4 @@ clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);
 </script>
 </body>
 </html>
-<!-- build: 2026-06-23-mapfix -->
+<!-- build: 2026-06-23-geofix -->
