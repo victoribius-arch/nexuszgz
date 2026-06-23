@@ -1182,6 +1182,31 @@ else if(ruta._rutaId)sb.from('paradas').update({addr:v,lat:p.lat||null,lng:p.lng
 toast('✓ Dirección actualizada','ok');
 }
 
+// El chófer mete (o corrige) el CP del destinatario cuando una parada quedó dudosa.
+// El código postal es lo que más afina la localización en pueblos → recoloca el pin al instante.
+async function ponerCP(n,e){
+if(e)e.stopPropagation();
+const p=ruta.paradas.find(x=>Number(x.n)===Number(n));
+if(!p)return;
+const actual=(String(p.addr||'').match(/\b\d{5}\b/)||[])[0]||'';
+const cp=prompt('Código postal del DESTINATARIO (5 dígitos):',actual);
+if(cp==null)return;
+const v=String(cp).replace(/\D/g,'').trim();
+if(!/^\d{5}$/.test(v)){toast('El CP debe tener 5 dígitos','err');return;}
+// Insertar el CP en la dirección (si ya había uno, se reemplaza por el nuevo).
+let addr=String(p.addr||'').trim();
+if(/\b\d{5}\b/.test(addr)){addr=addr.replace(/\b\d{5}\b/,v);}
+else{const i=addr.indexOf(',');addr=i>=0?addr.slice(0,i+1)+' '+v+addr.slice(i+1):addr+', '+v;}
+p.addr=addr;
+renderLista();
+toast('📍 Localizando con el CP…','');
+try{const c=await geocodeAddr(addr);p.lat=c.lat;p.lng=c.lng;p._aprox=c._aprox||false;}catch(_){p.lat=null;p.lng=null;}
+renderLista();if(gmap1)renderMarkers1();
+if(p._id)sb.from('paradas').update({addr:addr,lat:p.lat||null,lng:p.lng||null}).eq('id',p._id).then(()=>{});
+else if(ruta._rutaId)sb.from('paradas').update({addr:addr,lat:p.lat||null,lng:p.lng||null}).eq('ruta_id',ruta._rutaId).eq('n',p.n).then(()=>{});
+toast(p._aprox?'⚠️ Sigue sin localizar — revisa también calle y número':'✓ Parada localizada con el CP','ok');
+}
+
 // Clave de PORTAL (calle + número, sin piso/puerta) para agrupar bultos del mismo portal
 function portalKey(addr){const c=(typeof limpiarDireccionGeo==='function'?limpiarDireccionGeo(addr).calle:String(addr||'').split(',')[0]);return (c||'').toLowerCase().replace(/[\s.,º-]/g,'');}
 // Número de piso (para ordenar dentro del portal: bajo, 1º, 2º, 3º…)
@@ -1229,7 +1254,7 @@ let geoTag='';
 if(s.lat&&s.lng&&!s._aprox){
 geoTag='<span class="tag" style="background:rgba(22,163,74,.15);color:var(--green);font-weight:700;">📍 Localizada</span>';
 }else if(s._aprox){
-geoTag='<span class="tag" style="background:rgba(220,38,38,.15);color:var(--red);font-weight:700;">📍 Sin localizar</span>';
+geoTag=`<span onclick="ponerCP(${s.n},event)" class="tag" style="background:rgba(220,38,38,.18);color:var(--red);font-weight:800;cursor:pointer;">📍 Poner CP ✏️</span>`;
 }else if(s.lat===null&&s.lng===null){
 geoTag='<span class="tag" style="background:rgba(148,163,184,.15);color:var(--text3);font-weight:700;">📍 Localizando…</span>';
 }
@@ -1537,7 +1562,7 @@ img.src=url;
 
 // El prompt de lectura IA es ahora genérico (cualquier mensajería) — ver analyze().
 
-const prompt='Eres un experto en OCR y logística. Analiza esta imagen de una etiqueta de paquete de cualquier empresa de mensajería. EXTRAE: nombre del destinatario, dirección completa con CP y ciudad, número de bultos, y el código de seguimiento (el número largo del código de barras). NUNCA inventes datos — solo extrae lo que ves claramente. Devuelve SOLO JSON: {"stops":[{"n":1,"name":"Nombre o empresa","addr":"Dirección completa, CP Ciudad","bultos":1,"codigo":"código o null"}]}';
+const prompt='Eres un experto en OCR y logística de paquetería. La etiqueta puede tener DOS direcciones: la del REMITENTE/ORIGEN (quien ENVÍA: marcado "REMITENTE", "REMTE", "FROM", "DE:", "ORIGEN", "DEVOLVER A"; suele ir arriba o en letra pequeña) y la del DESTINATARIO (quien RECIBE: marcado "DESTINATARIO", "ENTREGAR A", "DELIVER TO", "PARA:", "CONSIGNEE", "SHIP TO"; suele ir destacado o en letra grande). EXTRAE SIEMPRE LOS DATOS DEL DESTINATARIO, NUNCA del remitente. Saca: nombre del destinatario, dirección completa con el CÓDIGO POSTAL de 5 dígitos y la localidad/pueblo del DESTINATARIO, número de bultos, y el código de seguimiento (el número largo del código de barras). El código postal es CRÍTICO para localizar el reparto: búscalo SIEMPRE junto a la dirección del destinatario y ponlo en addr justo antes de la localidad; si no lo ves con total seguridad déjalo fuera (NO inventes ni copies el CP del remitente). NUNCA inventes datos — solo extrae lo que ves claramente. Devuelve SOLO JSON: {"stops":[{"n":1,"name":"Nombre o empresa del destinatario","addr":"Calle y número, CP Localidad","bultos":1,"codigo":"código o null"}]}';
 
 document.getElementById('abtn').textContent=`ANALIZANDO ${imgs.length} fotos...`;
 const resultados=await Promise.all(imgs.map(async(img,i)=>{
@@ -1605,7 +1630,7 @@ ${extractedStops.map((s,i)=>`
 <div class="srnum">${s.n}</div>
 <div class="srinfo">
 <div class="srname">${esc(s.name)}</div>
-<div class="sraddr">${esc(s.addr)}${s.area?` · Área ${esc(s.area)}`:''}${s.rembolso?` · 💶${esc(s.rembolso)}`:''}</div>
+<div class="sraddr">${esc(s.addr)}${/\b\d{5}\b/.test(s.addr||'')?'':' <span style="color:var(--orange);font-weight:700">⚠ sin CP</span>'}${s.area?` · Área ${esc(s.area)}`:''}${s.rembolso?` · 💶${esc(s.rembolso)}`:''}</div>
 </div>
 <div class="srsaco">Saca ${sacas[Math.floor(i/Math.max(1,extractedStops.length/5))%5]}</div>
 </div>`).join('')}
@@ -1699,7 +1724,7 @@ const n=ruta.paradas.length+1;
 
 toast('📍 Localizando dirección...','');
 const coords=await geocodeAddr(addr);
-const nueva={n,name,addr,saco,bultos,status:'pending',lat:coords.lat,lng:coords.lng};
+const nueva={n,name,addr,saco,bultos,status:'pending',lat:coords.lat,lng:coords.lng,_aprox:coords._aprox||false};
 ruta.paradas.push(nueva);
 await guardarParadasEnDB([nueva]);
 renderLista();
@@ -1750,32 +1775,57 @@ const r=await fetch(`${WORKER_URL}/geocode?address=${encodeURIComponent(query)}&
 const d=await r.json();
 if(d.results&&d.results[0]){
 const g=d.results[0].geometry;const lt=g.location_type;
-return{lat:g.location.lat,lng:g.location.lng,preciso:(lt==='ROOFTOP'||lt==='RANGE_INTERPOLATED')};
+return{lat:g.location.lat,lng:g.location.lng,preciso:(lt==='ROOFTOP'||lt==='RANGE_INTERPOLATED'),formatted:d.results[0].formatted_address||''};
 }
 }catch(e){console.error('Geocode error:',e);}
+return null;
+}
+
+// Normaliza un nombre de municipio para comparar (sin tildes, solo letras).
+function _normMun(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z]/g,'');}
+// Municipio "pedido" por la etiqueta: el token de coma anterior a CP/provincia/España.
+// Devuelve null si la dirección es solo una calle (sin localidad) → entonces sí se ancla a CIUDAD_DEF.
+function _municipioPedido(addr){
+const parts=String(addr).split(',').map(s=>s.trim()).filter(Boolean);
+if(parts.length<2)return null; // solo calle, sin pueblo
+const prov=_normMun(CIUDAD_DEF);
+// Un token de piso/puerta/portal NO es un municipio ("4º A", "Esc Izq", "2 Dcha", "Bajo", "Pta 3").
+const esPisoPortal=t=>/\d/.test(t)||/^(bajo|bajos|entresuelo|atico|izq|izqda|izda|dcha|drcha|der|esc|escalera|pta|puerta|piso|planta|local|portal|nave|of|oficina|chalet|parcela)\b/i.test(t);
+for(let i=parts.length-1;i>=1;i--){
+const limpio=parts[i].replace(/\b\d{5}\b/g,'').replace(/espa[ñn]a/ig,'').trim();
+const tn=_normMun(limpio);
+if(!tn||tn===prov)continue; // saltar CP suelto / "España" / la provincia base
+if(esPisoPortal(limpio))continue; // piso/puerta/escalera/portal → no es el municipio
+return limpio; // primer token real desde el final = municipio del destinatario
+}
 return null;
 }
 
 async function geocodeAddr(addr){
 // Geocodificar la dirección COMPLETA (la misma cadena que usa 'Navegar') para que el pin coincida
 let full=String(addr).replace(/\s+/g,' ').trim();
-// Si no trae código postal, anclar a la ciudad base para que no salte a otra ciudad
-if(!/\b\d{5}\b/.test(full)&&CIUDAD_DEF&&!new RegExp(CIUDAD_DEF.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'i').test(full))full+=', '+CIUDAD_DEF;
+const mun=_municipioPedido(full); // pueblo/localidad que pide la etiqueta (null si es solo calle)
+// Anclar a la ciudad base SOLO si no hay CP y no hay localidad (calle suelta). Si la etiqueta
+// ya nombra un pueblo, añadir "Zaragoza" empujaría a Google a la ciudad → no lo hacemos.
+if(!/\b\d{5}\b/.test(full)&&!mun&&CIUDAD_DEF&&!new RegExp(CIUDAD_DEF.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'i').test(full))full+=', '+CIUDAD_DEF;
 if(!/espa[ñn]a/i.test(full))full+=', España';
 const calleKey=full.toUpperCase();
 try{const cache=JSON.parse(localStorage.getItem('geo_cache_v3')||'{}');if(cache[calleKey])return cache[calleKey];}catch(e){}
 const guardar=(c)=>{try{const cache=JSON.parse(localStorage.getItem('geo_cache_v3')||'{}');cache[calleKey]={lat:c.lat,lng:c.lng};const keys=Object.keys(cache);if(keys.length>500)delete cache[keys[0]];localStorage.setItem('geo_cache_v3',JSON.stringify(cache));}catch(e){}};
+// El resultado SOLO vale si cae en el municipio pedido. Evita el caso peligroso: Google
+// devuelve un acierto "seguro" (ROOFTOP) pero en otro pueblo / en la ciudad → lo rechazamos.
+const _munOK=(r)=>!mun||(r&&r.formatted&&_normMun(r.formatted).includes(_normMun(mun)));
 // Intento 1: dirección completa
 const g=await _geoOnce(full);
-if(g&&g.preciso){const c={lat:g.lat,lng:g.lng};guardar(c);return c;}
+if(g&&g.preciso&&_munOK(g)){const c={lat:g.lat,lng:g.lng};guardar(c);return c;}
 // Intento 2: si NO fue preciso, limpiar el formato (Nº→número, separar calle/número, quitar piso) y reintentar.
 // Esto recupera "Av América N2", "goya21", "C/ X Nº4 3ºC"… que si no caen al centro del CP (varias calles desviado).
 const limpia=limpiarDirParaGeo(addr);
 if(limpia&&limpia.toUpperCase()!==full.toUpperCase()){
 const g2=await _geoOnce(limpia);
-if(g2&&g2.preciso){const c={lat:g2.lat,lng:g2.lng};guardar(c);return c;}
+if(g2&&g2.preciso&&_munOK(g2)){const c={lat:g2.lat,lng:g2.lng};guardar(c);return c;}
 }
-// Nada preciso: no inventamos un punto (el centro del CP engaña) → gris "ubicación aproximada (revisar dirección)"
+// Nada fiable: no inventamos un punto (el centro del CP o la ciudad engañan) → gris "ubicación aproximada (revisar dirección)"
 return{lat:null,lng:null,_aprox:true};
 }
 
