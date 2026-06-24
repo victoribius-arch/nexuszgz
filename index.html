@@ -809,7 +809,9 @@ await Promise.all(sinCoords.slice(i,i+batch).map(async p=>{
 try{
 const coords=await geocodeAddr(p.addr);
 p.lat=coords.lat;p.lng=coords.lng;p._aprox=coords._aprox||false;
-await sb.from('paradas').update({lat:p.lat,lng:p.lng}).eq('ruta_id',rutaId).eq('n',p.n);
+// Solo persistimos coordenadas FIABLES (verde). Las aproximadas (gris) se dejan sin guardar para
+// que se re-evalúen cada carga y conserven el aviso "revisar / Poner CP".
+if(!p._aprox)await sb.from('paradas').update({lat:p.lat,lng:p.lng}).eq('ruta_id',rutaId).eq('n',p.n);
 }catch(e){}
 }));
 renderLista();if(gmap1)renderMarkers1();
@@ -1783,6 +1785,8 @@ return null;
 
 // Normaliza un nombre de municipio para comparar (sin tildes, solo letras).
 function _normMun(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z]/g,'');}
+// Canoniza un municipio para comparar: quita paréntesis y artículos → "Burgo de Ebro (El)" == "El Burgo de Ebro".
+function _muniCanon(s){return _normMun(String(s||'').replace(/\(.*?\)/g,'').replace(/\b(el|la|los|las|l)\b/gi,''));}
 // Municipio "pedido" por la etiqueta: el token de coma anterior a CP/provincia/España.
 // Devuelve null si la dirección es solo una calle (sin localidad) → entonces sí se ancla a CIUDAD_DEF.
 function _municipioPedido(addr){
@@ -1811,21 +1815,28 @@ if(!/\b\d{5}\b/.test(full)&&!mun&&CIUDAD_DEF&&!new RegExp(CIUDAD_DEF.replace(/[.
 if(!/espa[ñn]a/i.test(full))full+=', España';
 const calleKey=full.toUpperCase();
 try{const cache=JSON.parse(localStorage.getItem('geo_cache_v3')||'{}');if(cache[calleKey])return cache[calleKey];}catch(e){}
-const guardar=(c)=>{try{const cache=JSON.parse(localStorage.getItem('geo_cache_v3')||'{}');cache[calleKey]={lat:c.lat,lng:c.lng};const keys=Object.keys(cache);if(keys.length>500)delete cache[keys[0]];localStorage.setItem('geo_cache_v3',JSON.stringify(cache));}catch(e){}};
-// El resultado SOLO vale si cae en el municipio pedido. Evita el caso peligroso: Google
-// devuelve un acierto "seguro" (ROOFTOP) pero en otro pueblo / en la ciudad → lo rechazamos.
-const _munOK=(r)=>!mun||(r&&r.formatted&&_normMun(r.formatted).includes(_normMun(mun)));
-// Intento 1: dirección completa
-const g=await _geoOnce(full);
-if(g&&g.preciso&&_munOK(g)){const c={lat:g.lat,lng:g.lng};guardar(c);return c;}
-// Intento 2: si NO fue preciso, limpiar el formato (Nº→número, separar calle/número, quitar piso) y reintentar.
-// Esto recupera "Av América N2", "goya21", "C/ X Nº4 3ºC"… que si no caen al centro del CP (varias calles desviado).
+const guardar=(c)=>{try{const cache=JSON.parse(localStorage.getItem('geo_cache_v3')||'{}');cache[calleKey]={lat:c.lat,lng:c.lng,_aprox:c._aprox||false};const keys=Object.keys(cache);if(keys.length>500)delete cache[keys[0]];localStorage.setItem('geo_cache_v3',JSON.stringify(cache));}catch(e){}};
+// Verifica que el resultado caiga en el destino correcto. El CÓDIGO POSTAL manda (señal más
+// fuerte): si el CP de la etiqueta coincide con el del resultado, es el pueblo correcto aunque
+// el nombre venga con artículo ("El Burgo" vs "Burgo (El)"). Si ambos CP existen y DIFIEREN es
+// otro sitio → se rechaza (evita Pedrola→Alagón). Sin CP fiable, se compara el nombre del pueblo.
+const _ok=(r)=>{if(!r||!r.formatted)return false;const ip=(String(addr).match(/\b\d{5}\b/)||[])[0];const rp=(String(r.formatted).match(/\b\d{5}\b/)||[])[0];if(ip&&rp)return ip===rp;if(!mun)return true;return _muniCanon(r.formatted).includes(_muniCanon(mun));};
+// Mejor de dos intentos (dirección completa y versión limpia sin piso):
+//  · punto EXACTO y verificado  → 🟢 pin verde
+//  · solo punto aproximado pero en el PUEBLO CORRECTO → 🟡 pin gris (mejor llevar al chófer al
+//    pueblo correcto, que él afina con la dirección/"Poner CP", que no mostrarle nada).
 const limpia=limpiarDirParaGeo(addr);
-if(limpia&&limpia.toUpperCase()!==full.toUpperCase()){
-const g2=await _geoOnce(limpia);
-if(g2&&g2.preciso&&_munOK(g2)){const c={lat:g2.lat,lng:g2.lng};guardar(c);return c;}
+let aprox=null;
+for(const q of [full,(limpia&&limpia.toUpperCase()!==full.toUpperCase())?limpia:null]){
+if(!q)continue;
+const g=await _geoOnce(q);
+if(g&&_ok(g)){
+if(g.preciso){const c={lat:g.lat,lng:g.lng,_aprox:false};guardar(c);return c;}
+if(!aprox)aprox={lat:g.lat,lng:g.lng,_aprox:true};
 }
-// Nada fiable: no inventamos un punto (el centro del CP o la ciudad engañan) → gris "ubicación aproximada (revisar dirección)"
+}
+if(aprox){guardar(aprox);return aprox;}
+// Nada fiable (ni el pueblo coincide) → sin pin; el chófer pone el CP o corrige la dirección.
 return{lat:null,lng:null,_aprox:true};
 }
 
@@ -1934,8 +1945,8 @@ await Promise.all(chunk.map(async p=>{
 try{
 const coords=await geocodeAddr(p.addr);
 p.lat=coords.lat;p.lng=coords.lng;p._aprox=coords._aprox||false;
-// Actualizar la parada en la BD con sus coordenadas
-if(ruta._rutaId)await sb.from('paradas').update({lat:p.lat,lng:p.lng}).eq('ruta_id',ruta._rutaId).eq('n',p.n);
+// Solo persistimos coordenadas FIABLES (verde); las aproximadas (gris) se re-evalúan cada carga.
+if(ruta._rutaId&&!p._aprox)await sb.from('paradas').update({lat:p.lat,lng:p.lng}).eq('ruta_id',ruta._rutaId).eq('n',p.n);
 }catch(e){}
 hechas++;
 }));
