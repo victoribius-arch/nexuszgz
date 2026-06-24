@@ -1844,7 +1844,16 @@ if(!aprox)aprox={lat:g.lat,lng:g.lng,_aprox:true};
 }
 }
 if(aprox){guardar(aprox);return aprox;}
-// Nada fiable (ni el pueblo coincide) → sin pin; el chófer pone el CP o corrige la dirección.
+// ÚLTIMO RECURSO: si la etiqueta trae un CP válido, situamos un pin GRIS en el centro del pueblo
+// de ese CP. El código postal localiza el municipio con total fiabilidad (Muel, Letux, Pedrola…),
+// así el chófer al menos llega al pueblo correcto y afina la calle in situ. Pasa con naves,
+// polígonos, urbanizaciones y parajes que Google no tiene a nivel de calle.
+const cpFinal=(String(addr).match(/\b\d{5}\b/)||[])[0];
+if(cpFinal){
+const gcp=await _geoOnce(cpFinal+', España');
+if(gcp){const c={lat:gcp.lat,lng:gcp.lng,_aprox:true};guardar(c);return c;}
+}
+// Sin CP y sin pueblo reconocible → sin pin; el chófer pone el CP o corrige la dirección.
 return{lat:null,lng:null,_aprox:true};
 }
 
