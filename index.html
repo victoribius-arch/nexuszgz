@@ -1108,14 +1108,22 @@ window.open(url,'_blank');
 
 function navRutaCompleta(e){
 if(e)e.stopPropagation();
-
-const pendientes=ruta.paradas.filter(p=>p.status==='pending').slice(0,10);
-if(!pendientes.length){toast('No hay paradas pendientes','err');return;}
-const waypoints=pendientes.slice(0,-1).map(p=>encodeURIComponent(p.addr+', España')).join('|');
-const dest=encodeURIComponent(pendientes[pendientes.length-1].addr+', España');
+// Google Maps admite ~10 paradas por ruta (límite suyo). Con rutas largas abrimos por TRAMOS:
+// el chófer entrega un tramo, marca las paradas y vuelve a pulsar para el siguiente.
+const MAX=10;
+const todas=ruta.paradas.filter(p=>p.status==='pending');
+if(!todas.length){toast('No hay paradas pendientes','err');return;}
+const tramo=todas.slice(0,MAX);
+// Cada parada se manda por COORDENADA si la tiene (verde exacta o gris en el pueblo correcto) —
+// así Maps NO vuelve a localizar mal el pueblo. Sin coordenada (rojas) cae a la dirección en texto.
+const punto=p=>(p.lat&&p.lng)?`${p.lat},${p.lng}`:encodeURIComponent(p.addr+', España');
+const dest=punto(tramo[tramo.length-1]);
+const waypoints=tramo.slice(0,-1).map(punto).join('|');
 let url=`https://www.google.com/maps/dir/?api=1&destination=${dest}&travelmode=driving`;
 if(waypoints)url+=`&waypoints=${waypoints}`;
 window.open(url,'_blank');
+if(todas.length>MAX)toast(`🗺️ Tramo de ${tramo.length} paradas (de ${todas.length}). Entrega estas y pulsa otra vez para el siguiente tramo.`,'');
+else toast(`🗺️ ${tramo.length} paradas abiertas en Maps`,'ok');
 }
 let _zonaMode=false;
 function toggleZonas(){
