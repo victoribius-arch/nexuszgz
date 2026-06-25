@@ -494,6 +494,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
       <div class="gmapw" style="position:relative;">
         <div id="gmap2"></div>
         <button onclick="refrescarUbicaciones(this)" style="position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:5;padding:10px 16px;border:none;border-radius:20px;background:var(--accent);color:#fff;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.35);white-space:nowrap;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:5px"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Actualizar ubicaciones</button>
+        <div id="driver-list" style="position:absolute;bottom:10px;left:10px;z-index:5;background:#fff;border-radius:12px;box-shadow:0 2px 14px rgba(0,0,0,.28);width:215px;max-height:46%;overflow-y:auto;display:none;"></div>
       </div>
     </div>
   </div>
@@ -2690,20 +2691,57 @@ toast(`📍 Ubicaciones actualizadas (${n} repartidor${n===1?'':'es'})`,'ok');
 }catch(e){toast('No se pudieron actualizar las ubicaciones','err');}
 if(btn){btn.disabled=false;btn.innerHTML=orig||'Actualizar ubicaciones';}
 }
-function dibujarRepartidoresEnMapa(){
+// Traduce coordenadas a una dirección legible (geocodificación inversa por el Worker). Cachea por
+// coords redondeadas para no repetir llamadas con repartidores parados.
+const _revCache={};
+async function reverseGeo(lat,lng){
+const key=lat.toFixed(4)+','+lng.toFixed(4);
+if(_revCache[key])return _revCache[key];
+try{
+const r=await fetch(`${WORKER_URL}/geocode?address=${lat},${lng}`,{headers:APP_TOKEN?{'X-App-Token':APP_TOKEN}:{}});
+const d=await r.json();
+const fa=(d.results&&d.results[0]&&d.results[0].formatted_address)||'';
+let lbl=fa.replace(/,?\s*(Spain|España)\s*$/i,'').replace(/\b\d{5}\b/,'').replace(/\s{2,}/g,' ').replace(/\s+,/g,',').replace(/,\s*,/g,', ').replace(/^[\s,]+|[\s,]+$/g,'').trim();
+lbl=lbl||'ubicación desconocida';
+_revCache[key]=lbl;return lbl;
+}catch(e){return 'ubicación desconocida';}
+}
+// Centrar el mapa de Gestión en un repartidor y abrir su info (desde la lista).
+function centrarEnRepartidor(driver){
+const m=window._driverMarkerByName&&window._driverMarkerByName[driver];
+if(m&&gmap2){gmap2.panTo(m.getPosition());gmap2.setZoom(15);google.maps.event.trigger(m,'click');}
+else toast(driver+' no tiene señal reciente','');
+}
+async function dibujarRepartidoresEnMapa(){
 if(!gmap2)return;
-if(window._driverMarkers){window._driverMarkers.forEach(m=>m.setMap(null));}
-window._driverMarkers=[];
+if(window._driverMarkers){window._driverMarkers.forEach(m=>m.setMap&&m.setMap(null));}
+window._driverMarkers=[];window._driverMarkerByName={};
+if(window._driverInfo)window._driverInfo.close();
 const dbounds=new google.maps.LatLngBounds();let nd=0;
-Object.entries(driverLocations).forEach(([driver,loc])=>{
-const r=RUTAS.find(x=>x.driver===driver);const color=r?r.color:'#00d4ff';
-const mins=Math.round((Date.now()-new Date(loc.updated_at).getTime())/60000);
-if(mins>15)return; // >15 min sin actualizar = no está trabajando → no mostrar en el mapa
-const svg='<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><circle cx="24" cy="24" r="22" fill="'+color+'" stroke="#fff" stroke-width="3"/><text x="24" y="29" text-anchor="middle" fill="#000" font-size="16" font-weight="800" font-family="sans-serif">'+driver[0]+'</text></svg>';
+const ahora=Date.now();
+const haceTxt=mins=>mins<60?('hace '+mins+' min'):('hace '+Math.round(mins/60)+' h');
+// Activos primero (los más recientes arriba); >15 min sin moverse = no está trabajando.
+const entradas=Object.entries(driverLocations).map(([driver,loc])=>({driver,loc,mins:Math.round((ahora-new Date(loc.updated_at).getTime())/60000)})).sort((a,b)=>a.mins-b.mins);
+const filas=[];
+for(const {driver,loc,mins} of entradas){
+const r=RUTAS.find(x=>x.driver===driver);const color=r?r.color:'#2563eb';
+const activo=mins<=15;
+const lugar=activo?await reverseGeo(loc.lat,loc.lng):null;
+filas.push(`<div onclick="centrarEnRepartidor('${escJs(driver)}')" style="display:flex;align-items:center;gap:8px;padding:8px 10px;cursor:pointer;border-top:1px solid rgba(0,0,0,.06);">`+
+`<span style="width:11px;height:11px;border-radius:50%;background:${activo?color:'#cbd5e1'};flex-shrink:0;"></span>`+
+`<div style="min-width:0;flex:1;"><div style="font-weight:800;font-size:13px;color:#0f172a;">${esc(driver)}</div>`+
+`<div style="font-size:11px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${activo?esc(lugar):'sin señal'} · ${haceTxt(mins)}</div></div></div>`);
+if(!activo)continue;
+const svg='<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><circle cx="24" cy="24" r="22" fill="'+color+'" stroke="#fff" stroke-width="3"/><text x="24" y="29" text-anchor="middle" fill="#fff" font-size="16" font-weight="800" font-family="sans-serif">'+String(driver[0]).toUpperCase()+'</text></svg>';
 const icon={url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg),scaledSize:new google.maps.Size(48,48),anchor:new google.maps.Point(24,24)};
-const m=new google.maps.Marker({position:{lat:loc.lat,lng:loc.lng},map:gmap2,icon,title:driver+' — hace '+mins+' min',zIndex:1000});
-window._driverMarkers.push(m);dbounds.extend({lat:loc.lat,lng:loc.lng});nd++;
-});
+const m=new google.maps.Marker({position:{lat:loc.lat,lng:loc.lng},map:gmap2,icon,title:driver,zIndex:1000});
+const info=`<div style="color:#000;font-size:13px;min-width:150px;"><b>${esc(driver)}</b><br>${esc(lugar)}<br><span style="color:#64748b">${haceTxt(mins)}</span></div>`;
+m.addListener('click',()=>{if(!window._driverInfo)window._driverInfo=new google.maps.InfoWindow();window._driverInfo.setContent(info);window._driverInfo.open(gmap2,m);});
+window._driverMarkers.push(m);window._driverMarkerByName[driver]=m;
+dbounds.extend({lat:loc.lat,lng:loc.lng});nd++;
+}
+const lp=document.getElementById('driver-list');
+if(lp){lp.innerHTML=filas.length?(`<div style="font-weight:800;font-size:10px;padding:8px 10px 4px;color:#64748b;text-transform:uppercase;letter-spacing:.5px;">Repartidores</div>`+filas.join('')):'';lp.style.display=filas.length?'block':'none';}
 // Si el mapa no se encuadró por paradas (p.ej. sin coords reales), centrar en los repartidores
 if(nd&&!window._map2Framed){if(nd===1){gmap2.setCenter(dbounds.getCenter());gmap2.setZoom(14);}else{gmap2.fitBounds(dbounds,{top:40,right:20,bottom:40,left:20});}}
 }
