@@ -810,9 +810,9 @@ await Promise.all(sinCoords.slice(i,i+batch).map(async p=>{
 try{
 const coords=await geocodeAddr(p.addr);
 p.lat=coords.lat;p.lng=coords.lng;p._aprox=coords._aprox||false;
-// Solo persistimos coordenadas FIABLES (verde). Las aproximadas (gris) se dejan sin guardar para
-// que se re-evalúen cada carga y conserven el aviso "revisar / Poner CP".
-if(!p._aprox)await sb.from('paradas').update({lat:p.lat,lng:p.lng}).eq('ruta_id',rutaId).eq('n',p.n);
+// Guardamos SIEMPRE las coordenadas (también las aproximadas de pueblo) para que carguen FIABLES
+// desde la BD. En pueblos con mala cobertura el re-geocodeo en caliente fallaba → los pines no salían.
+if(p.lat&&p.lng)await sb.from('paradas').update({lat:p.lat,lng:p.lng}).eq('ruta_id',rutaId).eq('n',p.n);
 }catch(e){}
 }));
 renderLista();if(gmap1)renderMarkers1();
@@ -1981,8 +1981,8 @@ await Promise.all(chunk.map(async p=>{
 try{
 const coords=await geocodeAddr(p.addr);
 p.lat=coords.lat;p.lng=coords.lng;p._aprox=coords._aprox||false;
-// Solo persistimos coordenadas FIABLES (verde); las aproximadas (gris) se re-evalúan cada carga.
-if(ruta._rutaId&&!p._aprox)await sb.from('paradas').update({lat:p.lat,lng:p.lng}).eq('ruta_id',ruta._rutaId).eq('n',p.n);
+// Guardamos SIEMPRE las coordenadas (también las aproximadas) para que carguen fiables desde la BD.
+if(ruta._rutaId&&p.lat&&p.lng)await sb.from('paradas').update({lat:p.lat,lng:p.lng}).eq('ruta_id',ruta._rutaId).eq('n',p.n);
 }catch(e){}
 hechas++;
 }));
