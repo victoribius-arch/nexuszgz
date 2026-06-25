@@ -1572,7 +1572,7 @@ img.src=url;
 
 // El prompt de lectura IA es ahora genérico (cualquier mensajería) — ver analyze().
 
-const prompt='Eres un experto en OCR y logística de paquetería. La etiqueta puede tener DOS direcciones: la del REMITENTE/ORIGEN (quien ENVÍA: marcado "REMITENTE", "REMTE", "FROM", "DE:", "ORIGEN", "DEVOLVER A"; suele ir arriba o en letra pequeña) y la del DESTINATARIO (quien RECIBE: marcado "DESTINATARIO", "ENTREGAR A", "DELIVER TO", "PARA:", "CONSIGNEE", "SHIP TO"; suele ir destacado o en letra grande). EXTRAE SIEMPRE LOS DATOS DEL DESTINATARIO, NUNCA del remitente. Saca: nombre del destinatario, dirección completa con el CÓDIGO POSTAL de 5 dígitos y la localidad/pueblo del DESTINATARIO, número de bultos, y el código de seguimiento (el número largo del código de barras). El código postal es CRÍTICO para localizar el reparto: búscalo SIEMPRE junto a la dirección del destinatario y ponlo en addr justo antes de la localidad; si no lo ves con total seguridad déjalo fuera (NO inventes ni copies el CP del remitente). NUNCA inventes datos — solo extrae lo que ves claramente. Devuelve SOLO JSON: {"stops":[{"n":1,"name":"Nombre o empresa del destinatario","addr":"Calle y número, CP Localidad","bultos":1,"codigo":"código o null"}]}';
+const prompt='Estás leyendo una foto para cargar una ruta de reparto. Puede ser (A) una PANTALLA DE LISTA de una PDA/app de reparto con VARIAS paradas, o (B) la ETIQUETA de un paquete. Para CADA parada que veas, extrae estos campos: addr = la dirección de entrega COMPLETA (calle, número, y piso si lo hay) con el CÓDIGO POSTAL de 5 dígitos y la localidad; en la lista de la PDA va justo después de "Dirección:". El CP es CRÍTICO para localizar el reparto. paquete = el NÚMERO DE PAQUETE/PARADA: en la pantalla de la PDA es el NÚMERO GRANDE que está junto al signo "+", a la derecha de la dirección (por ejemplo 58, 59, 60). MUY IMPORTANTE: NO uses el número pequeño de la cajita de color rotulada "área" (ese es la ZONA, NO el número de paquete). Si es una etiqueta con un número escrito a mano que identifica el paquete, usa ese. Si no ves número de paquete, pon null. bultos = el número de entregas/bultos de esa parada (en la PDA, el número que va tras "Entregas:"); si no se ve, 1. name = el nombre del destinatario si aparece; la PDA normalmente NO muestra nombre, en ese caso pon null. NUNCA cojas los datos del REMITENTE: si una etiqueta tiene remitente y destinatario, coge SIEMPRE el destinatario. codigo = el código de seguimiento del código de barras si se ve; si no, null. NUNCA inventes datos. Devuelve SOLO JSON: {"stops":[{"addr":"Calle número, CP Localidad","paquete":"número o null","bultos":1,"name":"nombre o null","codigo":"código o null"}]}';
 
 document.getElementById('abtn').textContent=`ANALIZANDO ${imgs.length} fotos...`;
 const resultados=await Promise.all(imgs.map(async(img,i)=>{
@@ -1609,11 +1609,18 @@ if(Array.isArray(r))allStops=allStops.concat(r);
 else if(r&&r.error)errores.push(r.error);
 });
 
+const _limpiaPaq=v=>{const t=(v==null?'':String(v)).trim();return (t===''||/^null$/i.test(t))?null:t;};
 const seen=new Set();
 extractedStops=allStops.filter(s=>{
-const key=s.addr+s.name;
+// Clave de duplicado por dirección + número de paquete (dos paquetes distintos en la misma
+// dirección SON paradas distintas; sin número usamos el nombre).
+const paq=_limpiaPaq(s.paquete);
+const key=(s.addr||'')+'#'+(paq||s.name||'');
 if(seen.has(key))return false;
 seen.add(key);return true;
+}).map((s,i)=>{
+const paq=_limpiaPaq(s.paquete); // número grande del "+", nunca el de "área"
+return {...s,n:i+1,paquete:paq,_sinNum:paq==null};
 });
 
 if(!extractedStops.length){
@@ -1639,7 +1646,7 @@ ${extractedStops.map((s,i)=>`
 <div class="srow">
 <div class="srnum">${s.n}</div>
 <div class="srinfo">
-<div class="srname">${esc(s.name)}</div>
+<div class="srname">${s.paquete?`<span style="color:var(--accent);font-weight:800">📦 ${esc(String(s.paquete))}</span> · `:s._sinNum?`<span style="color:var(--red);font-weight:800">⚠️ sin nº</span> · `:''}${esc(s.name||'Particular')}</div>
 <div class="sraddr">${esc(s.addr)}${/\b\d{5}\b/.test(s.addr||'')?'':' <span style="color:var(--orange);font-weight:700">⚠ sin CP</span>'}${s.area?` · Área ${esc(s.area)}`:''}${s.rembolso?` · 💶${esc(s.rembolso)}`:''}</div>
 </div>
 <div class="srsaco">Saca ${sacas[Math.floor(i/Math.max(1,extractedStops.length/5))%5]}</div>
