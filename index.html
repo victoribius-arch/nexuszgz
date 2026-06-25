@@ -1835,7 +1835,15 @@ const guardar=(c)=>{try{const cache=JSON.parse(localStorage.getItem('geo_cache_v
 // fuerte): si el CP de la etiqueta coincide con el del resultado, es el pueblo correcto aunque
 // el nombre venga con artículo ("El Burgo" vs "Burgo (El)"). Si ambos CP existen y DIFIEREN es
 // otro sitio → se rechaza (evita Pedrola→Alagón). Sin CP fiable, se compara el nombre del pueblo.
-const _ok=(r)=>{if(!r||!r.formatted)return false;const ip=(String(addr).match(/\b\d{5}\b/)||[])[0];const rp=(String(r.formatted).match(/\b\d{5}\b/)||[])[0];if(ip&&rp)return ip===rp;if(!mun)return true;return _muniCanon(r.formatted).includes(_muniCanon(mun));};
+const _ok=(r)=>{if(!r||!r.formatted)return false;const ip=(String(addr).match(/\b\d{5}\b/)||[])[0];const rp=(String(r.formatted).match(/\b\d{5}\b/)||[])[0];
+// CP idéntico = confirmación fuerte → acepta.
+if(ip&&rp&&ip===rp)return true;
+// Si la etiqueta nombra un PUEBLO, debe coincidir su nombre (artículos normalizados). Esto es lo
+// que distingue de verdad un sitio equivocado (Pedrola→Alagón = pueblo distinto → rechaza).
+if(mun)return _muniCanon(r.formatted).includes(_muniCanon(mun));
+// Dirección de la ciudad base (sin pueblo): un acierto preciso ya vale; NO exigimos el CP exacto
+// (en ciudad hay CPs adyacentes — 50006/50007/50008 — para la misma calle).
+return true;};
 // Mejor de dos intentos (dirección completa y versión limpia sin piso):
 //  · punto EXACTO y verificado  → 🟢 pin verde
 //  · solo punto aproximado pero en el PUEBLO CORRECTO → 🟡 pin gris (mejor llevar al chófer al
