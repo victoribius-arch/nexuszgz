@@ -1615,7 +1615,9 @@ extractedStops=allStops.filter(s=>{
 // Clave de duplicado por dirección + número de paquete (dos paquetes distintos en la misma
 // dirección SON paradas distintas; sin número usamos el nombre).
 const paq=_limpiaPaq(s.paquete);
-const key=(s.addr||'')+'#'+(paq||s.name||'');
+// Mismo NÚMERO de paquete = misma parada (aunque la dirección se lea distinta entre fotos
+// solapadas). Sin número, deduplicamos por dirección+nombre.
+const key=paq?('PAQ#'+paq):((s.addr||'')+'#'+(s.name||''));
 if(seen.has(key))return false;
 seen.add(key);return true;
 }).map((s,i)=>{
@@ -1922,9 +1924,10 @@ const maxN=ruta.paradas.reduce((m,p)=>Math.max(m,Number(p.n)||0),0);
 // DISTINTO a la misma dirección SÍ se mantienen (son envíos reales distintos).
 const _norm=a=>(a||'').toLowerCase().replace(/[\s,.\-ºª]/g,'').replace(/-?es$/,'');
 const _esDup=(addr,paq,lista)=>lista.some(p=>{
-if(_norm(p.addr)!==_norm(addr))return false;
-if(paq==null)return true;
-return String(p.paquete)===String(paq);
+// Mismo nº de paquete = misma parada (aunque la dirección se lea distinta entre fotos).
+if(paq!=null&&p.paquete!=null)return String(p.paquete)===String(paq);
+// Sin número fiable, deduplicamos por dirección.
+return _norm(p.addr)===_norm(addr);
 });
 const _aceptadas=[];let _dups=0;
 for(const s of extractedStops){
