@@ -1344,7 +1344,7 @@ geoTag='<span class="tag" style="background:rgba(148,163,184,.15);color:var(--te
 let portalTag='';
 try{const pk=portalKey(s.addr);const grp=ruta.paradas.filter(x=>portalKey(x.addr)===pk).sort((a,b)=>pisoNum(a.addr)-pisoNum(b.addr));if(grp.length>1){const idx=grp.findIndex(x=>Number(x.n)===Number(s.n))+1;portalTag=`<span class="tag" style="background:var(--accent);color:#fff;font-weight:800;">🏠 ${idx}/${grp.length} mismo portal</span>`;}}catch(_){}
 el.innerHTML=`<div class="sibar" style="${s.lat&&s.lng&&!s._aprox?'background:var(--green);':s._aprox?'background:var(--red);':''}"></div><div class="sinum"><div class="nc">${pos!=null?pos:s.n}</div></div>
-<div class="sibody"><div class="siname"><span class="sinm">${esc(s.name)}</span>${s._sinNum?`<span onclick="editarPaquete(${s.n},event)" style="flex-shrink:0;margin-left:6px;background:var(--red);color:#fff;font-size:11px;font-weight:800;padding:2px 8px;border-radius:8px;cursor:pointer;">⚠️ Poner nº</span>`:s.paquete?`<span onclick="editarPaquete(${s.n},event)" style="flex-shrink:0;margin-left:6px;background:var(--orange);color:#000;font-size:11px;font-weight:800;padding:2px 8px;border-radius:8px;cursor:pointer;">📦 Paq. ${esc(s.paquete)} ✏️</span>`:''}</div><div class="siaddr" onclick="editarDireccion(${s.n},event)" style="cursor:pointer;"><span class="siad">${esc(s.addr)}</span> <span style="flex-shrink:0;color:var(--accent);font-size:13px;margin-left:3px;">✏️</span></div>
+<div class="sibody"><div class="siname"><span class="sinm">${esc(s.name)}</span>${s._sinNum?`<span onclick="editarPaquete(${s.n},event)" style="flex-shrink:0;margin-left:6px;background:var(--red);color:#fff;font-size:11px;font-weight:800;padding:2px 8px;border-radius:8px;cursor:pointer;">⚠️ Poner nº</span>`:s.paquete?`<span onclick="editarPaquete(${s.n},event)" style="flex-shrink:0;margin-left:6px;background:var(--orange);color:#000;font-size:11px;font-weight:800;padding:2px 8px;border-radius:8px;cursor:pointer;">📦 Paq. ${esc(s.paquete)} ✏️</span>`:`<span onclick="editarPaquete(${s.n},event)" style="flex-shrink:0;margin-left:6px;background:var(--accent);color:#fff;font-size:11px;font-weight:800;padding:2px 8px;border-radius:8px;cursor:pointer;">📦 Poner nº</span>`}</div><div class="siaddr" onclick="editarDireccion(${s.n},event)" style="cursor:pointer;"><span class="siad">${esc(s.addr)}</span> <span style="flex-shrink:0;color:var(--accent);font-size:13px;margin-left:3px;">✏️</span></div>
 <div class="sitags"><span class="tag ts">Saca ${esc(s.saco)}</span><span class="tag tb2">${esc(s.bultos)}b</span>${portalTag}${geoTag}${etaTag}${tag}${s.codigo?`<span class="tag" style="background:rgba(251,146,60,.1);color:var(--orange);font-family:monospace;font-size:9px;">${esc(String(s.codigo).slice(-8))}</span>`:''}</div></div>${acts}`;
 el.addEventListener('click',()=>{if(_modoBorrar)toggleSeleccion(s.n);else selStop(s.n);});
 return el;
@@ -1569,13 +1569,16 @@ markers1.forEach(m=>m.setMap(null));
 markers1=[];
 const bounds=new google.maps.LatLngBounds();
 let hayReales=false;
+const _vistos={};
 ruta.paradas.forEach((s,i)=>{
 // SIEMPRE se pinta un globo por parada (nunca debe faltar en el mapa).
 // Si no tiene coordenadas exactas, se sitúa cerca de la zona de la ruta y se
 // muestra ATENUADA (gris) para avisar de que la ubicación es aproximada.
 const tieneCoord=s.lat&&s.lng;
 const aprox=!tieneCoord||s._aprox;
-const c=tieneCoord?{lat:s.lat,lng:s.lng}:coord(i);
+let c=tieneCoord?{lat:s.lat,lng:s.lng}:coord(i);
+// 2+ paquetes en la MISMA dirección: separar los pines en un pequeño abanico para que se vean todos.
+if(tieneCoord){const k=s.lat.toFixed(5)+','+s.lng.toFixed(5);const idx=_vistos[k]||0;_vistos[k]=idx+1;if(idx>0){const ang=idx*2.4;c={lat:s.lat+Math.sin(ang)*0.00012*idx,lng:s.lng+Math.cos(ang)*0.00015*idx};}}
 const isSel=selPin===s.n;
 const col=s.status==='delivered'?'#10b981':s.status==='failed'?'#f43f5e':(aprox?'#94a3b8':'#00d4ff');
 const tc=s.status==='failed'?'#fff':'#000';
