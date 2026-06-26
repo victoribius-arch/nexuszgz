@@ -353,6 +353,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
       <div class="sbox"><span class="sico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span><input placeholder="Buscar parada..." oninput="doSearch(this.value)" id="srch"></div>
       <div class="frow" id="frow"></div>
       <div style="display:flex;gap:6px;margin-top:6px;">
+        <button id="btn-modo" onclick="toggleModoViaje()" title="Coche / A pie — toca para cambiar" style="padding:8px 9px;border:1.5px solid var(--accent);border-radius:8px;background:transparent;font-size:15px;cursor:pointer;white-space:nowrap;">🚗</button>
         <button id="btn-zona" onclick="toggleZonas()" style="flex:1;padding:8px;border:1.5px solid var(--border);border-radius:8px;background:transparent;color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:3px"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>Por zona</button>
         <button onclick="navRutaCompleta(event)" style="flex:1;padding:8px;border:1.5px solid var(--accent);border-radius:8px;background:rgba(27,42,58,.1);color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:3px"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>Ruta completa</button>
         <button onclick="optimizarConIA()" style="flex:1;padding:8px;border:1.5px solid var(--green);border-radius:8px;background:rgba(16,185,129,.1);color:var(--green);font-size:12px;font-weight:700;cursor:pointer;"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="vertical-align:-2px;margin-right:3px"><path d="M12 2.5l1.7 5.3 5.3 1.7-5.3 1.7L12 16.5l-1.7-5.3L5 9.5l5.3-1.7z"/></svg>Optimizar</button>
@@ -804,6 +805,7 @@ steward: {pass:'nexus5',role:'driver', name:'Steward', init:'T',did:4},
 };
 
 let me=null, ruta=null, filtro='all', busq='', selPin=null;
+let modoViaje=(localStorage.getItem('nexus_modo')==='walking')?'walking':'driving'; // 🚗 coche por defecto / 🚶 a pie
 let gmap1=null, gmap2=null, markers1=[], markers2=[];
 let gmLoaded=false, gmReady=false;
 let uploadFiles=[], extractedStops=[], empresa='optim';
@@ -1080,6 +1082,7 @@ document.querySelectorAll('.scr').forEach(x=>x.classList.remove('on'));
 el.classList.add('on');
 document.getElementById(id).classList.add('on');
 if(id==='s-mapa'){
+sincModoBtn();
 loadGMaps();
 // Repintar pines al entrar (las paradas pueden haber llegado después de crear el mapa)
 const pintarMapa=()=>{
@@ -1166,9 +1169,13 @@ function navTo(addr,e){
 e.stopPropagation();
 const dest=encodeURIComponent(addr+', España');
 
-const url=`https://www.google.com/maps/dir/?api=1&destination=${dest}&travelmode=driving`;
+const url=`https://www.google.com/maps/dir/?api=1&destination=${dest}&travelmode=${modoViaje}`;
 window.open(url,'_blank');
 }
+
+// Modo de viaje 🚗/🚶 — afecta a Optimizar y a la navegación (Navegar y Ruta completa).
+function sincModoBtn(){const b=document.getElementById('btn-modo');if(b)b.innerHTML=modoViaje==='walking'?'🚶':'🚗';}
+function toggleModoViaje(){modoViaje=modoViaje==='driving'?'walking':'driving';localStorage.setItem('nexus_modo',modoViaje);sincModoBtn();toast(modoViaje==='walking'?'🚶 A pie — optimiza y navega andando':'🚗 Coche — optimiza y navega conduciendo','ok');}
 
 function navRutaCompleta(e){
 if(e)e.stopPropagation();
@@ -1183,7 +1190,7 @@ const tramo=todas.slice(0,MAX);
 const punto=p=>(p.lat&&p.lng)?`${p.lat},${p.lng}`:encodeURIComponent(p.addr+', España');
 const dest=punto(tramo[tramo.length-1]);
 const waypoints=tramo.slice(0,-1).map(punto).join('|');
-let url=`https://www.google.com/maps/dir/?api=1&destination=${dest}&travelmode=driving`;
+let url=`https://www.google.com/maps/dir/?api=1&destination=${dest}&travelmode=${modoViaje}`;
 if(waypoints)url+=`&waypoints=${waypoints}`;
 window.open(url,'_blank');
 if(todas.length>MAX)toast(`🗺️ Tramo de ${tramo.length} paradas (de ${todas.length}). Entrega estas y pulsa otra vez para el siguiente tramo.`,'');
@@ -1354,7 +1361,7 @@ if(grupo.length<2)return{orden:grupo,legs:[]};
 const origin=grupo[0].addr+', España';
 const destination=grupo[grupo.length-1].addr+', España';
 const waypoints=grupo.slice(1,-1).map(p=>encodeURIComponent(p.addr+', España')).join('|');
-const resp=await fetch(`${WORKER_URL}/directions?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&waypoints=${waypoints}`,{headers:APP_TOKEN?{'X-App-Token':APP_TOKEN}:{}});
+const resp=await fetch(`${WORKER_URL}/directions?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&waypoints=${waypoints}&mode=${modoViaje}`,{headers:APP_TOKEN?{'X-App-Token':APP_TOKEN}:{}});
 const data=await resp.json();
 if(data.status!=='OK')console.warn('Google Directions status:',data.status,data.error_message||'');
 if(data.status==='OK'&&data.routes&&data.routes[0]){
