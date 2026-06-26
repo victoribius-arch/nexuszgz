@@ -1239,6 +1239,7 @@ const v=String(nuevo).trim();
 if(!v){toast('Número vacío','err');return;}
 p.paquete=v;p._sinNum=false;
 renderLista();
+if(gmap1)renderMarkers1();
 if(p._id)sb.from('paradas').update({paquete:v}).eq('id',p._id).then(()=>{});
 else if(ruta._rutaId)sb.from('paradas').update({paquete:v}).eq('ruta_id',ruta._rutaId).eq('n',p.n).then(()=>{});
 toast(`✓ Paquete → ${v}`,'ok');
@@ -1358,9 +1359,12 @@ toast('🗺️ Calculando ruta óptima...','');
 // Optimiza un bloque (máx 25 puntos) con Google Directions. Devuelve {orden, legs} o null
 async function optimizarBloque(grupo){
 if(grupo.length<2)return{orden:grupo,legs:[]};
-const origin=grupo[0].addr+', España';
-const destination=grupo[grupo.length-1].addr+', España';
-const waypoints=grupo.slice(1,-1).map(p=>encodeURIComponent(p.addr+', España')).join('|');
+// Usar la COORDENADA verificada si la hay (evita que Google re-geocodifique mal el texto de un
+// pueblo y meta un tramo de cientos de km que dispara el total). Sin coord, cae al texto.
+const punto=p=>(p.lat&&p.lng)?`${p.lat},${p.lng}`:(p.addr+', España');
+const origin=punto(grupo[0]);
+const destination=punto(grupo[grupo.length-1]);
+const waypoints=grupo.slice(1,-1).map(p=>encodeURIComponent(punto(p))).join('|');
 const resp=await fetch(`${WORKER_URL}/directions?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&waypoints=${waypoints}&mode=${modoViaje}`,{headers:APP_TOKEN?{'X-App-Token':APP_TOKEN}:{}});
 const data=await resp.json();
 if(data.status!=='OK')console.warn('Google Directions status:',data.status,data.error_message||'');
@@ -1560,6 +1564,7 @@ ${ring}
 
 function renderMarkers1(){
 if(!gmap1)return;
+if(window._pinInfo)window._pinInfo.close();
 markers1.forEach(m=>m.setMap(null));
 markers1=[];
 const bounds=new google.maps.LatLngBounds();
@@ -1577,7 +1582,13 @@ const tc=s.status==='failed'?'#fff':'#000';
 const svg=pinSVG(s.paquete!=null?s.paquete:s.n,col,tc,isSel);
 const icon={url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg),scaledSize:new google.maps.Size(44,54),anchor:new google.maps.Point(22,54)};
 const m=new google.maps.Marker({position:c,map:gmap1,icon,opacity:aprox?0.6:1,title:`${s.paquete!=null?'📦 '+s.paquete:'#'+s.n} · ${s.name}${aprox?' · 📍 ubicación aproximada (revisar dirección)':''}`,zIndex:isSel?999:s.n});
-m.addListener('click',()=>selStop(s.n));
+m.addListener('click',()=>{
+selStop(s.n);
+if(!window._pinInfo)window._pinInfo=new google.maps.InfoWindow();
+const numHtml=s.paquete!=null?`📦 Paquete <b>${esc(String(s.paquete))}</b>`:`Parada #${s.n} · <span style="color:#dc2626;font-weight:700">sin nº de paquete</span>`;
+window._pinInfo.setContent(`<div style="color:#000;font-size:13px;min-width:165px;">${numHtml}<br><b>${esc(s.name||'')}</b><br><span style="color:#64748b;font-size:12px;">${esc(s.addr||'')}</span><br><button onclick="editarPaquete(${s.n})" style="margin-top:8px;padding:6px 12px;border:none;border-radius:8px;background:var(--accent,#1b2a3a);color:#fff;font-size:12px;font-weight:800;cursor:pointer;">✏️ Modificar nº</button></div>`);
+window._pinInfo.open(gmap1,m);
+});
 markers1.push(m);
 if(tieneCoord){bounds.extend(c);hayReales=true;}
 });
