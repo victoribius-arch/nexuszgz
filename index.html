@@ -795,7 +795,7 @@ ruta._rutaId=rutaId;
 ruta._fecha=hoy;
 const{data:paradas_db}=await sb.from('paradas').select('*').eq('ruta_id',rutaId).order('n');
 if(paradas_db&&paradas_db.length){
-ruta.paradas=paradas_db.map(p=>({n:p.n,name:p.name,addr:p.addr,saco:p.saco,bultos:p.bultos,status:p.status,lat:p.lat,lng:p.lng,_id:p.id,codigo:p.codigo_seguimiento,paquete:p.paquete}));
+ruta.paradas=paradas_db.map(p=>({n:p.n,name:(p.name||'Particular'),addr:p.addr,saco:p.saco,bultos:p.bultos,status:p.status,lat:p.lat,lng:p.lng,_id:p.id,codigo:p.codigo_seguimiento,paquete:p.paquete}));
 renderLista();if(gmap1)renderMarkers1();
 toast(`✓ ${paradas_db.length} paradas cargadas del día`,'ok');
 
@@ -846,7 +846,7 @@ const{data:existentes}=await sb.from('paradas').select('n,addr').eq('ruta_id',ru
 const clavesExistentes=new Set((existentes||[]).map(x=>Number(x.n)+'|'+(x.addr||'').trim().toLowerCase()));
 const nuevas=paradas.filter(p=>!clavesExistentes.has(Number(p.n)+'|'+(p.addr||'').trim().toLowerCase()));
 if(!nuevas.length)return;
-const rows=nuevas.map(p=>({ruta_id:rutaId,n:p.n,name:p.name,addr:p.addr,saco:p.saco,bultos:p.bultos,status:p.status,lat:p.lat||null,lng:p.lng||null,codigo_seguimiento:p.codigo||null,paquete:p.paquete||null}));
+const rows=nuevas.map(p=>({ruta_id:rutaId,n:p.n,name:(p.name||'Particular'),addr:p.addr,saco:p.saco,bultos:p.bultos,status:p.status,lat:p.lat||null,lng:p.lng||null,codigo_seguimiento:p.codigo||null,paquete:p.paquete||null}));
 const{error:insErr}=await sb.from('paradas').insert(rows);
 if(insErr)throw new Error(insErr.message||'No se pudieron guardar las paradas');
 return rows.length;
@@ -900,7 +900,7 @@ if(!rutas_hoy||!rutas_hoy.length){r.paradas=[];continue;}
 const rutaDB=rutas_hoy.find(x=>x.driver===r.driver);
 if(!rutaDB){r.paradas=[];continue;}
 const{data:paradas_db}=await sb.from('paradas').select('*').eq('ruta_id',rutaDB.id).order('n');
-if(paradas_db)r.paradas=paradas_db.map(p=>({n:p.n,name:p.name,addr:p.addr,saco:p.saco,bultos:p.bultos,status:p.status,lat:p.lat,lng:p.lng,_id:p.id,codigo:p.codigo_seguimiento,paquete:p.paquete}));
+if(paradas_db)r.paradas=paradas_db.map(p=>({n:p.n,name:(p.name||'Particular'),addr:p.addr,saco:p.saco,bultos:p.bultos,status:p.status,lat:p.lat,lng:p.lng,_id:p.id,codigo:p.codigo_seguimiento,paquete:p.paquete}));
 else r.paradas=[];
 }
 renderGestor();
