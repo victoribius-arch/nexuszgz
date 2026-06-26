@@ -909,6 +909,24 @@ renderGestor();
 document.getElementById('lbtn').onclick=doLogin;
 document.getElementById('pi').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 
+// Aviso de crédito de IA bajo — SOLO para victor (el dueño). Hace un ping mínimo a la IA; si el
+// saldo de Anthropic está bajo, muestra un banner rojo para recargar antes de que se corte el escaneo.
+async function checkCreditoIA(){
+if(!me||String(me.username||'').toLowerCase()!=='victor')return;
+try{
+const r=await fetch(WORKER_URL,{method:'POST',headers:workerHeaders(),body:JSON.stringify({model:'fast',max_tokens:1,messages:[{role:'user',content:'.'}]})});
+const txt=await r.text();
+if(/credit balance is too low|too low to access|insufficient/i.test(txt)){
+if(document.getElementById('credito-banner'))return;
+const b=document.createElement('div');
+b.id='credito-banner';
+b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#dc2626;color:#fff;padding:12px 16px;font-size:13px;font-weight:700;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.35);line-height:1.4;';
+b.innerHTML='🔴 Crédito de IA bajo — recarga en Anthropic (console.anthropic.com → Billing) antes de que se corte el escaneo <span onclick="this.parentElement.remove()" style="margin-left:10px;cursor:pointer;text-decoration:underline;white-space:nowrap;">cerrar ✕</span>';
+document.body.appendChild(b);
+}
+}catch(e){}
+}
+
 async function aplicarSesion(user){
 me={...user};
 if(me.prueba&&me.prueba_fin&&Date.now()>new Date(me.prueba_fin).getTime()){
@@ -922,6 +940,7 @@ RUTAS.length=0;
 drivers.forEach(d=>{RUTAS.push({driver:d.name,did:d.did||0,color:d.color||'#1b2a3a',paradas:[]});});
 // La ruta ACTIVA del manager es la SUYA propia (se guarda y recarga entre dispositivos)
 ruta={driver:me.name,did:me.did||0,color:me.color||'#1b2a3a',paradas:[]};
+checkCreditoIA(); // solo victor: avisa si el crédito de IA está bajo
 } else {
 ruta=RUTAS.find(r=>r.driver===me.name)||{driver:me.name,did:me.did||0,color:me.color||'#1b2a3a',paradas:[]};
 if(!RUTAS.find(r=>r.driver===me.name))RUTAS.push(ruta);
