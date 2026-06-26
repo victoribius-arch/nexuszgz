@@ -1058,7 +1058,7 @@ renderStats();
 const lista=document.getElementById('slist');
 const stops=ruta.paradas.filter(s=>{
 if(filtro!=='all'&&s.status!==filtro)return false;
-if(busq&&!s.name.toLowerCase().includes(busq)&&!s.addr.toLowerCase().includes(busq)&&!String(s.n).includes(busq))return false;
+if(busq&&!(s.name||'').toLowerCase().includes(busq)&&!(s.addr||'').toLowerCase().includes(busq)&&!String(s.n).includes(busq)&&!String(s.paquete||'').includes(busq))return false;
 return true;
 });
 if(!stops.length){lista.innerHTML='<div class="empty">Sin resultados</div>';return;}
