@@ -1371,7 +1371,7 @@ function _portal(addr){const m=(addr||'').match(/\b(\d{1,4})\b/);return m?+m[1]:
 // Cada calle se hace junta y no se vuelve a ella → evita el "de un lado a otro". Probado con datos
 // reales: mejor para reparto que el óptimo por carretera puro (Google también fragmentaba las calles).
 // Las paradas sin coordenadas se dejan al final, en su orden original.
-function _optimizarPorCalles(stops){
+function _optimizarPorCalles(stops,startPos){
 const conC=stops.filter(p=>p.lat&&p.lng);
 const sinC=stops.filter(p=>!p.lat||!p.lng);
 if(conC.length<2)return [...conC,...sinC];
@@ -1381,8 +1381,8 @@ const calles=Object.values(grupos).map(arr=>{
 const list=arr.slice().sort((a,b)=>(_portal(a.addr)||0)-(_portal(b.addr)||0));
 return {list,lo:list[0],hi:list[list.length-1]};
 });
-// Arranque por un extremo (la parada más al oeste) para barrer en una dirección coherente.
-let pos=conC.reduce((m,p)=>p.lng<m.lng?p:m,conC[0]);
+// Arranque: desde la posición del chofer (GPS) si la hay; si no, por el extremo oeste.
+let pos=(startPos&&startPos.lat)?startPos:conC.reduce((m,p)=>p.lng<m.lng?p:m,conC[0]);
 const orden=[];let rest=calles.slice();
 while(rest.length){
 let bi=0,bd=Infinity,rev=false;
@@ -1403,7 +1403,10 @@ if(pendientes.length<2){toast('Necesitas al menos 2 paradas pendientes','err');r
 if(pendientes.length>110){toast('Máximo 110 paradas','err');return;}
 toast('🗺️ Ordenando ruta por calles...','');
 try{
-const reordenadas=_optimizarPorCalles(pendientes);
+// Arrancar desde la ubicación ACTUAL del chofer (GPS) si está disponible; si no, un extremo.
+let inicio=(typeof _miPos!=='undefined'&&_miPos&&_miPos.lat)?_miPos:null;
+if(!inicio&&navigator.geolocation){inicio=await new Promise(res=>navigator.geolocation.getCurrentPosition(p=>res({lat:p.coords.latitude,lng:p.coords.longitude}),()=>res(null),{enableHighAccuracy:true,timeout:4000,maximumAge:60000}));}
+const reordenadas=_optimizarPorCalles(pendientes,inicio);
 // RED DE SEGURIDAD: que no falte ninguna parada pendiente
 pendientes.forEach(p=>{if(!reordenadas.find(r=>r.n===p.n))reordenadas.push(p);});
 // ── km y ETA estimados por distancia real * factor de callejero (sin depender de Google) ──
