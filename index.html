@@ -1355,34 +1355,44 @@ const dLat=toR(b.lat-a.lat),dLng=toR(b.lng-a.lng);
 const s=Math.sin(dLat/2)**2+Math.cos(toR(a.lat))*Math.cos(toR(b.lat))*Math.sin(dLng/2)**2;
 return 2*R*Math.asin(Math.sqrt(s));
 }
-// Orden geográfico global: vecino más cercano + 2-opt sobre coordenadas. Mantiene juntas
-// las paradas cercanas (sin el límite de 25 de Google ni los saltos del agrupar por CP).
+// Nombre de calle normalizado: minúsculas, sin acentos, sin nº ni piso/puerta, sin artículos
+// (de/del/la/las/el/los). Une variantes como "Paseo Constitución", "Pº de la Constitución" y
+// "PASEO LA CONSTITUCION" → "paseo constitucion" (si no, el optimizador las trata como calles
+// distintas y fragmenta la ruta).
+function _calleNorm(addr){
+let s=(addr||'').toLowerCase().replace(/\d+.*/,'');
+s=s.normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z ]/g,' ');
+return s.split(/\s+/).filter(w=>w&&!['de','del','la','las','el','los'].includes(w)).join(' ').trim();
+}
+// Número de portal de una dirección.
+function _portal(addr){const m=(addr||'').match(/\b(\d{1,4})\b/);return m?+m[1]:null;}
+// Optimizador POR CALLES: agrupa por calle, ordena cada calle por portal y la recorre ENTERA de
+// un tirón (entrando por el extremo más cercano), encadenando calles por cercanía desde un extremo.
+// Cada calle se hace junta y no se vuelve a ella → evita el "de un lado a otro". Probado con datos
+// reales: mejor para reparto que el óptimo por carretera puro (Google también fragmentaba las calles).
 // Las paradas sin coordenadas se dejan al final, en su orden original.
-function _ordenGeografico(stops,start){
+function _optimizarPorCalles(stops){
 const conC=stops.filter(p=>p.lat&&p.lng);
 const sinC=stops.filter(p=>!p.lat||!p.lng);
 if(conC.length<2)return [...conC,...sinC];
-const rest=conC.slice();
-let idx=start?rest.findIndex(p=>p.n===start.n):-1;
-let cur=idx>=0?rest.splice(idx,1)[0]:rest.shift();
-const orden=[cur];
+const grupos={};
+conC.forEach(p=>{const c=_calleNorm(p.addr)||('zz'+p.n);(grupos[c]=grupos[c]||[]).push(p);});
+const calles=Object.values(grupos).map(arr=>{
+const list=arr.slice().sort((a,b)=>(_portal(a.addr)||0)-(_portal(b.addr)||0));
+return {list,lo:list[0],hi:list[list.length-1]};
+});
+// Arranque por un extremo (la parada más al oeste) para barrer en una dirección coherente.
+let pos=conC.reduce((m,p)=>p.lng<m.lng?p:m,conC[0]);
+const orden=[];let rest=calles.slice();
 while(rest.length){
-let bi=0,bd=Infinity;
-for(let i=0;i<rest.length;i++){const d=_distKm(cur,rest[i]);if(d<bd){bd=d;bi=i;}}
-cur=rest.splice(bi,1)[0];orden.push(cur);
+let bi=0,bd=Infinity,rev=false;
+for(let i=0;i<rest.length;i++){
+const dlo=_distKm(pos,rest[i].lo),dhi=_distKm(pos,rest[i].hi);
+const d=Math.min(dlo,dhi);if(d<bd){bd=d;bi=i;rev=dhi<dlo;}
 }
-// 2-opt: deshace cruces (tope de pasadas para no congelar el móvil con muchas paradas)
-let mejora=true,pasadas=0;
-while(mejora&&pasadas<8){
-mejora=false;pasadas++;
-for(let i=1;i<orden.length-1;i++){
-for(let k=i+1;k<orden.length;k++){
-const a=orden[i-1],b=orden[i],c=orden[k],d=orden[k+1];
-const antes=_distKm(a,b)+(d?_distKm(c,d):0);
-const desp=_distKm(a,c)+(d?_distKm(b,d):0);
-if(desp+1e-9<antes){let lo=i,hi=k;while(lo<hi){const t=orden[lo];orden[lo]=orden[hi];orden[hi]=t;lo++;hi--;}mejora=true;}
-}
-}
+const g=rest.splice(bi,1)[0];
+const seq=rev?g.list.slice().reverse():g.list;
+orden.push(...seq);pos=seq[seq.length-1];
 }
 return [...orden,...sinC];
 }
@@ -1391,116 +1401,29 @@ async function optimizarConIA(){
 const pendientes=ruta.paradas.filter(p=>p.status==='pending');
 if(pendientes.length<2){toast('Necesitas al menos 2 paradas pendientes','err');return;}
 if(pendientes.length>110){toast('Máximo 110 paradas','err');return;}
-toast('🗺️ Calculando ruta óptima...','');
-
-// Optimiza un bloque (máx 25 puntos) con Google Directions. Devuelve {orden, legs} o null
-async function optimizarBloque(grupo){
-if(grupo.length<2)return{orden:grupo,legs:[]};
-// Usar la COORDENADA verificada si la hay (evita que Google re-geocodifique mal el texto de un
-// pueblo y meta un tramo de cientos de km que dispara el total). Sin coord, cae al texto.
-const punto=p=>(p.lat&&p.lng)?`${p.lat},${p.lng}`:(p.addr+', España');
-const origin=punto(grupo[0]);
-const destination=punto(grupo[grupo.length-1]);
-const waypoints=grupo.slice(1,-1).map(p=>encodeURIComponent(punto(p))).join('|');
-const resp=await fetch(`${WORKER_URL}/directions?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&waypoints=${waypoints}&mode=${modoViaje}`,{headers:APP_TOKEN?{'X-App-Token':APP_TOKEN}:{}});
-const data=await resp.json();
-if(data.status!=='OK')console.warn('Google Directions status:',data.status,data.error_message||'');
-if(data.status==='OK'&&data.routes&&data.routes[0]){
-const order=data.routes[0].waypoint_order||[];
-const middle=grupo.slice(1,-1);
-// Reconstruir el orden óptimo de los waypoints intermedios
-const mediasOrdenadas=order.map(i=>middle[i]).filter(Boolean);
-// Si Google no devolvió todos los índices, añadir los que falten en su orden original
-middle.forEach(p=>{if(!mediasOrdenadas.find(r=>r&&r.n===p.n))mediasOrdenadas.push(p);});
-const orden=[grupo[0],...mediasOrdenadas,grupo[grupo.length-1]].filter(Boolean);
-// Garantía final: ninguna parada del grupo se pierde
-grupo.forEach(p=>{if(!orden.find(r=>r.n===p.n))orden.push(p);});
-return{orden,legs:data.routes[0].legs||[]};
-}
-return null;
-}
-
+toast('🗺️ Ordenando ruta por calles...','');
 try{
-let reordenadas=[],allLegs=[];
-
-if(pendientes.length<=2){
-// Con 1-2 paradas no hay nada que optimizar: mantener tal cual, sin tocar Google
-reordenadas=pendientes;allLegs=[];
-}else if(pendientes.length<=25){
-// Caso normal: un solo bloque
-const r=await optimizarBloque(pendientes);
-if(!r)throw new Error('Google falló');
-reordenadas=r.orden;allLegs=r.legs;
-}else{
-// Muchas paradas (>25): orden geográfico global (vecino más cercano + 2-opt sobre
-// coordenadas) y luego refinar por carretera en bloques consecutivos de 25 con Google
-// (para el orden fino dentro de cada bloque + km/ETA). Antes se agrupaba por CP y se
-// ordenaba alfabéticamente, lo que separaba paradas que están enfrente pero con CP
-// distinto → zigzag. El orden geográfico las mantiene juntas.
-toast('🗺️ Optimizando ruta larga...','');
-const geo=_ordenGeografico(pendientes,pendientes[0]);
-for(let i=0;i<geo.length;i+=25){
-const sub=geo.slice(i,i+25);
-const r=await optimizarBloque(sub);
-if(r){reordenadas.push(...r.orden);allLegs.push(...r.legs);}
-else{reordenadas.push(...sub);}
-}
-}
-
-if(!reordenadas.length)throw new Error('Sin resultado');
-
-// RED DE SEGURIDAD: garantizar que NINGUNA parada pendiente se pierda
+const reordenadas=_optimizarPorCalles(pendientes);
+// RED DE SEGURIDAD: que no falte ninguna parada pendiente
 pendientes.forEach(p=>{if(!reordenadas.find(r=>r.n===p.n))reordenadas.push(p);});
-
-// ── CALCULAR ETA POR PARADA ──
+// ── km y ETA estimados por distancia real * factor de callejero (sin depender de Google) ──
+const factorVia=modoViaje==='walking'?1.15:1.4;
+const velKmh=modoViaje==='walking'?4.5:20;
 const MARGEN_ENTREGA=120;
-let reloj=Date.now()+5*60*1000;
+let reloj=Date.now()+5*60*1000,kmRecto=0;
 reordenadas.forEach((p,i)=>{
-if(i>0){
-const leg=allLegs[i-1];
-const seg=leg?leg.duration.value:180;
-reloj+=(seg+MARGEN_ENTREGA)*1000;
-}
+if(i>0){const d=_distKm(reordenadas[i-1],p);const dd=d<1e5?d:0;kmRecto+=dd;reloj+=(dd*factorVia/velKmh*3600+MARGEN_ENTREGA)*1000;}
 p.eta=new Date(reloj).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
 p._etaMs=reloj;
 });
-
+const kmTotal=(kmRecto*factorVia).toFixed(1);
+const minTotal=Math.round(kmRecto*factorVia/velKmh*60)+reordenadas.length*2;
 const entregadas=ruta.paradas.filter(p=>p.status!=='pending');
 ruta.paradas=[...entregadas,...reordenadas];
 renderLista();
 if(gmap1)renderMarkers1();
-const kmTotal=(allLegs.reduce((s,l)=>s+(l.distance?l.distance.value:0),0)/1000).toFixed(1);
-const minTotal=Math.round(allLegs.reduce((s,l)=>s+(l.duration?l.duration.value:0),0)/60)+reordenadas.length*2;
-toast(`✅ Ruta optimizada — ${reordenadas.length} paradas · ${kmTotal} km · ~${minTotal} min`,'ok');
-return;
-}catch(e){console.warn('Google falló, usando IA:',e);}
-
-// ── FALLBACK IA (solo para rutas cortas) ──
-if(pendientes.length>25){toast('No se pudo optimizar la ruta larga, inténtalo de nuevo','err');return;}
-toast('✨ Optimizando con IA...','');
-try{
-const lista=pendientes.map(p=>`${p.n}: ${p.addr}`).join('\n');
-const content=[{type:'text',text:`Eres un experto en rutas de reparto de última milla en España.
-Tengo estas paradas pendientes con furgoneta:
-${lista}
-Ordénalas para minimizar el recorrido total, teniendo en cuenta el callejero real de la zona, sentidos únicos y barrios.
-Devuelve SOLO un array JSON con los números de parada en el orden óptimo: [3,1,5,2,4]`}];
-const resp=await fetch(WORKER_URL,{method:'POST',headers:workerHeaders(),
-body:JSON.stringify({model:'route',max_tokens:500,messages:[{role:'user',content}]})});
-const data=await resp.json();
-const txt=data.content?.find(c=>c.type==='text')?.text||'';
-let orden=null;
-try{orden=JSON.parse(txt.trim());}catch(e){}
-if(!orden){const m=txt.match(/\[[\d,\s]+\]/);if(m)try{orden=JSON.parse(m[0]);}catch(e){}}
-if(!orden||!Array.isArray(orden)){toast('No se pudo optimizar','err');return;}
-const entregadas=ruta.paradas.filter(p=>p.status!=='pending');
-const reordenadas=orden.map(n=>pendientes.find(p=>Number(p.n)===Number(n))).filter(Boolean);
-pendientes.forEach(p=>{if(!reordenadas.find(r=>r.n===p.n))reordenadas.push(p);});
-ruta.paradas=[...entregadas,...reordenadas];
-renderLista();
-if(gmap1)renderMarkers1();
-toast(`✨ Ruta optimizada — ${reordenadas.length} paradas`,'ok');
-}catch(e){toast('Error al optimizar','err');}
+toast(`✅ Ruta ordenada por calles — ${reordenadas.length} paradas · ${kmTotal} km · ~${minTotal} min`,'ok');
+}catch(e){console.warn('optimizar falló:',e);toast('No se pudo optimizar','err');}
 }
 function selStop(n){
 document.querySelectorAll('.si').forEach(x=>x.classList.remove('on'));
