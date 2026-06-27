@@ -823,12 +823,12 @@ if(!me)return;
 if(blockDBReload)return;
 const hoy=new Date().toISOString().split('T')[0];
 
-const{data:rutas_hoy}=await sb.from('rutas').select('id').eq('driver',me.name).eq('fecha',hoy).order('created_at',{ascending:false}).limit(1);
-if(!rutas_hoy||!rutas_hoy.length)return;
+let rutas_hoy=[];try{const _d=await api('/data/rutas?scope=mine&fecha='+encodeURIComponent(hoy)+'&limit=1');rutas_hoy=_d.rutas||[];}catch(e){return;}
+if(!rutas_hoy.length)return;
 const rutaId=rutas_hoy[0].id;
 ruta._rutaId=rutaId;
 ruta._fecha=hoy;
-const{data:paradas_db}=await sb.from('paradas').select('*').eq('ruta_id',rutaId).order('n');
+let paradas_db=[];try{const _d=await api('/data/paradas?ruta_id='+encodeURIComponent(rutaId));paradas_db=_d.paradas||[];}catch(e){paradas_db=[];}
 if(paradas_db&&paradas_db.length){
 ruta.paradas=paradas_db.map(p=>({n:p.n,name:(p.name||'Particular'),addr:p.addr,saco:p.saco,bultos:p.bultos,status:p.status,lat:p.lat,lng:p.lng,_id:p.id,codigo:p.codigo_seguimiento,paquete:p.paquete}));
 renderLista();if(gmap1)renderMarkers1();
@@ -847,7 +847,7 @@ const coords=await geocodeAddr(p.addr);
 p.lat=coords.lat;p.lng=coords.lng;p._aprox=coords._aprox||false;
 // Guardamos SIEMPRE las coordenadas (también las aproximadas de pueblo) para que carguen FIABLES
 // desde la BD. En pueblos con mala cobertura el re-geocodeo en caliente fallaba → los pines no salían.
-if(p.lat&&p.lng)await sb.from('paradas').update({lat:p.lat,lng:p.lng}).eq('ruta_id',rutaId).eq('n',p.n);
+if(p.lat&&p.lng)await api('/data/paradas','PATCH',{ruta_id:rutaId,n:p.n,set:{lat:p.lat,lng:p.lng}});
 }catch(e){}
 }));
 renderLista();if(gmap1)renderMarkers1();
@@ -929,12 +929,12 @@ for(let i=RUTAS.length-1;i>=0;i--){
 if(!usuarios.find(u=>u.name===RUTAS[i].driver))RUTAS.splice(i,1);
 }
 }
-const{data:rutas_hoy}=await sb.from('rutas').select('*').eq('fecha',hoy).eq('empresa_id',me.empresa_id);
+let rutas_hoy=[];try{const _d=await api('/data/rutas?scope=empresa&fecha='+encodeURIComponent(hoy));rutas_hoy=_d.rutas||[];}catch(e){rutas_hoy=[];}
 for(const r of RUTAS){
 if(!rutas_hoy||!rutas_hoy.length){r.paradas=[];continue;}
 const rutaDB=rutas_hoy.find(x=>x.driver===r.driver);
 if(!rutaDB){r.paradas=[];continue;}
-const{data:paradas_db}=await sb.from('paradas').select('*').eq('ruta_id',rutaDB.id).order('n');
+let paradas_db=[];try{const _d=await api('/data/paradas?ruta_id='+encodeURIComponent(rutaDB.id));paradas_db=_d.paradas||[];}catch(e){paradas_db=[];}
 if(paradas_db)r.paradas=paradas_db.map(p=>({n:p.n,name:(p.name||'Particular'),addr:p.addr,saco:p.saco,bultos:p.bultos,status:p.status,lat:p.lat,lng:p.lng,_id:p.id,codigo:p.codigo_seguimiento,paquete:p.paquete}));
 else r.paradas=[];
 }
@@ -2905,15 +2905,13 @@ const list=document.getElementById('hist-list');
 if(!fecha){list.innerHTML='<div class="empty">Selecciona una fecha</div>';return;}
 list.innerHTML='<div class="empty">Cargando...</div>';
 
-let query=sb.from('rutas').select('*').eq('fecha',fecha).eq('empresa_id',me.empresa_id).order('created_at',{ascending:true});
-if(driver!=='all') query=query.eq('driver',driver);
-const{data:rutas}=await query;
+let rutas=[];try{const _d=await api('/data/rutas?scope=empresa&fecha='+encodeURIComponent(fecha)+(driver!=='all'?'&driver='+encodeURIComponent(driver):''));rutas=_d.rutas||[];}catch(e){rutas=[];}
 
 if(!rutas||!rutas.length){list.innerHTML='<div class="empty">No hay rutas para esta fecha</div>';return;}
 
 let html='';
 for(const r of rutas){
-const{data:paradas}=await sb.from('paradas').select('*').eq('ruta_id',r.id).order('n');
+let paradas=[];try{const _d=await api('/data/paradas?ruta_id='+encodeURIComponent(r.id));paradas=_d.paradas||[];}catch(e){paradas=[];}
 if(!paradas)continue;
 const total=paradas.length;
 const ok=paradas.filter(p=>p.status==='delivered').length;
