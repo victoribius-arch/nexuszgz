@@ -657,7 +657,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
             var r=await sb.storage.from('cierres').upload(fn,c,{contentType:'image/jpeg',upsert:true});
             if(!r.error){url=sb.storage.from('cierres').getPublicUrl(fn).data.publicUrl;}
           }
-          await sb.from('cierres').insert({driver:me.name,parada_n:n,addr:p?p.addr:'',foto_url:url,nombre_cliente:nom||null,empresa_id:me.empresa_id||null});
+          await api('/data/cierres','POST',{parada_n:n,addr:p?p.addr:'',foto_url:url,nombre_cliente:nom||null});
         }catch(e){console.error(e);}
       })()">✓ Confirmar</button>
     </div>
@@ -2393,8 +2393,7 @@ const r=await sb.storage.from('cierres').upload(fn,c,{contentType:'image/jpeg',u
 if(!r.error)url=sb.storage.from('cierres').getPublicUrl(fn).data.publicUrl;
 }catch(e){}
 try{
-const{error}=await sb.from('cierres').insert({driver:me.name,addr:dest,foto_url:url,ruta_tipo:(tipo==='recogida'?'RECOGIDA':'INCIDENCIA'),empresa_id:me.empresa_id||null});
-if(error)throw error;
+await api('/data/cierres','POST',{addr:dest,foto_url:url,ruta_tipo:(tipo==='recogida'?'RECOGIDA':'INCIDENCIA')});
 }catch(e){toast('No se pudo guardar — revisa la conexión','err');return;}
 _recFoto[tipo]=null;
 if(inp)inp.value='';
@@ -2694,13 +2693,8 @@ fotoUrl=sb.storage.from('cierres').getPublicUrl(fn).data.publicUrl;
 console.error('Upload error:',upErr);
 }
 }
-const{error:insErr}=await sb.from('cierres').insert({
-driver:me.name,parada_n:n,addr:parada?parada.addr:'',
-foto_url:fotoUrl,nombre_cliente:nombre||null,
-ruta_tipo:window._cpRuta||'principal',
-preferente:window._cpPreferente||false,
-empresa_id:me.empresa_id||null
-});
+let insErr=null;
+try{await api('/data/cierres','POST',{parada_n:n,addr:parada?parada.addr:'',foto_url:fotoUrl,nombre_cliente:nombre||null,ruta_tipo:window._cpRuta||'principal',preferente:window._cpPreferente||false});}catch(e){insErr=e;}
 if(t){
 if(insErr){t.textContent='Error: '+insErr.message;t.className='toast err show';}
 else{t.textContent='✓ Parada #'+n+' entregada';t.className='toast ok show';t._t=setTimeout(()=>t.classList.remove('show'),3000);}
@@ -2737,11 +2731,7 @@ const fn=me.name+'_'+n+'_'+Date.now()+'.jpg';
 const{error:upErr}=await sb.storage.from('cierres').upload(fn,compressed,{contentType:'image/jpeg',upsert:true});
 if(!upErr){fotoUrl=sb.storage.from('cierres').getPublicUrl(fn).data.publicUrl;}
 }
-await sb.from('cierres').insert({
-driver:me.name,parada_n:n,addr:parada?parada.addr:'',
-foto_url:fotoUrl,nombre_cliente:nombre||null,
-empresa_id:me.empresa_id||null
-});
+await api('/data/cierres','POST',{parada_n:n,addr:parada?parada.addr:'',foto_url:fotoUrl,nombre_cliente:nombre||null});
 
 if(document.getElementById('s-cierres').classList.contains('on'))cargarCierres();
 }catch(err){console.error('Error cierre:',err);}
@@ -2783,7 +2773,7 @@ const parada=ruta.paradas.find(p=>Number(p.n)===Number(n));
 const labels={ausente:'🚫 Ausente',cambio_domicilio:'🏠 Cambio domicilio',rehusado:'❌ Rehusado'};
 cerrarIncidencia();
 if(parada){parada.status='failed';renderLista();if(gmap1)renderMarkers1();actualizarEstadoDB(parada,'failed');toast((labels[tipo]||tipo)+' — Parada #'+n,'err');}
-try{await sb.from('cierres').insert({driver:me.name,parada_n:n,addr:parada?parada.addr:'',nombre_cliente:(labels[tipo]||tipo)+(nota?' — '+nota:''),foto_url:null,empresa_id:me.empresa_id||null});}catch(e){console.error(e);}
+try{await api('/data/cierres','POST',{parada_n:n,addr:parada?parada.addr:'',nombre_cliente:(labels[tipo]||tipo)+(nota?' — '+nota:''),foto_url:null});}catch(e){console.error(e);}
 }
 
 let geoInterval=null;
