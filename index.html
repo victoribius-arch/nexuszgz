@@ -1346,6 +1346,47 @@ el.addEventListener('click',()=>{if(_modoBorrar)toggleSeleccion(s.n);else selSto
 return el;
 }
 
+// Distancia en km (haversine) entre dos paradas con coordenadas. Sin coords = "lejísimos"
+// (1e6) para que esas paradas caigan al final del orden geográfico.
+function _distKm(a,b){
+if(!a.lat||!a.lng||!b.lat||!b.lng)return 1e6;
+const R=6371,toR=x=>x*Math.PI/180;
+const dLat=toR(b.lat-a.lat),dLng=toR(b.lng-a.lng);
+const s=Math.sin(dLat/2)**2+Math.cos(toR(a.lat))*Math.cos(toR(b.lat))*Math.sin(dLng/2)**2;
+return 2*R*Math.asin(Math.sqrt(s));
+}
+// Orden geográfico global: vecino más cercano + 2-opt sobre coordenadas. Mantiene juntas
+// las paradas cercanas (sin el límite de 25 de Google ni los saltos del agrupar por CP).
+// Las paradas sin coordenadas se dejan al final, en su orden original.
+function _ordenGeografico(stops,start){
+const conC=stops.filter(p=>p.lat&&p.lng);
+const sinC=stops.filter(p=>!p.lat||!p.lng);
+if(conC.length<2)return [...conC,...sinC];
+const rest=conC.slice();
+let idx=start?rest.findIndex(p=>p.n===start.n):-1;
+let cur=idx>=0?rest.splice(idx,1)[0]:rest.shift();
+const orden=[cur];
+while(rest.length){
+let bi=0,bd=Infinity;
+for(let i=0;i<rest.length;i++){const d=_distKm(cur,rest[i]);if(d<bd){bd=d;bi=i;}}
+cur=rest.splice(bi,1)[0];orden.push(cur);
+}
+// 2-opt: deshace cruces (tope de pasadas para no congelar el móvil con muchas paradas)
+let mejora=true,pasadas=0;
+while(mejora&&pasadas<8){
+mejora=false;pasadas++;
+for(let i=1;i<orden.length-1;i++){
+for(let k=i+1;k<orden.length;k++){
+const a=orden[i-1],b=orden[i],c=orden[k],d=orden[k+1];
+const antes=_distKm(a,b)+(d?_distKm(c,d):0);
+const desp=_distKm(a,c)+(d?_distKm(b,d):0);
+if(desp+1e-9<antes){let lo=i,hi=k;while(lo<hi){const t=orden[lo];orden[lo]=orden[hi];orden[hi]=t;lo++;hi--;}mejora=true;}
+}
+}
+}
+return [...orden,...sinC];
+}
+
 async function optimizarConIA(){
 const pendientes=ruta.paradas.filter(p=>p.status==='pending');
 if(pendientes.length<2){toast('Necesitas al menos 2 paradas pendientes','err');return;}
@@ -1391,23 +1432,18 @@ const r=await optimizarBloque(pendientes);
 if(!r)throw new Error('Google falló');
 reordenadas=r.orden;allLegs=r.legs;
 }else{
-// Muchas paradas: agrupar por código postal (zona) y optimizar cada grupo
-toast('🗺️ Optimizando ruta larga por zonas...','');
-const grupos={};
-pendientes.forEach(p=>{
-const cp=(p.addr.match(/\b\d{5}\b/)||['00000'])[0];
-if(!grupos[cp])grupos[cp]=[];
-grupos[cp].push(p);
-});
-// Ordenar las zonas por CP y optimizar cada una (en sublotes de 25 si hiciera falta)
-for(const cp of Object.keys(grupos).sort()){
-let zona=grupos[cp];
-for(let i=0;i<zona.length;i+=25){
-const sub=zona.slice(i,i+25);
+// Muchas paradas (>25): orden geográfico global (vecino más cercano + 2-opt sobre
+// coordenadas) y luego refinar por carretera en bloques consecutivos de 25 con Google
+// (para el orden fino dentro de cada bloque + km/ETA). Antes se agrupaba por CP y se
+// ordenaba alfabéticamente, lo que separaba paradas que están enfrente pero con CP
+// distinto → zigzag. El orden geográfico las mantiene juntas.
+toast('🗺️ Optimizando ruta larga...','');
+const geo=_ordenGeografico(pendientes,pendientes[0]);
+for(let i=0;i<geo.length;i+=25){
+const sub=geo.slice(i,i+25);
 const r=await optimizarBloque(sub);
 if(r){reordenadas.push(...r.orden);allLegs.push(...r.legs);}
 else{reordenadas.push(...sub);}
-}
 }
 }
 
