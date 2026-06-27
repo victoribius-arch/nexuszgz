@@ -391,8 +391,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
         </div>
 
         <input id="cp-nom" class="linp" placeholder="Nombre del cliente" autocapitalize="words" style="margin-bottom:8px;">
-        <input id="cp-dni" class="linp" placeholder="DNI / NIE" style="margin-bottom:10px;">
-
+        
         <!-- Preferente opcional -->
         <button id="cp-preferente-btn" onclick="cpTogglePreferente()" style="width:100%;padding:10px;border:2px solid var(--border);border-radius:10px;background:transparent;color:var(--text2);font-size:13px;font-weight:700;cursor:pointer;margin-bottom:10px;">
           ⚡ Marcar como preferente (13h/14h)
@@ -637,8 +636,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 
     <label class="llbl">Nombre del cliente</label>
     <input class="linp" id="cierre-nombre" placeholder="Nombre y apellidos" autocapitalize="words" style="margin-bottom:12px;">
-    <label class="llbl">DNI / NIE</label>
-    <input class="linp" id="cierre-dni" placeholder="12345678A" style="margin-bottom:20px;">
     <input type="hidden" id="cierre-parada-n">
 
     <div style="display:flex;gap:10px;">
@@ -646,7 +643,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
       <button class="lbtn" style="flex:1;margin-top:0;background:linear-gradient(135deg,#10b981,#059669);box-shadow:0 4px 15px rgba(16,185,129,.3);" id="btn-confirmar-cierre" onclick="(async function(){
         var n=parseInt(document.getElementById('cierre-parada-n').value||'0');
         var nom=document.getElementById('cierre-nombre').value.trim();
-        var dni=document.getElementById('cierre-dni').value.trim();
+        var dni='';
         var foto=cierreFotoFile;
         cerrarTodoCierre();
         var p=ruta.paradas.find(function(x){return Number(x.n)===Number(n);});
@@ -660,7 +657,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
             var r=await sb.storage.from('cierres').upload(fn,c,{contentType:'image/jpeg',upsert:true});
             if(!r.error){url=sb.storage.from('cierres').getPublicUrl(fn).data.publicUrl;}
           }
-          await sb.from('cierres').insert({driver:me.name,parada_n:n,addr:p?p.addr:'',foto_url:url,nombre_cliente:nom||null,dni_cliente:dni||null,empresa_id:me.empresa_id||null});
+          await sb.from('cierres').insert({driver:me.name,parada_n:n,addr:p?p.addr:'',foto_url:url,nombre_cliente:nom||null,empresa_id:me.empresa_id||null});
         }catch(e){console.error(e);}
       })()">✓ Confirmar</button>
     </div>
@@ -2454,8 +2451,7 @@ cierres=cierres.filter(c=>c.ruta_tipo!=='RECOGIDA'&&c.ruta_tipo!=='INCIDENCIA');
 if(cierresBusq) cierres=cierres.filter(c=>
 String(c.parada_n).includes(cierresBusq)||
 (c.addr||'').toLowerCase().includes(cierresBusq)||
-(c.nombre_cliente||'').toLowerCase().includes(cierresBusq)||
-(c.dni_cliente||'').toLowerCase().includes(cierresBusq)
+(c.nombre_cliente||'').toLowerCase().includes(cierresBusq)
 );
 if(!cierres.length){list.innerHTML='<div class="empty">No hay cierres</div>';return;}
 
@@ -2498,8 +2494,7 @@ ${c.foto_url?`<img src="${esc(c.foto_url)}" onclick="verFoto('${escJs(c.foto_url
 <div style="padding:12px 14px;">
 <div style="font-size:12px;color:var(--text2);margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">📍 ${esc(c.addr||'—')}</div>
 ${c.nombre_cliente?`<div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px;">👤 ${esc(c.nombre_cliente)}</div>`:''}
-${c.dni_cliente?`<div style="font-size:15px;font-weight:700;color:var(--accent);font-family:monospace;letter-spacing:1px;">🪪 ${esc(c.dni_cliente)}</div>`:''}
-${!c.nombre_cliente&&!c.dni_cliente?`<div style="font-size:13px;color:var(--text3);font-style:italic;">Sin nombre ni DNI</div>`:''}
+${!c.nombre_cliente?`<div style="font-size:13px;color:var(--text3);font-style:italic;">Sin nombre</div>`:''}
 </div>
 </div>`;
 };
@@ -2627,7 +2622,6 @@ document.getElementById('cp-n').value=n;
 document.getElementById('cp-titulo').textContent='✓ Confirmar entrega — Parada #'+n;
 document.getElementById('cp-addr').textContent=parada.addr;
 document.getElementById('cp-nom').value='';
-document.getElementById('cp-dni').value='';
 document.getElementById('cp-foto').value='';
 document.getElementById('cp-foto-img').style.display='none';
 document.getElementById('cp-foto-ph').style.display='block';
@@ -2685,7 +2679,7 @@ reader.readAsDataURL(input.files[0]);
 async function cpConfirmar(){
 const n=parseInt(document.getElementById('cp-n').value);
 const nombre=document.getElementById('cp-nom').value.trim();
-const dni=document.getElementById('cp-dni').value.trim();
+const dni='';
 const fotoInput=document.getElementById('cp-foto');
 const fotoFile=fotoInput.files[0]||null;
 const parada=ruta.paradas.find(p=>Number(p.n)===Number(n));
@@ -2716,7 +2710,7 @@ console.error('Upload error:',upErr);
 }
 const{error:insErr}=await sb.from('cierres').insert({
 driver:me.name,parada_n:n,addr:parada?parada.addr:'',
-foto_url:fotoUrl,nombre_cliente:nombre||null,dni_cliente:dni||null,
+foto_url:fotoUrl,nombre_cliente:nombre||null,
 ruta_tipo:window._cpRuta||'principal',
 preferente:window._cpPreferente||false,
 empresa_id:me.empresa_id||null
@@ -2734,7 +2728,7 @@ if(t){t.textContent='Error: '+err.message;t.className='toast err show';}
 async function submitCierre(){
 const n=parseInt(document.getElementById('cierre-form-parada-n').value||'0');
 const nombre=document.getElementById('cierre-form-nombre').value.trim();
-const dni=document.getElementById('cierre-form-dni').value.trim();
+const dni='';
 const foto=_cierreFoto;
 const parada=ruta.paradas.find(p=>Number(p.n)===Number(n));
 
@@ -2759,7 +2753,7 @@ if(!upErr){fotoUrl=sb.storage.from('cierres').getPublicUrl(fn).data.publicUrl;}
 }
 await sb.from('cierres').insert({
 driver:me.name,parada_n:n,addr:parada?parada.addr:'',
-foto_url:fotoUrl,nombre_cliente:nombre||null,dni_cliente:dni||null,
+foto_url:fotoUrl,nombre_cliente:nombre||null,
 empresa_id:me.empresa_id||null
 });
 
@@ -2803,7 +2797,7 @@ const parada=ruta.paradas.find(p=>Number(p.n)===Number(n));
 const labels={ausente:'🚫 Ausente',cambio_domicilio:'🏠 Cambio domicilio',rehusado:'❌ Rehusado'};
 cerrarIncidencia();
 if(parada){parada.status='failed';renderLista();if(gmap1)renderMarkers1();actualizarEstadoDB(parada,'failed');toast((labels[tipo]||tipo)+' — Parada #'+n,'err');}
-try{await sb.from('cierres').insert({driver:me.name,parada_n:n,addr:parada?parada.addr:'',nombre_cliente:(labels[tipo]||tipo)+(nota?' — '+nota:''),dni_cliente:null,foto_url:null,empresa_id:me.empresa_id||null});}catch(e){console.error(e);}
+try{await sb.from('cierres').insert({driver:me.name,parada_n:n,addr:parada?parada.addr:'',nombre_cliente:(labels[tipo]||tipo)+(nota?' — '+nota:''),foto_url:null,empresa_id:me.empresa_id||null});}catch(e){console.error(e);}
 }
 
 let geoInterval=null;
