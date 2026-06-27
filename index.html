@@ -900,10 +900,12 @@ try{await api('/data/paradas','PATCH',{ruta_id:ruta._rutaId,n:parada.n,set});}ca
 }
 }
 
+let gestorPoll=null;
 function suscribirGestor(){
-sb.channel('paradas-changes').on('postgres_changes',{event:'UPDATE',schema:'public',table:'paradas'},()=>{
-cargarTodasParadasGestor();
-}).subscribe();
+// Sondeo cada 20s (sustituye al realtime de Supabase: al cerrar RLS en 'paradas'
+// los postgres_changes dejan de emitir). Pausa cuando la pestaña no está visible.
+if(gestorPoll)clearInterval(gestorPoll);
+gestorPoll=setInterval(()=>{if(!document.hidden)cargarTodasParadasGestor();},20000);
 }
 
 async function cargarTodasParadasGestor(){
@@ -2775,7 +2777,7 @@ async function iniciarGeolocalizacion(){if(!navigator.geolocation)return;enviarU
 async function enviarUbicacion(){
 if(!me||(me.role!=='driver'&&me.role!=='supervisor'))return;
 navigator.geolocation.getCurrentPosition(async function(pos){
-await sb.from('ubicaciones').upsert({driver:me.name,lat:pos.coords.latitude,lng:pos.coords.longitude,updated_at:new Date().toISOString()},{onConflict:'driver'});
+await api('/data/ubicaciones','POST',{lat:pos.coords.latitude,lng:pos.coords.longitude}).catch(()=>{});
 },function(err){console.log('Geo error:',err);},{enableHighAccuracy:true,timeout:20000,maximumAge:30000});
 }
 async function cargarUbicacionesRepartidores(){
@@ -2784,9 +2786,9 @@ async function cargarUbicacionesRepartidores(){
 const hoy=new Date().toISOString().split('T')[0];
 if(localStorage.getItem('nexus_ubi_reset')!==hoy){
 localStorage.setItem('nexus_ubi_reset',hoy);
-try{await sb.from('ubicaciones').delete().neq('driver','__none__');}catch(_){}
+try{await api('/data/ubicaciones-reset','POST',{});}catch(_){}
 }
-const{data}=await sb.from('ubicaciones').select('*');
+let data=[];try{const _d=await api('/data/ubicaciones');data=_d.ubicaciones||[];}catch(e){data=[];}
 if(data){driverLocations={};data.forEach(u=>driverLocations[u.driver]={lat:u.lat,lng:u.lng,updated_at:u.updated_at});}
 }
 // Refresco manual de las geolocalizaciones de los repartidores en el mapa de Gestión
