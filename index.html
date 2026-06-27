@@ -2408,10 +2408,9 @@ const marca=tipo==='recogida'?'RECOGIDA':'INCIDENCIA';
 const list=document.getElementById(tipo+'-list');
 if(!list)return;
 list.innerHTML='<div class="empty">Cargando...</div>';
-let query=sb.from('cierres').select('*').eq('ruta_tipo',marca).eq('empresa_id',me.empresa_id).order('created_at',{ascending:false}).limit(100);
-const{data,error}=await query;
-if(error){list.innerHTML='<div class="empty">Error cargando</div>';return;}
-const items=data||[];
+let items=[];
+try{const d=await api('/data/cierres?vista='+(tipo==='recogida'?'recogidas':'incidencias'));items=d.cierres||[];}
+catch(e){list.innerHTML='<div class="empty">Error cargando</div>';return;}
 if(!items.length){list.innerHTML=`<div class="empty">Sin ${tipo==='recogida'?'recogidas':'incidencias'} todavía</div>`;return;}
 const col=tipo==='recogida'?'var(--accent)':'#dc2626';
 list.innerHTML=items.map(c=>{
@@ -2428,26 +2427,13 @@ return `<div style="margin:8px;background:var(--card);border-radius:16px;overflo
 async function cargarCierres(){
 const list=document.getElementById('cierres-list');
 list.innerHTML='<div class="empty">Cargando...</div>';
-let query=sb.from('cierres').select('*').not('ruta_tipo','in','("RECOGIDA","INCIDENCIA")').order('created_at',{ascending:false}).limit(100);
-// Cliente de prueba (modo simple): SOLO sus cierres, aislado por su nombre
-if(me.modo_simple){
-query=query.eq('driver',me.name);
-}else{
-query=query.eq('empresa_id',me.empresa_id);
-if(me.role==='driver') query=query.eq('driver',me.name);
-else if(me.role==='supervisor'){
-const _sn=(me.name||'').toLowerCase();
-if(_sn.includes('jon')||_sn.includes('jhon')) query=query.eq('ruta_tipo','principal');
-else if(_sn.includes('andrea')) query=query.eq('ruta_tipo','andarin');
-else if(_sn.includes('sebas')) query=query.eq('ruta_tipo','50008');
-// Camilo (encargado) ve todos los cierres, sin filtro
-} else if(me.role==='manager'&&cierresDriverFiltro!=='all') query=query.eq('driver',cierresDriverFiltro);
-}
-const{data,error}=await query;
-if(error){list.innerHTML='<div class="empty">Error cargando</div>';return;}
-let cierres=data||[];
-// Las recogidas e incidencias viven en sus propias pestañas → fuera de la vista de entregas.
-cierres=cierres.filter(c=>c.ruta_tipo!=='RECOGIDA'&&c.ruta_tipo!=='INCIDENCIA');
+let cierres=[];
+try{
+let q='/data/cierres?vista=entregas';
+if(me.role==='manager'&&cierresDriverFiltro&&cierresDriverFiltro!=='all') q+='&driver='+encodeURIComponent(cierresDriverFiltro);
+const d=await api(q);cierres=d.cierres||[];
+}catch(e){list.innerHTML='<div class="empty">Error cargando</div>';return;}
+// El worker ya excluye RECOGIDA/INCIDENCIA y aplica el aislamiento por empresa/rol/modo_simple.
 if(cierresBusq) cierres=cierres.filter(c=>
 String(c.parada_n).includes(cierresBusq)||
 (c.addr||'').toLowerCase().includes(cierresBusq)||
