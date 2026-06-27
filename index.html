@@ -863,47 +863,40 @@ const hoy=new Date().toISOString().split('T')[0];
 let rutaId=ruta._rutaId;
 if(!rutaId){
 
-const{data:existente}=await sb.from('rutas').select('id').eq('driver',me.name).eq('fecha',hoy).order('created_at',{ascending:false}).limit(1);
+let existente=[];try{const _d=await api('/data/rutas?scope=mine&fecha='+encodeURIComponent(hoy)+'&limit=1');existente=_d.rutas||[];}catch(e){existente=[];}
 if(existente&&existente.length){
 rutaId=existente[0].id;
 ruta._rutaId=rutaId;
 } else {
 
-const{data:nuevaRuta,error:rErr}=await sb.from('rutas').insert({driver:me.name,fecha:hoy,empresa,empresa_id:me.empresa_id||null}).select().single();
-if(rErr)throw new Error(rErr.message||'No se pudo crear la ruta');
+let nuevaRuta;try{const _d=await api('/data/rutas','POST',{fecha:hoy,empresa});nuevaRuta=_d.ruta;}catch(e){throw new Error('No se pudo crear la ruta');}
 if(nuevaRuta){rutaId=nuevaRuta.id;ruta._rutaId=rutaId;}
 }
 }
 if(!rutaId)return;
 // Evitar duplicados reales: misma parada (número + dirección). 
 // Así dos paquetes distintos no se borran aunque compartan número de lote.
-const{data:existentes}=await sb.from('paradas').select('n,addr').eq('ruta_id',rutaId);
+let existentes=[];try{const _d=await api('/data/paradas?ruta_id='+encodeURIComponent(rutaId));existentes=_d.paradas||[];}catch(e){existentes=[];}
 const clavesExistentes=new Set((existentes||[]).map(x=>Number(x.n)+'|'+(x.addr||'').trim().toLowerCase()));
 const nuevas=paradas.filter(p=>!clavesExistentes.has(Number(p.n)+'|'+(p.addr||'').trim().toLowerCase()));
 if(!nuevas.length)return;
 const rows=nuevas.map(p=>({ruta_id:rutaId,n:p.n,name:(p.name||'Particular'),addr:p.addr,saco:p.saco,bultos:p.bultos,status:p.status,lat:p.lat||null,lng:p.lng||null,codigo_seguimiento:p.codigo||null,paquete:p.paquete||null}));
-const{error:insErr}=await sb.from('paradas').insert(rows);
-if(insErr)throw new Error(insErr.message||'No se pudieron guardar las paradas');
+try{await api('/data/paradas','POST',{ruta_id:rutaId,rows});}catch(e){throw new Error('No se pudieron guardar las paradas');}
 return rows.length;
 }
 
 async function actualizarEstadoDB(parada,status){
+const set={status,updated_at:new Date().toISOString()};
 if(parada._id){
-await sb.from('paradas').update({status,updated_at:new Date().toISOString()}).eq('id',parada._id);
+try{await api('/data/paradas','PATCH',{id:parada._id,set});}catch(e){}
 return;
 }
-
 if(!ruta._rutaId){
 const hoy=new Date().toISOString().split('T')[0];
-const{data:rutas_hoy}=await sb.from('rutas').select('id').eq('driver',me.name).eq('fecha',hoy).limit(1);
-if(rutas_hoy&&rutas_hoy.length) ruta._rutaId=rutas_hoy[0].id;
+try{const _d=await api('/data/rutas?scope=mine&fecha='+encodeURIComponent(hoy)+'&limit=1');if(_d.rutas&&_d.rutas.length)ruta._rutaId=_d.rutas[0].id;}catch(e){}
 }
 if(ruta._rutaId){
-const{data}=await sb.from('paradas').select('id').eq('ruta_id',ruta._rutaId).eq('n',parada.n).limit(1);
-if(data&&data.length){
-parada._id=data[0].id;
-await sb.from('paradas').update({status,updated_at:new Date().toISOString()}).eq('id',parada._id);
-}
+try{await api('/data/paradas','PATCH',{ruta_id:ruta._rutaId,n:parada.n,set});}catch(e){}
 }
 }
 
@@ -1240,8 +1233,8 @@ if(!v){toast('Número vacío','err');return;}
 p.paquete=v;p._sinNum=false;
 renderLista();
 if(gmap1)renderMarkers1();
-if(p._id)sb.from('paradas').update({paquete:v}).eq('id',p._id).then(()=>{});
-else if(ruta._rutaId)sb.from('paradas').update({paquete:v}).eq('ruta_id',ruta._rutaId).eq('n',p.n).then(()=>{});
+if(p._id)api('/data/paradas','PATCH',{id:p._id,set:{paquete:v}}).catch(()=>{});
+else if(ruta._rutaId)api('/data/paradas','PATCH',{ruta_id:ruta._rutaId,n:p.n,set:{paquete:v}}).catch(()=>{});
 toast(`✓ Paquete → ${v}`,'ok');
 }
 
@@ -1259,8 +1252,8 @@ renderLista();
 toast('📍 Localizando nueva dirección…','');
 try{const c=await geocodeAddr(v);p.lat=c.lat;p.lng=c.lng;p._aprox=c._aprox||false;}catch(_){p.lat=null;p.lng=null;}
 renderLista();if(gmap1)renderMarkers1();
-if(p._id)sb.from('paradas').update({addr:v,lat:p.lat||null,lng:p.lng||null}).eq('id',p._id).then(()=>{});
-else if(ruta._rutaId)sb.from('paradas').update({addr:v,lat:p.lat||null,lng:p.lng||null}).eq('ruta_id',ruta._rutaId).eq('n',p.n).then(()=>{});
+if(p._id)api('/data/paradas','PATCH',{id:p._id,set:{addr:v,lat:p.lat||null,lng:p.lng||null}}).catch(()=>{});
+else if(ruta._rutaId)api('/data/paradas','PATCH',{ruta_id:ruta._rutaId,n:p.n,set:{addr:v,lat:p.lat||null,lng:p.lng||null}}).catch(()=>{});
 toast('✓ Dirección actualizada','ok');
 }
 
@@ -1284,8 +1277,8 @@ renderLista();
 toast('📍 Localizando con el CP…','');
 try{const c=await geocodeAddr(addr);p.lat=c.lat;p.lng=c.lng;p._aprox=c._aprox||false;}catch(_){p.lat=null;p.lng=null;}
 renderLista();if(gmap1)renderMarkers1();
-if(p._id)sb.from('paradas').update({addr:addr,lat:p.lat||null,lng:p.lng||null}).eq('id',p._id).then(()=>{});
-else if(ruta._rutaId)sb.from('paradas').update({addr:addr,lat:p.lat||null,lng:p.lng||null}).eq('ruta_id',ruta._rutaId).eq('n',p.n).then(()=>{});
+if(p._id)api('/data/paradas','PATCH',{id:p._id,set:{addr:addr,lat:p.lat||null,lng:p.lng||null}}).catch(()=>{});
+else if(ruta._rutaId)api('/data/paradas','PATCH',{ruta_id:ruta._rutaId,n:p.n,set:{addr:addr,lat:p.lat||null,lng:p.lng||null}}).catch(()=>{});
 toast(p._aprox?'⚠️ Sigue sin localizar — revisa también calle y número':'✓ Parada localizada con el CP','ok');
 }
 
@@ -1795,15 +1788,15 @@ const hoy=new Date().toISOString().split('T')[0];
 let rutaIds=[];
 if(ruta._rutaId)rutaIds=[ruta._rutaId];
 else{
-const{data:rutas_hoy}=await sb.from('rutas').select('id').eq('driver',me.name).eq('fecha',hoy);
+let rutas_hoy=[];try{const _d=await api('/data/rutas?scope=mine&fecha='+encodeURIComponent(hoy));rutas_hoy=_d.rutas||[];}catch(e){rutas_hoy=[];}
 if(rutas_hoy)rutaIds=rutas_hoy.map(r=>r.id);
 }
 for(const rid of rutaIds){
-await sb.from('paradas').delete().eq('ruta_id',rid).in('n',nums);
+await api('/data/paradas-delete','POST',{ruta_id:rid,n:nums});
 }
 // Si se borraron todas, borrar la ruta también
 if(nums.length===ruta.paradas.length){
-for(const rid of rutaIds)await sb.from('rutas').delete().eq('id',rid);
+for(const rid of rutaIds)await api('/data/rutas-delete','POST',{id:rid});
 ruta._rutaId=null;
 }
 }catch(e){console.error('Error borrando:',e);}
@@ -2047,7 +2040,7 @@ if(btn){btn.disabled=false;btn.textContent='ANALIZAR CON IA';}
 try{
 await guardarParadasEnDB(paradas);
 if(ruta._rutaId){
-const{count}=await sb.from('paradas').select('id',{count:'exact',head:true}).eq('ruta_id',ruta._rutaId);
+let count=0;try{const _d=await api('/data/paradas?ruta_id='+encodeURIComponent(ruta._rutaId)+'&select=count');count=_d.count||0;}catch(e){count=0;}
 toast(`☁️ Guardado en la nube: ${count!=null?count:'?'} paradas`,'ok');
 }
 }catch(e){
@@ -2066,7 +2059,7 @@ try{
 const coords=await geocodeAddr(p.addr);
 p.lat=coords.lat;p.lng=coords.lng;p._aprox=coords._aprox||false;
 // Guardamos SIEMPRE las coordenadas (también las aproximadas) para que carguen fiables desde la BD.
-if(ruta._rutaId&&p.lat&&p.lng)await sb.from('paradas').update({lat:p.lat,lng:p.lng}).eq('ruta_id',ruta._rutaId).eq('n',p.n);
+if(ruta._rutaId&&p.lat&&p.lng)await api('/data/paradas','PATCH',{ruta_id:ruta._rutaId,n:p.n,set:{lat:p.lat,lng:p.lng}});
 }catch(e){}
 hechas++;
 }));
