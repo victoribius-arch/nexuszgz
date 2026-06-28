@@ -392,6 +392,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
         </div>
 
         <input id="cp-nom" class="linp" placeholder="Nombre del cliente" autocapitalize="words" style="margin-bottom:8px;">
+        <input id="cp-dni" class="linp" placeholder="DNI / NIE (opcional)" autocapitalize="characters" style="margin-bottom:8px;">
         
         <!-- Preferente opcional -->
         <button id="cp-preferente-btn" onclick="cpTogglePreferente()" style="width:100%;padding:10px;border:2px solid var(--border);border-radius:10px;background:transparent;color:var(--text2);font-size:13px;font-weight:700;cursor:pointer;margin-bottom:10px;">
@@ -637,6 +638,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 
     <label class="llbl">Nombre del cliente</label>
     <input class="linp" id="cierre-nombre" placeholder="Nombre y apellidos" autocapitalize="words" style="margin-bottom:12px;">
+    <input class="linp" id="cierre-dni" placeholder="DNI / NIE (opcional)" autocapitalize="characters" style="margin-bottom:12px;">
     <input type="hidden" id="cierre-parada-n">
 
     <div style="display:flex;gap:10px;">
@@ -644,7 +646,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
       <button class="lbtn" style="flex:1;margin-top:0;background:linear-gradient(135deg,#10b981,#059669);box-shadow:0 4px 15px rgba(16,185,129,.3);" id="btn-confirmar-cierre" onclick="(async function(){
         var n=parseInt(document.getElementById('cierre-parada-n').value||'0');
         var nom=document.getElementById('cierre-nombre').value.trim();
-        var dni='';
+        var dni=(document.getElementById('cierre-dni')?.value||'').trim();
         var foto=cierreFotoFile;
         cerrarTodoCierre();
         var p=ruta.paradas.find(function(x){return Number(x.n)===Number(n);});
@@ -658,7 +660,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
             var r=await sb.storage.from('cierres').upload(fn,c,{contentType:'image/jpeg',upsert:true});
             if(!r.error){url=sb.storage.from('cierres').getPublicUrl(fn).data.publicUrl;}
           }
-          await api('/data/cierres','POST',{parada_n:n,addr:p?p.addr:'',foto_url:url,nombre_cliente:nom||null});
+          await api('/data/cierres','POST',{parada_n:n,addr:p?p.addr:'',foto_url:url,nombre_cliente:nom||null,dni_cliente:dni||null});
         }catch(e){console.error(e);}
       })()">✓ Confirmar</button>
     </div>
@@ -2373,6 +2375,12 @@ const fi=document.getElementById('rec-foto-'+tipo);if(fi)fi.value='';
 toast('✓ '+(tipo==='recogida'?'Recogida':'Incidencia')+' guardada','ok');
 cargarRecogidasTab(tipo);
 }
+async function borrarRecogida(id,tipo){
+if(!confirm('¿Borrar este registro? No se puede deshacer.'))return;
+try{await api('/data/cierres-delete','POST',{id});}catch(e){toast('Error al borrar','err');return;}
+toast('🗑️ Registro borrado','ok');
+cargarRecogidasTab(tipo);
+}
 async function cargarRecogidasTab(tipo){
 const marca=tipo==='recogida'?'RECOGIDA':'INCIDENCIA';
 const list=document.getElementById(tipo+'-list');
@@ -2388,7 +2396,8 @@ const hora=new Date(c.created_at).toLocaleString('es-ES',{day:'2-digit',month:'s
 return `<div style="margin:8px;background:var(--card);border-radius:16px;overflow:hidden;border:1px solid var(--border);">`
 +`<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;">`
 +`<div style="width:34px;height:34px;border-radius:50%;background:${col};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0;">${esc(String(c.driver||'?')[0])}</div>`
-+`<div style="flex:1;min-width:0;"><div style="font-weight:700;font-size:14px;">${esc(c.driver||'')}</div><div style="font-size:11px;color:var(--text3);">${hora}</div></div></div>`
++`<div style="flex:1;min-width:0;"><div style="font-weight:700;font-size:14px;">${esc(c.driver||'')}</div><div style="font-size:11px;color:var(--text3);">${hora}</div></div>`
++`<button onclick="borrarRecogida('${escJs(c.id)}','${tipo}')" title="Borrar" style="flex-shrink:0;background:rgba(244,63,94,.12);border:1px solid rgba(244,63,94,.25);color:var(--red);width:32px;height:32px;border-radius:10px;cursor:pointer;font-size:14px;">🗑️</button></div>`
 +(c.foto_url?`<img src="${esc(c.foto_url)}" onclick="verFoto('${escJs(c.foto_url)}')" style="width:100%;max-height:260px;object-fit:cover;display:block;cursor:pointer;">`:'')
 +`<div style="padding:12px 14px;font-size:14px;font-weight:700;">📍 ${esc(c.addr||'—')}</div></div>`;
 }).join('');
@@ -2450,6 +2459,7 @@ ${c.foto_url?`<img src="${esc(c.foto_url)}" onclick="verFoto('${escJs(c.foto_url
 <div style="padding:12px 14px;">
 <div style="font-size:12px;color:var(--text2);margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">📍 ${esc(c.addr||'—')}</div>
 ${c.nombre_cliente?`<div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px;">👤 ${esc(c.nombre_cliente)}</div>`:''}
+${c.dni_cliente?`<div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:4px;">🪪 ${esc(c.dni_cliente)}</div>`:''}
 ${!c.nombre_cliente?`<div style="font-size:13px;color:var(--text3);font-style:italic;">Sin nombre</div>`:''}
 </div>
 </div>`;
@@ -2578,6 +2588,7 @@ document.getElementById('cp-n').value=n;
 document.getElementById('cp-titulo').textContent='✓ Confirmar entrega — Parada #'+n;
 document.getElementById('cp-addr').textContent=parada.addr;
 document.getElementById('cp-nom').value='';
+{const _d=document.getElementById('cp-dni');if(_d)_d.value='';}
 document.getElementById('cp-foto').value='';
 document.getElementById('cp-foto-img').style.display='none';
 document.getElementById('cp-foto-ph').style.display='block';
@@ -2635,7 +2646,7 @@ reader.readAsDataURL(input.files[0]);
 async function cpConfirmar(){
 const n=parseInt(document.getElementById('cp-n').value);
 const nombre=document.getElementById('cp-nom').value.trim();
-const dni='';
+const dni=(document.getElementById('cp-dni')?.value||'').trim();
 const fotoInput=document.getElementById('cp-foto');
 const fotoFile=fotoInput.files[0]||null;
 const parada=ruta.paradas.find(p=>Number(p.n)===Number(n));
@@ -2665,7 +2676,7 @@ console.error('Upload error:',upErr);
 }
 }
 let insErr=null;
-try{await api('/data/cierres','POST',{parada_n:n,addr:parada?parada.addr:'',foto_url:fotoUrl,nombre_cliente:nombre||null,ruta_tipo:window._cpRuta||'principal',preferente:window._cpPreferente||false});}catch(e){insErr=e;}
+try{await api('/data/cierres','POST',{parada_n:n,addr:parada?parada.addr:'',foto_url:fotoUrl,nombre_cliente:nombre||null,dni_cliente:dni||null,ruta_tipo:window._cpRuta||'principal',preferente:window._cpPreferente||false});}catch(e){insErr=e;}
 if(t){
 if(insErr){t.textContent='Error: '+insErr.message;t.className='toast err show';}
 else{t.textContent='✓ Parada #'+n+' entregada';t.className='toast ok show';t._t=setTimeout(()=>t.classList.remove('show'),3000);}
@@ -2702,7 +2713,7 @@ const fn=me.name+'_'+n+'_'+Date.now()+'.jpg';
 const{error:upErr}=await sb.storage.from('cierres').upload(fn,compressed,{contentType:'image/jpeg',upsert:true});
 if(!upErr){fotoUrl=sb.storage.from('cierres').getPublicUrl(fn).data.publicUrl;}
 }
-await api('/data/cierres','POST',{parada_n:n,addr:parada?parada.addr:'',foto_url:fotoUrl,nombre_cliente:nombre||null});
+await api('/data/cierres','POST',{parada_n:n,addr:parada?parada.addr:'',foto_url:fotoUrl,nombre_cliente:nombre||null,dni_cliente:dni||null});
 
 if(document.getElementById('s-cierres').classList.contains('on'))cargarCierres();
 }catch(err){console.error('Error cierre:',err);}
