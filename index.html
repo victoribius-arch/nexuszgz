@@ -531,11 +531,16 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
       </div>
       <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px;">
         <input type="file" id="rec-foto-recogida" accept="image/*" capture="environment" style="display:none" onchange="prevRecFoto('recogida',this)">
+        <input type="file" id="rec-gal-recogida" accept="image/*" style="display:none" onchange="prevRecFoto('recogida',this)">
         <div id="rec-prev-recogida" style="margin-bottom:8px;"></div>
-        <button onclick="document.getElementById('rec-foto-recogida').click()" style="width:100%;padding:12px;border:1.5px dashed var(--accent);border-radius:10px;background:transparent;color:var(--accent);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px;">📷 Hacer foto</button>
+        <div style="display:flex;gap:8px;margin-bottom:8px;">
+          <button onclick="document.getElementById('rec-foto-recogida').click()" style="flex:1;padding:12px;border:1.5px dashed var(--accent);border-radius:10px;background:transparent;color:var(--accent);font-size:14px;font-weight:700;cursor:pointer;">📷 Cámara</button>
+          <button onclick="document.getElementById('rec-gal-recogida').click()" style="flex:1;padding:12px;border:1.5px dashed var(--accent);border-radius:10px;background:transparent;color:var(--accent);font-size:14px;font-weight:700;cursor:pointer;">🖼️ Galería</button>
+        </div>
         <input id="rec-dest-recogida" placeholder="¿A dónde pertenece el paquete?" style="width:100%;background:var(--bg2);border:1.5px solid var(--border);border-radius:10px;padding:11px 12px;color:var(--text);font-size:14px;outline:none;margin-bottom:8px;box-sizing:border-box;">
         <button onclick="guardarRecogida('recogida')" style="width:100%;padding:12px;border:none;border-radius:10px;background:var(--accent);color:#fff;font-size:14px;font-weight:800;cursor:pointer;">Guardar recogida</button>
       </div>
+      <div class="sbox" style="margin-top:8px"><span class="sico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span><input id="rec-srch-recogida" placeholder="Buscar por nombre/destino…" oninput="filtrarRec('recogida',this.value)"></div>
     </div>
     <div class="slist" id="recogida-list"></div>
   </div>
@@ -549,11 +554,16 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
       </div>
       <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px;">
         <input type="file" id="rec-foto-incidencia" accept="image/*" capture="environment" style="display:none" onchange="prevRecFoto('incidencia',this)">
+        <input type="file" id="rec-gal-incidencia" accept="image/*" style="display:none" onchange="prevRecFoto('incidencia',this)">
         <div id="rec-prev-incidencia" style="margin-bottom:8px;"></div>
-        <button onclick="document.getElementById('rec-foto-incidencia').click()" style="width:100%;padding:12px;border:1.5px dashed #dc2626;border-radius:10px;background:transparent;color:#dc2626;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px;">📷 Hacer foto</button>
+        <div style="display:flex;gap:8px;margin-bottom:8px;">
+          <button onclick="document.getElementById('rec-foto-incidencia').click()" style="flex:1;padding:12px;border:1.5px dashed #dc2626;border-radius:10px;background:transparent;color:#dc2626;font-size:14px;font-weight:700;cursor:pointer;">📷 Cámara</button>
+          <button onclick="document.getElementById('rec-gal-incidencia').click()" style="flex:1;padding:12px;border:1.5px dashed #dc2626;border-radius:10px;background:transparent;color:#dc2626;font-size:14px;font-weight:700;cursor:pointer;">🖼️ Galería</button>
+        </div>
         <input id="rec-dest-incidencia" placeholder="¿A dónde pertenece el paquete?" style="width:100%;background:var(--bg2);border:1.5px solid var(--border);border-radius:10px;padding:11px 12px;color:var(--text);font-size:14px;outline:none;margin-bottom:8px;box-sizing:border-box;">
         <button onclick="guardarRecogida('incidencia')" style="width:100%;padding:12px;border:none;border-radius:10px;background:#dc2626;color:#fff;font-size:14px;font-weight:800;cursor:pointer;">Guardar incidencia</button>
       </div>
+      <div class="sbox" style="margin-top:8px"><span class="sico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span><input id="rec-srch-incidencia" placeholder="Buscar por nombre/destino…" oninput="filtrarRec('incidencia',this.value)"></div>
     </div>
     <div class="slist" id="incidencia-list"></div>
   </div>
@@ -781,7 +791,7 @@ let alat=null,alng=null,c=0;
 try{((typeof ruta!=='undefined'&&ruta&&ruta.paradas)||[]).forEach(p=>{if(p.lat&&p.lng&&!p._aprox){alat=(alat||0)+p.lat;alng=(alng||0)+p.lng;c++;}});}catch(_){}
 if(c){alat/=c;alng/=c;}
 else if(typeof _miPos!=='undefined'&&_miPos&&_miPos.lat){alat=_miPos.lat;alng=_miPos.lng;}
-else{alat=40.4168;alng=-3.7038;}
+else{alat=41.6488;alng=-0.8891;}
 return{lat:alat+(sr(i)-0.5)*0.006,lng:alng+(sr(i+99)-0.5)*0.008};
 }
 
@@ -1176,10 +1186,11 @@ actualizarEstadoDB(s,st);
 toast(st==='delivered'?`✓ Parada ${n} entregada`:`✗ Parada ${n} fallida`,st==='delivered'?'ok':'err');
 }
 }
-function navTo(addr,e){
-e.stopPropagation();
-const dest=encodeURIComponent(addr+', España');
-
+function navTo(addr,e,lat,lng){
+if(e)e.stopPropagation();
+// Navegar por COORDENADAS (la app ya localizó la calle) — evita que Maps no encuentre
+// el texto si la dirección está mal escrita. Sin coords, cae al texto.
+const dest=(lat&&lng&&Math.abs(lat)>0.01)?(lat+','+lng):encodeURIComponent(addr+', España');
 const url=`https://www.google.com/maps/dir/?api=1&destination=${dest}&travelmode=${modoViaje}`;
 window.open(url,'_blank');
 }
@@ -1316,10 +1327,10 @@ const acts=_modoBorrar
 ?`<div class="siacts">
 <button class="abt ab-ok" onclick="abrirCierreIntegrado(${s.n},event)" style="font-size:16px;padding:8px 10px;">✓</button>
 <button class="abt ab-ko" onclick="abrirIncidencia(${s.n},event)" style="font-size:16px;padding:8px 10px;">✗</button>
-<button class="abt ab-nav" onclick="navTo('${escJs(s.addr)}',event)" style="font-size:16px;padding:8px 10px;">↗</button>
+<button class="abt ab-nav" onclick="navTo('${escJs(s.addr)}',event,${s.lat||0},${s.lng||0})" style="font-size:16px;padding:8px 10px;">↗</button>
 </div>`
 :`<div class="siacts">
-<button class="abt ab-nav" onclick="navTo('${escJs(s.addr)}',event)">↗</button>
+<button class="abt ab-nav" onclick="navTo('${escJs(s.addr)}',event,${s.lat||0},${s.lng||0})">↗</button>
 <button class="abt" style="background:rgba(251,146,60,.15);color:var(--orange);font-size:12px;padding:6px 8px;" onclick="markStop(${s.n},'pending',event)">↩</button>
 </div>`;
 const el=document.createElement('div');
@@ -1377,7 +1388,8 @@ return 2*R*Math.asin(Math.sqrt(s));
 function _calleNorm(addr){
 let s=(addr||'').toLowerCase().replace(/\d+.*/,'');
 s=s.normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z ]/g,' ');
-return s.split(/\s+/).filter(w=>w&&!['de','del','la','las','el','los'].includes(w)).join(' ').trim();
+const quita=['de','del','la','las','el','los','y','calle','c','paseo','p','po','pso','avenida','avda','av','plaza','pza','pl','camino','cmno','ronda','rda','via','carretera','ctra','glorieta','gta','numero','num','n','urbanizacion','urb','poligono','pol','barrio','bloque','blq'];
+return s.split(/\s+/).filter(w=>w&&!quita.includes(w)).join(' ').trim();
 }
 // Número de portal de una dirección.
 function _portal(addr){const m=(addr||'').match(/\b(\d{1,4})\b/);return m?+m[1]:null;}
@@ -1474,7 +1486,7 @@ const MAP_STYLE=[
 
 function initMap1(){
 gmap1=new google.maps.Map(document.getElementById('gmap'),{
-center:{lat:40.4168,lng:-3.7038},zoom:6,
+center:{lat:41.6488,lng:-0.8891},zoom:13,
 styles:MAP_STYLE,
 disableDefaultUI:false,zoomControl:true,mapTypeControl:false,streetViewControl:false,fullscreenControl:false,
 });
@@ -1580,8 +1592,8 @@ const tag=s.status==='delivered'?'<span class="tag tok">✓ Entregado</span>':s.
 document.getElementById('mpacts').innerHTML=s.status==='pending'
 ?`<button class="abt ab-ok" style="flex:1" onclick="markStop(${s.n},'delivered',event)">✓ Entregado</button>
 <button class="abt ab-ko" style="flex:1" onclick="markStop(${s.n},'failed',event)">✗ Fallido</button>
-<button class="abt ab-nav" style="flex:1" onclick="navTo('${escJs(s.addr)}',event)">↗ Navegar</button>`
-:`${tag}<button class="abt ab-nav" style="margin-left:auto" onclick="navTo('${escJs(s.addr)}',event)">↗ Navegar</button>`;
+<button class="abt ab-nav" style="flex:1" onclick="navTo('${escJs(s.addr)}',event,${s.lat||0},${s.lng||0})">↗ Navegar</button>`
+:`${tag}<button class="abt ab-nav" style="margin-left:auto" onclick="navTo('${escJs(s.addr)}',event,${s.lat||0},${s.lng||0})">↗ Navegar</button>`;
 const pop=document.getElementById('mpop');
 pop.classList.add('show');
 clearTimeout(pop._t);pop._t=setTimeout(()=>pop.classList.remove('show'),5000);
@@ -1833,6 +1845,7 @@ function limpiarDirParaGeo(addr){
 const cp=(String(addr).match(/\b\d{5}\b/)||[])[0]||'';
 let s=String(addr).split(',')[0];
 s=s.replace(/\bN[º°ªo\.]?\s*(\d)/gi,'$1');            // N2 / Nº4 / N 6 -> 2 / 4 / 6
+s=s.replace(/\b(portal|esc(?:alera)?|bloque|bloq|blq)\b\.?\s*/gi,' '); // "Portal 2"/"Esc 1" -> que el nº sea el de la calle
 s=s.replace(/([A-Za-zÁÉÍÓÚáéíóúÑñ])(\d)/g,'$1 $2');    // goya21 -> goya 21
 const m=s.match(/^(.*?\d+)/);                          // calle + primer número
 if(m)s=m[1];
@@ -1889,8 +1902,8 @@ const mun=_municipioPedido(full); // pueblo/localidad que pide la etiqueta (null
 if(!/\b\d{5}\b/.test(full)&&!mun&&CIUDAD_DEF&&!new RegExp(CIUDAD_DEF.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'i').test(full))full+=', '+CIUDAD_DEF;
 if(!/espa[ñn]a/i.test(full))full+=', España';
 const calleKey=full.toUpperCase();
-try{const cache=JSON.parse(localStorage.getItem('geo_cache_v3')||'{}');if(cache[calleKey])return cache[calleKey];}catch(e){}
-const guardar=(c)=>{try{const cache=JSON.parse(localStorage.getItem('geo_cache_v3')||'{}');cache[calleKey]={lat:c.lat,lng:c.lng,_aprox:c._aprox||false};const keys=Object.keys(cache);if(keys.length>500)delete cache[keys[0]];localStorage.setItem('geo_cache_v3',JSON.stringify(cache));}catch(e){}};
+try{const cache=JSON.parse(localStorage.getItem('geo_cache_v4')||'{}');if(cache[calleKey])return cache[calleKey];}catch(e){}
+const guardar=(c)=>{try{const cache=JSON.parse(localStorage.getItem('geo_cache_v4')||'{}');cache[calleKey]={lat:c.lat,lng:c.lng,_aprox:c._aprox||false};const keys=Object.keys(cache);if(keys.length>500)delete cache[keys[0]];localStorage.setItem('geo_cache_v4',JSON.stringify(cache));}catch(e){}};
 // Verifica que el resultado caiga en el destino correcto. El CÓDIGO POSTAL manda (señal más
 // fuerte): si el CP de la etiqueta coincide con el del resultado, es el pueblo correcto aunque
 // el nombre venga con artículo ("El Burgo" vs "Burgo (El)"). Si ambos CP existen y DIFIEREN es
@@ -2146,7 +2159,7 @@ let selectedDriver2=null;
 
 function initMap2(){
 gmap2=new google.maps.Map(document.getElementById('gmap2'),{
-center:{lat:40.4168,lng:-3.7038},zoom:6,styles:MAP_STYLE,
+center:{lat:41.6488,lng:-0.8891},zoom:13,styles:MAP_STYLE,
 disableDefaultUI:false,zoomControl:true,mapTypeControl:false,streetViewControl:false,fullscreenControl:false,
 });
 renderMap2Markers();
@@ -2381,15 +2394,23 @@ try{await api('/data/cierres-delete','POST',{id});}catch(e){toast('Error al borr
 toast('🗑️ Registro borrado','ok');
 cargarRecogidasTab(tipo);
 }
+const _recCache={recogida:[],incidencia:[]};
 async function cargarRecogidasTab(tipo){
-const marca=tipo==='recogida'?'RECOGIDA':'INCIDENCIA';
 const list=document.getElementById(tipo+'-list');
 if(!list)return;
 list.innerHTML='<div class="empty">Cargando...</div>';
-let items=[];
-try{const d=await api('/data/cierres?vista='+(tipo==='recogida'?'recogidas':'incidencias'));items=d.cierres||[];}
+try{const d=await api('/data/cierres?vista='+(tipo==='recogida'?'recogidas':'incidencias'));_recCache[tipo]=d.cierres||[];}
 catch(e){list.innerHTML='<div class="empty">Error cargando</div>';return;}
-if(!items.length){list.innerHTML=`<div class="empty">Sin ${tipo==='recogida'?'recogidas':'incidencias'} todavía</div>`;return;}
+const _inp=document.getElementById('rec-srch-'+tipo);
+pintarRec(tipo,_inp?_inp.value:'');
+}
+function filtrarRec(tipo,q){pintarRec(tipo,q);}
+function pintarRec(tipo,q){
+const list=document.getElementById(tipo+'-list');if(!list)return;
+q=(q||'').toLowerCase().trim();
+let items=_recCache[tipo]||[];
+if(q)items=items.filter(c=>(((c.addr||'')+' '+(c.driver||'')+' '+(c.nombre_cliente||'')).toLowerCase().includes(q)));
+if(!items.length){list.innerHTML=`<div class="empty">${q?'Sin resultados':'Sin '+(tipo==='recogida'?'recogidas':'incidencias')+' todavía'}</div>`;return;}
 const col=tipo==='recogida'?'var(--accent)':'#dc2626';
 list.innerHTML=items.map(c=>{
 const hora=new Date(c.created_at).toLocaleString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
