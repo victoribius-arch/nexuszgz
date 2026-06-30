@@ -358,6 +358,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
         <button id="btn-zona" onclick="toggleZonas()" style="flex:1;padding:8px;border:1.5px solid var(--border);border-radius:8px;background:transparent;color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:3px"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>Por zona</button>
         <button onclick="navRutaCompleta(event)" style="flex:1;padding:8px;border:1.5px solid var(--accent);border-radius:8px;background:rgba(27,42,58,.1);color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:3px"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>Ruta completa</button>
         <button onclick="optimizarConIA()" style="flex:1;padding:8px;border:1.5px solid var(--green);border-radius:8px;background:rgba(16,185,129,.1);color:var(--green);font-size:12px;font-weight:700;cursor:pointer;"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="vertical-align:-2px;margin-right:3px"><path d="M12 2.5l1.7 5.3 5.3 1.7-5.3 1.7L12 16.5l-1.7-5.3L5 9.5l5.3-1.7z"/></svg>Optimizar</button>
+        <button onclick="elegirInicio()" style="flex:1;padding:8px;border:1.5px solid var(--border);border-radius:8px;background:transparent;color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:3px"><path d="M4 21V4M4 4h13l-2 4 2 4H4"/></svg>Inicio</button>
         <button onclick="abrirEscaner()" style="flex:1;padding:8px;border:1.5px solid var(--orange);border-radius:8px;background:rgba(251,146,60,.1);color:var(--orange);font-size:12px;font-weight:700;cursor:pointer;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:3px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Escanear</button>
         <button onclick="borrarRuta()" style="padding:8px 10px;border:1.5px solid var(--red);border-radius:8px;background:rgba(244,63,94,.1);color:var(--red);font-size:12px;font-weight:700;cursor:pointer;" title="Borrar ruta"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
       </div>
@@ -1366,9 +1367,9 @@ geoTag='<span class="tag" style="background:rgba(148,163,184,.15);color:var(--te
 let portalTag='';
 try{const pk=portalKey(s.addr);const grp=ruta.paradas.filter(x=>portalKey(x.addr)===pk).sort((a,b)=>pisoNum(a.addr)-pisoNum(b.addr));if(grp.length>1){const idx=grp.findIndex(x=>Number(x.n)===Number(s.n))+1;portalTag=`<span class="tag" style="background:var(--accent);color:#fff;font-weight:800;">🏠 ${idx}/${grp.length} mismo portal</span>`;}}catch(_){}
 el.innerHTML=`<div class="sibar" style="${s.lat&&s.lng&&!s._aprox?'background:var(--green);':s._aprox?'background:var(--red);':''}"></div><div class="sinum"><div class="nc">${pos!=null?pos:s.n}</div></div>
-<div class="sibody"><div class="siname"><span class="sinm">${esc(s.name)}</span>${s._sinNum?`<span onclick="editarPaquete(${s.n},event)" style="flex-shrink:0;margin-left:6px;background:var(--red);color:#fff;font-size:11px;font-weight:800;padding:2px 8px;border-radius:8px;cursor:pointer;">⚠️ Poner nº</span>`:s.paquete?`<span onclick="editarPaquete(${s.n},event)" style="flex-shrink:0;margin-left:6px;background:var(--orange);color:#000;font-size:11px;font-weight:800;padding:2px 8px;border-radius:8px;cursor:pointer;">📦 Paq. ${esc(s.paquete)} ✏️</span>`:`<span onclick="editarPaquete(${s.n},event)" style="flex-shrink:0;margin-left:6px;background:var(--accent);color:#fff;font-size:11px;font-weight:800;padding:2px 8px;border-radius:8px;cursor:pointer;">📦 Poner nº</span>`}</div><div class="siaddr" onclick="editarDireccion(${s.n},event)" style="cursor:pointer;"><span class="siad">${esc(s.addr)}</span> <span style="flex-shrink:0;color:var(--accent);font-size:13px;margin-left:3px;">✏️</span></div>
+<div class="sibody"><div class="siname">${(typeof _inicioRuta!=='undefined'&&_inicioRuta&&_inicioRuta.n===s.n)?'<span title="Inicio de la ruta" style="margin-right:5px">🏁</span>':''}<span class="sinm">${esc(s.name)}</span>${s._sinNum?`<span onclick="editarPaquete(${s.n},event)" style="flex-shrink:0;margin-left:6px;background:var(--red);color:#fff;font-size:11px;font-weight:800;padding:2px 8px;border-radius:8px;cursor:pointer;">⚠️ Poner nº</span>`:s.paquete?`<span onclick="editarPaquete(${s.n},event)" style="flex-shrink:0;margin-left:6px;background:var(--orange);color:#000;font-size:11px;font-weight:800;padding:2px 8px;border-radius:8px;cursor:pointer;">📦 Paq. ${esc(s.paquete)} ✏️</span>`:`<span onclick="editarPaquete(${s.n},event)" style="flex-shrink:0;margin-left:6px;background:var(--accent);color:#fff;font-size:11px;font-weight:800;padding:2px 8px;border-radius:8px;cursor:pointer;">📦 Poner nº</span>`}</div><div class="siaddr" onclick="editarDireccion(${s.n},event)" style="cursor:pointer;"><span class="siad">${esc(s.addr)}</span> <span style="flex-shrink:0;color:var(--accent);font-size:13px;margin-left:3px;">✏️</span></div>
 <div class="sitags"><span class="tag ts">Saca ${esc(s.saco)}</span><span class="tag tb2">${esc(s.bultos)}b</span>${portalTag}${geoTag}${etaTag}${tag}${s.codigo?`<span class="tag" style="background:rgba(251,146,60,.1);color:var(--orange);font-family:monospace;font-size:9px;">${esc(String(s.codigo).slice(-8))}</span>`:''}</div></div>${acts}`;
-el.addEventListener('click',()=>{if(_modoBorrar)toggleSeleccion(s.n);else selStop(s.n);});
+el.addEventListener('click',()=>{if(typeof _pickInicio!=='undefined'&&_pickInicio){empezarDesde(s.n);return;}if(_modoBorrar)toggleSeleccion(s.n);else selStop(s.n);});
 return el;
 }
 
@@ -1424,14 +1425,28 @@ orden.push(...seq);pos=seq[seq.length-1];
 return [...orden,...sinC];
 }
 
+// Elegir manualmente la parada de inicio de la ruta (opcional).
+let _pickInicio=false,_inicioRuta=null;
+function elegirInicio(){
+if(_inicioRuta){_inicioRuta=null;renderLista();toast('🏁 Inicio manual quitado — vuelve a tu ubicación','');return;}
+_pickInicio=true;toast('🏁 Toca la parada por la que quieres empezar','');
+}
+function empezarDesde(n){
+_pickInicio=false;
+const s=ruta.paradas.find(p=>Number(p.n)===Number(n));
+if(!s||!s.lat||!s.lng){toast('Esa parada no tiene ubicación','err');return;}
+_inicioRuta={lat:s.lat,lng:s.lng,n:s.n};
+toast('🏁 La ruta empezará por la parada #'+n,'ok');
+optimizarConIA();
+}
 async function optimizarConIA(){
 const pendientes=ruta.paradas.filter(p=>p.status==='pending');
 if(pendientes.length<2){toast('Necesitas al menos 2 paradas pendientes','err');return;}
 if(pendientes.length>110){toast('Máximo 110 paradas','err');return;}
 toast('🗺️ Ordenando ruta por calles...','');
 try{
-// Arrancar desde la ubicación ACTUAL del chofer (GPS) si está disponible; si no, un extremo.
-let inicio=(typeof _miPos!=='undefined'&&_miPos&&_miPos.lat)?_miPos:null;
+// Inicio: 1º la parada elegida a mano; si no, la ubicación GPS del chofer; si no, un extremo.
+let inicio=_inicioRuta||((typeof _miPos!=='undefined'&&_miPos&&_miPos.lat)?_miPos:null);
 if(!inicio&&navigator.geolocation){inicio=await new Promise(res=>navigator.geolocation.getCurrentPosition(p=>res({lat:p.coords.latitude,lng:p.coords.longitude}),()=>res(null),{enableHighAccuracy:true,timeout:4000,maximumAge:60000}));}
 const reordenadas=_optimizarPorCalles(pendientes,inicio);
 // RED DE SEGURIDAD: que no falte ninguna parada pendiente
